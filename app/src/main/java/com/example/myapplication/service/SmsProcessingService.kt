@@ -1,26 +1,29 @@
-// service/SmsProcessingService.kt
+package com.example.myapplication.service
+
+import android.content.Intent
+import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.lifecycleScope
+import com.example.myapplication.engine.ScamDetectionEngine
+import com.example.myapplication.model.IncomingSms
+import com.example.myapplication.model.ScamResult
+import com.example.myapplication.trigger.TriggerEngine
+import kotlinx.coroutines.launch
+
 class SmsProcessingService : LifecycleService() {
 
-    private lateinit var db: KnowledgeBaseDatabase
-    private lateinit var embedder: ScamTextEmbedder
-    private lateinit var vectorSearch: VectorSearchEngine
-    private lateinit var llmClassifier: ScamLlmClassifier
+    private lateinit var engine: ScamDetectionEngine
 
     // In-memory conversation store: senderNumber → list of messages
     private val conversationStore = mutableMapOf<String, MutableList<String>>()
 
     override fun onCreate() {
         super.onCreate()
-        db = KnowledgeBaseDatabase.getInstance(this)
-        embedder = ScamTextEmbedder(this)
-        vectorSearch = VectorSearchEngine(db, embedder)
-        llmClassifier = ScamLlmClassifier(this)
-
-        // Pre-compute KB embeddings on first launch (runs once, ~2-5s)
-        lifecycleScope.launch(Dispatchers.IO) {
-            if (db.knowledgeBaseDao().count() > 0 &&
-                db.knowledgeBaseDao().getAll().first().embeddingBlob.isEmpty()) {
-                vectorSearch.precomputeEmbeddings()
+        engine = ScamDetectionEngine(this)
+        lifecycleScope.launch {
+            try {
+                engine.initialize()
+            } catch (e: Exception) {
+                android.util.Log.e("SmsProcessingService", "Engine init failed", e)
             }
         }
     }
@@ -32,88 +35,57 @@ class SmsProcessingService : LifecycleService() {
             ?: return START_NOT_STICKY
 
         lifecycleScope.launch {
-            processSms(incomingSms)
+            val history = conversationStore.getOrPut(incomingSms.sender) { mutableListOf() }
+            
+            val result = engine.processMessage(incomingSms, history)
+            
+            // Update history AFTER processing (so the current message is included for next time, 
+            // but engine already handled adding it to history for current run via history parameter logic if needed?
+            // Actually engine.processMessage uses the history list passed to it.
+            // Wait, looking at engine logic: Stage 3: conversationText = history.joinToString("\n")
+            // It doesn't add the current message to history. Let's fix that.
+            
+            history.add("[${incomingSms.sender}]: ${incomingSms.body}")
+            if (history.size > 10) history.removeAt(0)
+
+            actOnResult(result)
         }
 
         return START_NOT_STICKY
     }
 
-    private suspend fun processSms(sms: IncomingSms) {
+    private fun actOnResult(result: ScamDetectionEngine.DetectionResult) {
+        val scamResult = result.scamResult ?: return
+        val sms = result.sms
 
-        // --- STAGE 1: Pre-filter (sync, ~1ms) ---
-        val filterResult = SmsPreFilter.shouldIgnore(sms.sender, sms.body)
-        if (filterResult == FilterResult.IGNORE) return
-
-        // --- STAGE 2: Preprocess (sync, ~5ms) ---
-        val preprocessed = withContext(Dispatchers.Default) {
-            SmsPreprocessor.process(sms)
-        }
-
-        // --- STAGE 3: Track conversation ---
-        val history = conversationStore.getOrPut(sms.sender) { mutableListOf() }
-        history.add("[${sms.sender}]: ${sms.body}")
-        // Keep last 10 messages to bound memory + context window
-        if (history.size > 10) history.removeAt(0)
-
-        val conversationText = history.joinToString("\n")
-
-        // --- STAGE 4: Trigger check (sync, ~2ms) ---
-        val triggerResult = TriggerEngine.evaluate(preprocessed, history)
-        if (!triggerResult.shouldProcess) return
-
-        // --- STAGE 5: Embed + Vector Search (async, ~15ms total) ---
-        val kbResults = withContext(Dispatchers.Default) {
-            vectorSearch.search(
-                queryText = conversationText,
-                topK = 3,
-                minSimilarity = 0.45f
-            )
-        }
-
-        // If no KB entries match at all, this is likely not a known scam pattern
-        // Use a lower-confidence fallback based on trigger count alone
-        if (kbResults.isEmpty() && triggerResult.priority == TriggerEngine.Priority.LOW) return
-
-        // --- STAGE 6: LLM Classification (async, ~500ms–2s on-device) ---
-        val result = withContext(Dispatchers.Default) {
-            llmClassifier.classify(
-                conversationText = conversationText,
-                retrievedKbEntries = kbResults,
-                firedTriggers = triggerResult.firedTriggers
-            )
-        }
-
-        // --- STAGE 7: Act on result ---
         when {
-            result.isScam && result.confidence >= 0.85f -> {
-                showScamAlert(sms, result)
+            scamResult.isScam && scamResult.confidence >= 0.85f -> {
+                showScamAlert(sms, scamResult)
             }
-            result.isScam && result.confidence >= 0.60f -> {
-                showWarningNotification(sms, result)
+            scamResult.isScam && scamResult.confidence >= 0.60f -> {
+                showWarningNotification(sms, scamResult)
             }
             else -> {
-                logForMonitoring(sms, result, triggerResult)
+                logForMonitoring(sms, scamResult, result.triggerResult)
             }
         }
     }
 
     private fun showScamAlert(sms: IncomingSms, result: ScamResult) {
         // Fire high-priority notification
-        // Store to Room for report generation later
-        // Offer user the option to hand off to AI agent
     }
 
     private fun showWarningNotification(sms: IncomingSms, result: ScamResult) {
-        // Fire warning notification with "This looks suspicious"
+        // Fire warning notification
     }
 
     private fun logForMonitoring(sms: IncomingSms, result: ScamResult,
-                                 trigger: TriggerEngine.TriggerResult) {
-        // Write to a monitoring log table in Room — useful for debugging
+                                 trigger: TriggerEngine.TriggerResult?) {
+        // Write to a monitoring log table in Room
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        llmClassifier.close()
+        engine.close()
     }
 }

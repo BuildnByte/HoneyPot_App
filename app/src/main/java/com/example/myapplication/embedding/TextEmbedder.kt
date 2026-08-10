@@ -1,17 +1,31 @@
 package com.example.myapplication.embedding
 
 import android.content.Context
+import android.util.Log
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.core.Delegate
 import com.google.mediapipe.tasks.text.textembedder.TextEmbedder
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-class ScamTextEmbedder(context: Context) {
+class ScamTextEmbedder(private val context: Context) {
 
-    private val embedder: TextEmbedder
+    private var embedder: TextEmbedder? = null
+    private val MODEL_PATH = "universal_sentence_encoder_lite.tflite"
 
-    init {
+    suspend fun initialize() = withContext(Dispatchers.IO) {
+        if (embedder != null) return@withContext
+        
+        try {
+            // Check if asset exists
+            context.assets.open(MODEL_PATH).close()
+        } catch (e: Exception) {
+            Log.e("ScamTextEmbedder", "Model asset not found: $MODEL_PATH")
+            throw IllegalStateException("Model asset $MODEL_PATH missing from assets folder.")
+        }
+
         val baseOptions = BaseOptions.builder()
-            .setModelAssetPath("universal_sentence_encoder_lite.tflite")
+            .setModelAssetPath(MODEL_PATH)
             .setDelegate(Delegate.CPU)
             .build()
 
@@ -25,23 +39,10 @@ class ScamTextEmbedder(context: Context) {
     }
 
     fun embed(text: String): FloatArray {
-        try {
-            // Try newer API first
-            val inputClass = Class.forName(
-                "com.google.mediapipe.tasks.text.textembedder.TextEmbedder\$TextEmbedderInput"
-            )
-            val createMethod = inputClass.getMethod("create", String::class.java)
-            val input = createMethod.invoke(null, text)
-            val result = embedder.javaClass.getMethod("embed", inputClass).invoke(embedder, input)
-            val embeddingResult = result!!.javaClass.getMethod("embeddingResult").invoke(result)
-            val embeddings = embeddingResult!!.javaClass.getMethod("embeddings").invoke(embeddingResult) as List<*>
-            val embedding = embeddings[0]!!
-            @Suppress("UNCHECKED_CAST")
-            val floatList = embedding.javaClass.getMethod("floatEmbedding").invoke(embedding) as List<Float>
-            return floatList.toFloatArray()
-        } catch (e: Exception) {
-            throw RuntimeException("TextEmbedder.embed() failed: ${e.message}", e)
-        }
+        val currentEmbedder = embedder ?: throw IllegalStateException("TextEmbedder not initialized")
+        val result = currentEmbedder.embed(text)
+        val embedding = result.embeddingResult().embeddings()[0]
+        return embedding.floatEmbedding()
     }
 
     fun cosineSimilarity(a: FloatArray, b: FloatArray): Float {
@@ -59,6 +60,7 @@ class ScamTextEmbedder(context: Context) {
     }
 
     fun close() {
-        embedder.close()
+        embedder?.close()
+        embedder = null
     }
 }

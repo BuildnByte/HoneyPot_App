@@ -8,21 +8,60 @@ import com.google.mediapipe.tasks.genai.llminference.LlmInference
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import java.io.File
+import java.io.FileOutputStream
 
-class ScamLlmClassifier(context: Context) {
+class ScamLlmClassifier(private val context: Context) {
 
-    private val llmInference: LlmInference
+    private var llmInference: LlmInference? = null
     private val json = Json { ignoreUnknownKeys = true }
+    private val MODEL_NAME = "gemma-2b-it-cpu-int4.bin"
 
-    init {
-        val modelPath = context.filesDir.absolutePath + "/gemma3n_1b_int4.task"
+    suspend fun initialize() = withContext(Dispatchers.IO) {
+        if (llmInference != null) return@withContext
+
+        val modelFile = File(context.filesDir, MODEL_NAME)
+        
+        // 1. Check if we need to copy (or re-copy if corrupt)
+        val assetSize = getAssetSize(MODEL_NAME)
+        if (!modelFile.exists() || modelFile.length() != assetSize) {
+            Log.d("ScamLlmClassifier", "Model missing or size mismatch (${modelFile.length()} vs $assetSize). Copying...")
+            modelFile.delete() // Clean up potentially corrupt file
+            copyAssetToFilesDir(MODEL_NAME)
+        }
+
+        Log.d("ScamLlmClassifier", "Initializing LlmInference from: ${modelFile.absolutePath} (${modelFile.length() / (1024 * 1024)} MB)")
 
         val options = LlmInference.LlmInferenceOptions.builder()
-            .setModelPath(modelPath)
+            .setModelPath(modelFile.absolutePath)
             .setMaxTokens(512)
             .build()
 
-        llmInference = LlmInference.createFromOptions(context, options)
+        try {
+            llmInference = LlmInference.createFromOptions(context, options)
+            Log.d("ScamLlmClassifier", "LlmInference ready.")
+        } catch (e: Exception) {
+            Log.e("ScamLlmClassifier", "Engine rejected model format. Ensure this is a MediaPipe-converted .bin file.", e)
+            throw e
+        }
+    }
+
+    private fun getAssetSize(fileName: String): Long {
+        return try {
+            context.assets.openFd(fileName).use { it.length }
+        } catch (e: Exception) {
+            -1L // Compressed or missing
+        }
+    }
+
+    private fun copyAssetToFilesDir(fileName: String) {
+        val tempFile = File(context.filesDir, "${fileName}.tmp")
+        context.assets.open(fileName).use { input ->
+            FileOutputStream(tempFile).use { output ->
+                input.copyTo(output)
+            }
+        }
+        tempFile.renameTo(File(context.filesDir, fileName))
     }
 
     suspend fun classify(
@@ -30,11 +69,11 @@ class ScamLlmClassifier(context: Context) {
         retrievedKbEntries: List<VectorSearchEngine.SearchResult>,
         firedTriggers: List<String>
     ): ScamResult = withContext(Dispatchers.Default) {
+        val currentLlm = llmInference ?: throw IllegalStateException("LlmInference not initialized.")
 
         val prompt = buildPrompt(conversationText, retrievedKbEntries, firedTriggers)
-
-        val rawResponse = llmInference.generateResponse(prompt)
-
+        val rawResponse = currentLlm.generateResponse(prompt)
+        
         parseResponse(rawResponse)
     }
 
@@ -43,53 +82,27 @@ class ScamLlmClassifier(context: Context) {
         kbEntries: List<VectorSearchEngine.SearchResult>,
         triggers: List<String>
     ): String {
-        val kbContext = if (kbEntries.isEmpty()) {
-            "No matching patterns found."
-        } else {
-            kbEntries.joinToString("\n") { result ->
-                "Pattern: ${result.entry.patternDescription}\n" +
-                        "Severity: ${result.entry.severity}/5\n" +
-                        "Example: ${result.entry.exampleTriggerText}\n" +
-                        "Strategy: ${result.entry.responseStrategy}\n" +
-                        "Similarity: ${"%.2f".format(result.similarity)}"
-            }
-        }
+        val kbContext = if (kbEntries.isEmpty()) "No matching patterns." else 
+            kbEntries.joinToString("\n") { "Pattern: ${it.entry.patternDescription}" }
 
-        val triggerList = triggers.ifEmpty { listOf("none") }.joinToString(", ")
-
-        return """You are a scam detection AI. Analyse the following SMS conversation.
-
-KNOWLEDGE BASE MATCHES:
-$kbContext
-
-TRIGGERED SIGNALS: $triggerList
-
-CONVERSATION:
-$conversation
-
-Reply ONLY with this JSON, no other text:
-{"isScam":true/false,"scamType":"kyc_fraud|impersonation|lottery|phishing|job_scam|safe","confidence":0.0,"reasoning":"one sentence","extractedEntities":[]}"""
+        return """You are a scam detection AI. Analyze this SMS:
+KNOWLEDGE: $kbContext
+SIGNALS: ${triggers.joinToString(", ")}
+CONVERSATION: $conversation
+Reply ONLY with JSON: {"isScam":true/false,"scamType":"...","confidence":0.0,"reasoning":"...","extractedEntities":[]}"""
     }
 
     private fun parseResponse(raw: String): ScamResult {
         return try {
-            val jsonRegex = Regex("""\{[\s\S]*?\}""")
-            val jsonStr = jsonRegex.find(raw)?.value
-                ?: throw IllegalStateException("No JSON found in response")
+            val jsonStr = Regex("""\{.*\}""").find(raw)?.value ?: throw Exception()
             json.decodeFromString<ScamResult>(jsonStr)
         } catch (e: Exception) {
-            Log.e("ScamLlmClassifier", "Failed to parse LLM response: ${e.message}")
-            ScamResult(
-                isScam = false,
-                scamType = "parse_error",
-                confidence = 0f,
-                reasoning = "LLM response parse failed",
-                extractedEntities = emptyList()
-            )
+            ScamResult(false, "error", 0f, "Parse failed", emptyList())
         }
     }
 
     fun close() {
-        llmInference.close()
+        llmInference?.close()
+        llmInference = null
     }
 }

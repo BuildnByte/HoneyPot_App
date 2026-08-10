@@ -52,3 +52,6 @@ Thumbs.db
 
 # Kotlin build folder
 out/
+
+# Assets (Large ML models, etc.)
+**/src/main/assets/

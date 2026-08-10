@@ -5,7 +5,15 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [KnowledgeBaseEntry::class], version = 1, exportSchema = false)
+@Database(
+    entities = [
+        KnowledgeBaseEntry::class,
+        com.example.myapplication.model.SimulatedMessage::class,
+        com.example.myapplication.model.AiAnalysisLog::class
+    ],
+    version = 2,
+    exportSchema = false
+)
 abstract class KnowledgeBaseDatabase : RoomDatabase() {
 
     abstract fun knowledgeBaseDao(): KnowledgeBaseDao

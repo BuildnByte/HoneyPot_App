@@ -24,13 +24,20 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        setSupportActionBar(findViewById(R.id.toolbar))
+
         resultText = findViewById(R.id.resultText)
         val testButton = findViewById<Button>(R.id.testButton)
+        val simulationButton = findViewById<Button>(R.id.simulationButton)
 
         requestSmsPermissions()
 
         testButton.setOnClickListener {
             runPipelineTest()
+        }
+
+        simulationButton.setOnClickListener {
+            startActivity(android.content.Intent(this, com.example.myapplication.ui.SimulationActivity::class.java))
         }
     }
 

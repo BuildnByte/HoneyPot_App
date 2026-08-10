@@ -16,6 +16,10 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+
+        ndk {
+            abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
+        }
     }
 
     androidResources {
@@ -44,11 +48,10 @@ dependencies {
     ksp("androidx.room:room-compiler:$roomVersion")
 
     // MediaPipe Text Embedder
-    implementation("com.google.mediapipe:tasks-text:0.10.14")
+    implementation("com.google.mediapipe:tasks-text:1.0.0")
 
     // LiteRT-LM
-    // MediaPipe LLM (use this until LiteRT-LM stabilises on Maven)
-    implementation("com.google.mediapipe:tasks-genai:0.10.22")
+    implementation("com.google.mediapipe:tasks-genai:0.10.35")
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")

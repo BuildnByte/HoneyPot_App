@@ -35,6 +35,16 @@
         android:theme="@style/Theme.MyApplication"
         tools:targetApi="31">
 
+        <!-- Main Activity -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
         <!-- SMS BroadcastReceiver -->
         <receiver
             android:name=".receiver.SmsReceiver"
@@ -50,6 +60,12 @@
             android:name=".service.SmsProcessingService"
             android:foregroundServiceType="dataSync"
             android:exported="false"/>
+
+        <activity
+            android:name=".ui.SimulationActivity"
+            android:exported="false"
+            android:label="Simulation Lab"
+            android:theme="@style/Theme.MyApplication" />
 
     </application>
 
