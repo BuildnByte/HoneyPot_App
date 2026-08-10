@@ -1,0 +1,54 @@
+# ==========================
+# Android / Kotlin .gitignore
+# ==========================
+
+# Built output
+/build/
+app/build/
+
+# Gradle files
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+
+# Local configuration (contains SDK path - machine specific)
+local.properties
+
+# IntelliJ / Android Studio IDE files
+*.iml
+.idea/
+!.idea/runConfigurations/
+
+# Keystore / signing files (NEVER commit these)
+*.jks
+*.keystore
+release-keystore.properties
+keystore.properties
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Log files
+*.log
+
+# NDK / CMake native build
+.externalNativeBuild/
+.cxx/
+/captures/
+
+# ProGuard mapping (optional: uncomment if you want to exclude)
+# app/proguard-rules.pro
+
+# Google services (contains API keys - treat carefully)
+# If you use Firebase, consider keeping google-services.json out of version control
+# google-services.json
+
+# Kotlin build folder
+out/
