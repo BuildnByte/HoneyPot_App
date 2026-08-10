@@ -14,6 +14,8 @@ class ChatAdapter(private val onBrainClick: (Int) -> Unit) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val messages = mutableListOf<SimulatedMessage>()
+    private val analysisMap = mutableMapOf<Int, com.example.myapplication.model.AiAnalysisLog>()
+    private val processingIds = mutableSetOf<Int>()
     private val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
 
     companion object {
@@ -45,14 +47,73 @@ class ChatAdapter(private val onBrainClick: (Int) -> Unit) :
             holder.messageText.text = message.content
             holder.timeText.text = timeStr
             
-            // Ensure the indicator is visible
-            holder.brainIndicator.visibility = View.VISIBLE
+            val analysis = analysisMap[message.id]
+            val isProcessing = processingIds.contains(message.id)
+
+            when {
+                isProcessing -> {
+                    holder.brainIndicator.visibility = View.VISIBLE
+                    holder.brainIndicator.text = "⏳ AI is thinking..."
+                    holder.brainIndicator.setTextColor(android.graphics.Color.GRAY)
+                    holder.messageCard.setStrokeColor(android.content.res.ColorStateList.valueOf(android.graphics.Color.LTGRAY))
+                }
+                analysis != null -> {
+                    holder.brainIndicator.visibility = View.VISIBLE
+                    when {
+                        analysis.reason.contains("AI returned invalid format") -> {
+                            holder.brainIndicator.text = "⚠️ Analysis Error"
+                            holder.brainIndicator.setTextColor(android.graphics.Color.parseColor("#FF9800")) // Orange
+                            holder.messageCard.setStrokeColor(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#FF9800")))
+                            holder.messageCard.setCardBackgroundColor(android.content.res.ColorStateList.valueOf(0xFFFFF3E0.toInt()))
+                        }
+                        analysis.isScam -> {
+                            holder.brainIndicator.text = "⚠️ SCAM DETECTED"
+                            holder.brainIndicator.setTextColor(android.graphics.Color.RED)
+                            holder.messageCard.setStrokeColor(android.content.res.ColorStateList.valueOf(android.graphics.Color.RED))
+                            holder.messageCard.setCardBackgroundColor(android.content.res.ColorStateList.valueOf(0xFFFFEBEE.toInt()))
+                        }
+                        else -> {
+                            holder.brainIndicator.text = "✅ Safe (AI Analyzed)"
+                            holder.brainIndicator.setTextColor(0xFF4CAF50.toInt())
+                            holder.messageCard.setStrokeColor(android.content.res.ColorStateList.valueOf(0xFF4CAF50.toInt()))
+                            holder.messageCard.setCardBackgroundColor(android.content.res.ColorStateList.valueOf(0xFFE8F5E9.toInt()))
+                        }
+                    }
+                }
+                else -> {
+                    // Not attacker message or no analysis yet
+                    holder.brainIndicator.visibility = View.VISIBLE
+                    holder.brainIndicator.text = "🧠 Tap for AI analysis"
+                    holder.brainIndicator.setTextColor(0xFF9C27B0.toInt())
+                    holder.messageCard.setStrokeColor(android.content.res.ColorStateList.valueOf(0xFFCE93D8.toInt()))
+                    holder.messageCard.setCardBackgroundColor(android.content.res.ColorStateList.valueOf(0xFFF3E5F5.toInt()))
+                }
+            }
             
-            // Set click listener specifically on the message card for better UX
             holder.messageCard.setOnClickListener {
                 onBrainClick(message.id)
             }
         }
+    }
+
+    fun setAnalysisResults(logs: List<com.example.myapplication.model.AiAnalysisLog>) {
+        analysisMap.clear()
+        logs.forEach { analysisMap[it.messageId] = it }
+        notifyDataSetChanged()
+    }
+
+    fun addAnalysisResult(log: com.example.myapplication.model.AiAnalysisLog) {
+        analysisMap[log.messageId] = log
+        processingIds.remove(log.messageId)
+        val index = messages.indexOfFirst { it.id == log.messageId }
+        if (index != -1) notifyItemChanged(index)
+    }
+
+    fun setProcessing(messageId: Int, processing: Boolean) {
+        if (processing) processingIds.add(messageId)
+        else processingIds.remove(messageId)
+        val index = messages.indexOfFirst { it.id == messageId }
+        if (index != -1) notifyItemChanged(index)
     }
 
     override fun getItemCount(): Int = messages.size
@@ -76,7 +137,7 @@ class ChatAdapter(private val onBrainClick: (Int) -> Unit) :
     class AViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val messageText: TextView = view.findViewById(R.id.messageText)
         val timeText: TextView = view.findViewById(R.id.timeText)
-        val brainIndicator: View = view.findViewById(R.id.brainIndicator)
-        val messageCard: View = view.findViewById(R.id.messageCard)
+        val brainIndicator: TextView = view.findViewById(R.id.brainIndicator)
+        val messageCard: com.google.android.material.card.MaterialCardView = view.findViewById(R.id.messageCard)
     }
 }

@@ -61,7 +61,7 @@ class SimulationActivity : AppCompatActivity() {
 
         recyclerView = findViewById(R.id.chatRecyclerView)
         adapter = ChatAdapter { messageId ->
-            showAnalysis(messageId)
+            handleBrainClick(messageId)
         }
         recyclerView.layoutManager = LinearLayoutManager(this).apply {
             stackFromEnd = true
@@ -81,6 +81,14 @@ class SimulationActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val history = db.knowledgeBaseDao().getSimulationHistory(sessionId)
             adapter.submitList(history)
+            
+            // Load existing analysis logs for this session
+            val logs = mutableListOf<AiAnalysisLog>()
+            history.forEach { msg ->
+                db.knowledgeBaseDao().getAnalysisForMessage(msg.id)?.let { logs.add(it) }
+            }
+            adapter.setAnalysisResults(logs)
+
             if (history.isNotEmpty()) {
                 recyclerView.scrollToPosition(history.size - 1)
             }
@@ -115,43 +123,80 @@ class SimulationActivity : AppCompatActivity() {
     }
 
     private suspend fun processWithEngine(message: SimulatedMessage) {
+        // Prevent duplicate processing
+        val existingLog = db.knowledgeBaseDao().getAnalysisForMessage(message.id)
+        if (existingLog != null) return
+
+        adapter.setProcessing(message.id, true)
+        
         val historyFromDb = db.knowledgeBaseDao().getSimulationHistory(sessionId)
         val engineHistory = historyFromDb
             .filter { it.id != message.id }
             .map { "[${it.senderType}]: ${it.content}" }
 
-        val sms = IncomingSms(message.senderType, message.content)
-        val result = engine.processMessage(sms, engineHistory)
+        try {
+            val sms = IncomingSms(message.senderType, message.content)
+            val result = engine.processMessage(sms, engineHistory)
 
-        if (result.scamResult != null) {
-            val log = AiAnalysisLog(
-                messageId = message.id,
-                confidence = result.scamResult.confidence,
-                isScam = result.scamResult.isScam,
-                reason = result.scamResult.reasoning,
-                firedTriggers = result.triggerResult?.firedTriggers?.joinToString(",") ?: "",
-                kbMatches = result.kbResults.joinToString("\n") { 
-                    "${it.entry.scamType} (${String.format(Locale.getDefault(), "%.2f", it.similarity)})" 
-                },
-                timestamp = System.currentTimeMillis()
-            )
-            db.knowledgeBaseDao().insertAiAnalysisLog(log)
-            
-            adapter.notifyItemChanged(adapter.itemCount - 1)
+            if (result.scamResult != null) {
+                val log = AiAnalysisLog(
+                    messageId = message.id,
+                    confidence = result.scamResult.confidence,
+                    isScam = result.scamResult.isScam,
+                    reason = if (result.scamResult.reasoning == "Parse failed") 
+                        "AI returned invalid format. Please try again." else result.scamResult.reasoning,
+                    firedTriggers = result.triggerResult?.firedTriggers?.joinToString(",") ?: "",
+                    kbMatches = result.kbResults.joinToString("\n") { 
+                        "${it.entry.scamType} (${String.format(Locale.getDefault(), "%.2f", it.similarity)})" 
+                    },
+                    timestamp = System.currentTimeMillis()
+                )
+                db.knowledgeBaseDao().insertAiAnalysisLog(log)
+                adapter.addAnalysisResult(log)
+            } else {
+                // Result was null (e.g. low priority, no KB matches)
+                val reason = when {
+                    result.filterResult == com.example.myapplication.filter.FilterResult.IGNORE -> "Message ignored by pre-filter."
+                    result.triggerResult?.shouldProcess == false -> "No suspicious triggers detected."
+                    else -> "Low risk message. No detailed analysis required."
+                }
+                
+                val log = AiAnalysisLog(
+                    messageId = message.id,
+                    confidence = 0f,
+                    isScam = false,
+                    reason = reason,
+                    firedTriggers = result.triggerResult?.firedTriggers?.joinToString(",") ?: "",
+                    kbMatches = "",
+                    timestamp = System.currentTimeMillis()
+                )
+                db.knowledgeBaseDao().insertAiAnalysisLog(log)
+                adapter.addAnalysisResult(log)
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("SimulationActivity", "Error during inference", e)
+            adapter.setProcessing(message.id, false)
         }
     }
 
-    private fun showAnalysis(messageId: Int) {
+    private fun handleBrainClick(messageId: Int) {
         lifecycleScope.launch {
             val log = db.knowledgeBaseDao().getAnalysisForMessage(messageId)
             if (log != null) {
                 AnalysisBottomSheet.newInstance(log).show(supportFragmentManager, AnalysisBottomSheet.TAG)
             } else {
-                com.google.android.material.snackbar.Snackbar.make(
-                    findViewById(android.R.id.content),
-                    "Analysis still in progress or not available.",
-                    com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
-                ).show()
+                // If no log, try to trigger inference (if it failed or was skipped)
+                val messages = db.knowledgeBaseDao().getSimulationHistory(sessionId)
+                val message = messages.find { it.id == messageId }
+                if (message != null && message.senderType == "A") {
+                    processWithEngine(message)
+                } else {
+                    com.google.android.material.snackbar.Snackbar.make(
+                        findViewById(android.R.id.content),
+                        "Analysis only available for attacker messages.",
+                        com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
     }

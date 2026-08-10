@@ -15,7 +15,7 @@ class ScamLlmClassifier(private val context: Context) {
 
     private var llmInference: LlmInference? = null
     private val json = Json { ignoreUnknownKeys = true }
-    private val MODEL_NAME = "gemma-2b-it-cpu-int4.bin"
+    private val MODEL_NAME = "gemma3-1B-it-int4.task"
 
     suspend fun initialize() = withContext(Dispatchers.IO) {
         if (llmInference != null) return@withContext
@@ -41,7 +41,7 @@ class ScamLlmClassifier(private val context: Context) {
             llmInference = LlmInference.createFromOptions(context, options)
             Log.d("ScamLlmClassifier", "LlmInference ready.")
         } catch (e: Exception) {
-            Log.e("ScamLlmClassifier", "Engine rejected model format. Ensure this is a MediaPipe-converted .bin file.", e)
+            Log.e("ScamLlmClassifier", "Engine rejected model format. Ensure this is a MediaPipe-converted model file.", e)
             throw e
         }
     }
