@@ -35,4 +35,42 @@ interface KnowledgeBaseDao {
 
     @Query("DELETE FROM simulated_messages WHERE sessionId = :sessionId")
     suspend fun deleteSimulation(sessionId: String)
+
+    // Evidence related
+    @Insert
+    suspend fun insertEvidence(evidence: com.example.myapplication.model.ScamEvidence)
+
+    @Insert
+    suspend fun insertEvidenceBatch(evidence: List<com.example.myapplication.model.ScamEvidence>)
+
+    @Query("SELECT * FROM scam_evidence ORDER BY timestamp DESC")
+    suspend fun getAllEvidence(): List<com.example.myapplication.model.ScamEvidence>
+
+    @Query("SELECT * FROM scam_evidence WHERE sessionId = :sessionId ORDER BY timestamp ASC")
+    suspend fun getEvidenceForSession(sessionId: String): List<com.example.myapplication.model.ScamEvidence>
+
+    @Query("SELECT * FROM scam_evidence WHERE entityType = :type ORDER BY timestamp DESC")
+    suspend fun getEvidenceByType(type: String): List<com.example.myapplication.model.ScamEvidence>
+
+    @Query("SELECT * FROM scam_evidence WHERE sourceSender = :sender ORDER BY timestamp DESC")
+    suspend fun getEvidenceForSender(sender: String): List<com.example.myapplication.model.ScamEvidence>
+
+    @Query("DELETE FROM scam_evidence WHERE id = :id")
+    suspend fun deleteEvidence(id: Int)
+
+    // Indicator related
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertIndicator(entry: IndicatorEntry)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertIndicators(entries: List<IndicatorEntry>)
+
+    @Query("SELECT * FROM indicator_kb WHERE indicatorValue = :value LIMIT 1")
+    suspend fun getIndicator(value: String): IndicatorEntry?
+
+    @Query("SELECT * FROM indicator_kb WHERE indicatorType = :type")
+    suspend fun getIndicatorsByType(type: String): List<IndicatorEntry>
+
+    @Query("SELECT * FROM scam_evidence WHERE entityValue = :value")
+    suspend fun getEvidenceMatchingValue(value: String): List<com.example.myapplication.model.ScamEvidence>
 }

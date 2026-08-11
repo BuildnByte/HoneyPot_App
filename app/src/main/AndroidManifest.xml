@@ -26,6 +26,8 @@
     <application
         android:name=".HoneypotApp"
         android:allowBackup="true"
+        android:largeHeap="true"
+        android:enableOnBackInvokedCallback="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
@@ -65,6 +67,12 @@
             android:name=".ui.SimulationActivity"
             android:exported="false"
             android:label="Simulation Lab"
+            android:theme="@style/Theme.MyApplication" />
+
+        <activity
+            android:name=".ui.EvidenceActivity"
+            android:exported="false"
+            android:label="Evidence Vault"
             android:theme="@style/Theme.MyApplication" />
 
     </application>

@@ -29,6 +29,7 @@ class MainActivity : AppCompatActivity() {
         resultText = findViewById(R.id.resultText)
         val testButton = findViewById<Button>(R.id.testButton)
         val simulationButton = findViewById<Button>(R.id.simulationButton)
+        val evidenceButton = findViewById<Button>(R.id.evidenceButton)
 
         requestSmsPermissions()
 
@@ -38,6 +39,10 @@ class MainActivity : AppCompatActivity() {
 
         simulationButton.setOnClickListener {
             startActivity(android.content.Intent(this, com.example.myapplication.ui.SimulationActivity::class.java))
+        }
+
+        evidenceButton.setOnClickListener {
+            startActivity(android.content.Intent(this, com.example.myapplication.ui.EvidenceActivity::class.java))
         }
     }
 

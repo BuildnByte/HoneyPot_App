@@ -83,6 +83,16 @@
                 android:text="Enter Simulation Lab"
                 app:icon="@android:drawable/ic_menu_edit" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/evidenceButton"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:padding="12dp"
+                android:text="View Evidence Vault"
+                app:icon="@android:drawable/ic_menu_info_details" />
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

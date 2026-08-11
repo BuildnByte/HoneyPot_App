@@ -12,5 +12,6 @@ data class AiAnalysisLog(
     val reason: String,
     val firedTriggers: String, // Comma separated list
     val kbMatches: String, // JSON or formatted summary of KB hits
+    val evidenceFlagsJson: String = "[]", // JSON-serialized EvidenceFlag list
     val timestamp: Long
 )

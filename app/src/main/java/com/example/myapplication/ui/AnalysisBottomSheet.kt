@@ -7,10 +7,12 @@ import android.view.ViewGroup
 import android.widget.TextView
 import com.example.myapplication.R
 import com.example.myapplication.model.AiAnalysisLog
+import com.example.myapplication.model.EvidenceFlag
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.progressindicator.LinearProgressIndicator
+import kotlinx.serialization.json.Json
 
 class AnalysisBottomSheet : BottomSheetDialogFragment() {
 
@@ -51,6 +53,37 @@ class AnalysisBottomSheet : BottomSheetDialogFragment() {
             val chip = Chip(context)
             chip.text = it
             triggerGroup.addView(chip)
+        }
+
+        // New Evidence Section
+        val evidenceGroup = view.findViewById<ChipGroup>(R.id.evidenceGroup)
+        val evidenceLabel = view.findViewById<View>(R.id.evidenceLabel)
+        
+        try {
+            val flags = Json.decodeFromString<List<EvidenceFlag>>(currentLog.evidenceFlagsJson)
+            if (flags.isEmpty()) {
+                evidenceLabel.visibility = View.GONE
+                evidenceGroup.visibility = View.GONE
+            } else {
+                evidenceLabel.visibility = View.VISIBLE
+                evidenceGroup.visibility = View.VISIBLE
+                flags.forEach { flag ->
+                    val chip = Chip(context)
+                    chip.text = "${flag.indicator}: ${flag.verdict}"
+                    
+                    val colorRes = when (flag.confidenceLevel.uppercase()) {
+                        "HIGH" -> android.R.color.holo_red_light
+                        "MEDIUM" -> android.R.color.holo_orange_light
+                        else -> android.R.color.darker_gray
+                    }
+                    chip.setChipBackgroundColorResource(colorRes)
+                    chip.setTextColor(android.graphics.Color.WHITE)
+                    evidenceGroup.addView(chip)
+                }
+            }
+        } catch (e: Exception) {
+            evidenceLabel.visibility = View.GONE
+            evidenceGroup.visibility = View.GONE
         }
     }
 

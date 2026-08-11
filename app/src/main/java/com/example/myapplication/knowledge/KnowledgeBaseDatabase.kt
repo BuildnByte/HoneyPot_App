@@ -9,9 +9,11 @@ import androidx.room.RoomDatabase
     entities = [
         KnowledgeBaseEntry::class,
         com.example.myapplication.model.SimulatedMessage::class,
-        com.example.myapplication.model.AiAnalysisLog::class
+        com.example.myapplication.model.AiAnalysisLog::class,
+        com.example.myapplication.model.ScamEvidence::class,
+        IndicatorEntry::class
     ],
-    version = 2,
+    version = 6,
     exportSchema = false
 )
 abstract class KnowledgeBaseDatabase : RoomDatabase() {

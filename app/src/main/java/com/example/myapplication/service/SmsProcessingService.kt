@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.example.myapplication.engine.ScamDetectionEngine
+import com.example.myapplication.engine.ScamDetectionEngineManager
 import com.example.myapplication.model.IncomingSms
 import com.example.myapplication.model.ScamResult
 import com.example.myapplication.trigger.TriggerEngine
@@ -11,17 +12,15 @@ import kotlinx.coroutines.launch
 
 class SmsProcessingService : LifecycleService() {
 
-    private lateinit var engine: ScamDetectionEngine
-
     // In-memory conversation store: senderNumber → list of messages
     private val conversationStore = mutableMapOf<String, MutableList<String>>()
 
     override fun onCreate() {
         super.onCreate()
-        engine = ScamDetectionEngine(this)
+        // Engine will be initialized on first demand or here
         lifecycleScope.launch {
             try {
-                engine.initialize()
+                ScamDetectionEngineManager.getEngine(this@SmsProcessingService)
             } catch (e: Exception) {
                 android.util.Log.e("SmsProcessingService", "Engine init failed", e)
             }
@@ -37,7 +36,8 @@ class SmsProcessingService : LifecycleService() {
         lifecycleScope.launch {
             val history = conversationStore.getOrPut(incomingSms.sender) { mutableListOf() }
             
-            val result = engine.processMessage(incomingSms, history)
+            val activeEngine = ScamDetectionEngineManager.getEngine(this@SmsProcessingService)
+            val result = activeEngine.processMessage(incomingSms, history)
             
             // Update history AFTER processing (so the current message is included for next time, 
             // but engine already handled adding it to history for current run via history parameter logic if needed?
@@ -86,6 +86,6 @@ class SmsProcessingService : LifecycleService() {
 
     override fun onDestroy() {
         super.onDestroy()
-        engine.close()
+        // Do not close global engine here unless app is being terminated
     }
 }

@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.R
 import com.example.myapplication.engine.ScamDetectionEngine
+import com.example.myapplication.engine.ScamDetectionEngineManager
 import com.example.myapplication.knowledge.KnowledgeBaseDatabase
 import com.example.myapplication.model.AiAnalysisLog
 import com.example.myapplication.model.IncomingSms
@@ -15,6 +16,8 @@ import com.example.myapplication.model.SimulatedMessage
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.util.*
 
 class SimulationActivity : AppCompatActivity() {
@@ -25,22 +28,26 @@ class SimulationActivity : AppCompatActivity() {
     private lateinit var adapter: ChatAdapter
     private lateinit var messageInput: EditText
     private lateinit var senderToggle: MaterialButtonToggleGroup
+    private lateinit var sendButton: MaterialButton
     
     private val sessionId = UUID.randomUUID().toString()
+    private var isEngineReady = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_simulation)
 
         db = KnowledgeBaseDatabase.getInstance(this)
-        engine = ScamDetectionEngine(this)
 
         setupUI()
         loadHistory()
         
         lifecycleScope.launch {
             try {
-                engine.initialize()
+                sendButton.isEnabled = false
+                engine = ScamDetectionEngineManager.getEngine(this@SimulationActivity)
+                isEngineReady = true
+                sendButton.isEnabled = true
             } catch (e: Throwable) {
                 android.util.Log.e("SimulationActivity", "Failed to initialize engine", e)
                 com.google.android.material.snackbar.Snackbar.make(
@@ -70,8 +77,9 @@ class SimulationActivity : AppCompatActivity() {
 
         messageInput = findViewById(R.id.messageInput)
         senderToggle = findViewById(R.id.senderToggleGroup)
+        sendButton = findViewById(R.id.sendButton)
 
-        findViewById<MaterialButton>(R.id.sendButton).setOnClickListener {
+        sendButton.setOnClickListener {
             val senderType = if (senderToggle.checkedButtonId == R.id.selectV) "V" else "A"
             sendMessage(senderType)
         }
@@ -149,6 +157,7 @@ class SimulationActivity : AppCompatActivity() {
                     kbMatches = result.kbResults.joinToString("\n") { 
                         "${it.entry.scamType} (${String.format(Locale.getDefault(), "%.2f", it.similarity)})" 
                     },
+                    evidenceFlagsJson = Json.encodeToString(result.scamResult.evidenceFlags),
                     timestamp = System.currentTimeMillis()
                 )
                 db.knowledgeBaseDao().insertAiAnalysisLog(log)
@@ -168,6 +177,7 @@ class SimulationActivity : AppCompatActivity() {
                     reason = reason,
                     firedTriggers = result.triggerResult?.firedTriggers?.joinToString(",") ?: "",
                     kbMatches = "",
+                    evidenceFlagsJson = "[]",
                     timestamp = System.currentTimeMillis()
                 )
                 db.knowledgeBaseDao().insertAiAnalysisLog(log)
@@ -203,6 +213,6 @@ class SimulationActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        engine.close()
+        // Do not close global engine here, it might be used by the background service
     }
 }
