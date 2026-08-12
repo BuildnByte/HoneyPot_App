@@ -1,0 +1,24 @@
+package com.example.myapplication.agent
+
+enum class AgentObjective {
+
+    OBTAIN_SCAMMER_IDENTITY,
+
+    OBTAIN_PHONE_NUMBER,
+
+    OBTAIN_SUSPICIOUS_LINK,
+
+    OBTAIN_EMAIL_ADDRESS,
+
+    OBTAIN_UPI_ID,
+
+    OBTAIN_BANK_ACCOUNT,
+
+    OBTAIN_PAYMENT_DETAILS,
+
+    UNDERSTAND_SCAM_METHOD,
+
+    MAINTAIN_ENGAGEMENT,
+
+    END_CONVERSATION
+}
