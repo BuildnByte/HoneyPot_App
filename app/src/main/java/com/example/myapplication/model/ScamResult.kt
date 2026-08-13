@@ -13,11 +13,18 @@ data class EvidenceFlag(
 
 @OptIn(InternalSerializationApi::class)
 @Serializable
+data class ExtractedEntity(
+    val type: String, // e.g. "NAME", "ROLE", "COMPANY", "ACCOUNT_NUMBER"
+    val value: String
+)
+
+@OptIn(InternalSerializationApi::class)
+@Serializable
 data class ScamResult(
     val isScam: Boolean = false,
     val scamType: String = "unknown",
     val confidence: Float = 0f,
     val reasoning: String = "",
-    val extractedEntities: List<String> = emptyList(),
+    val extractedEntities: List<ExtractedEntity> = emptyList(),
     val evidenceFlags: List<EvidenceFlag> = emptyList()
 )

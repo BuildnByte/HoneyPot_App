@@ -9,6 +9,7 @@ import com.example.myapplication.llm.ScamLlmClassifier
 import com.example.myapplication.model.IncomingSms
 import com.example.myapplication.model.ScamResult
 import com.example.myapplication.model.ScamEvidence
+import com.example.myapplication.model.ExtractedEntity
 import com.example.myapplication.preprocessor.SmsPreprocessor
 import com.example.myapplication.trigger.TriggerEngine
 import com.example.myapplication.vectorsearch.VectorSearchEngine
@@ -78,7 +79,8 @@ class ScamDetectionEngine(context: Context) {
 
     suspend fun processMessage(
         sms: IncomingSms,
-        history: List<String>
+        history: List<String>,
+        explicitSessionId: String? = null
     ): DetectionResult {
         // --- STAGE 1: Pre-filter ---
         val filterResult = SmsPreFilter.shouldIgnore(sms.sender, sms.body)
@@ -133,8 +135,10 @@ class ScamDetectionEngine(context: Context) {
         // --- STAGE 7: Evidence Extraction ---
         if (scamResult.isScam) {
             withContext(Dispatchers.IO) {
-                val datePart = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(sms.timestamp))
-                val sessionId = "${sms.sender}_$datePart"
+                val sessionId = explicitSessionId ?: run {
+                    val datePart = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(sms.timestamp))
+                    "${sms.sender}_$datePart"
+                }
                 val evidenceList = mutableListOf<ScamEvidence>()
 
                 val entities = preprocessed.extractedEntities
@@ -167,6 +171,14 @@ class ScamDetectionEngine(context: Context) {
                     evidenceList.add(ScamEvidence(
                         sessionId = sessionId, sourceSender = sms.sender, entityType = "AMOUNT",
                         entityValue = it, sourceMessageText = sms.body, analysisLogId = null, timestamp = sms.timestamp
+                    ))
+                }
+
+                // Add LLM extracted entities (Names, Roles, etc.)
+                scamResult.extractedEntities.filter { it.value.isNotBlank() }.forEach {
+                    evidenceList.add(ScamEvidence(
+                        sessionId = sessionId, sourceSender = sms.sender, entityType = it.type,
+                        entityValue = it.value, sourceMessageText = sms.body, analysisLogId = null, timestamp = sms.timestamp
                     ))
                 }
 
@@ -214,7 +226,8 @@ class ScamDetectionEngine(context: Context) {
         sms: IncomingSms,
         history: List<String>,
         originalScamType: String,
-        originalConfidence: Float
+        originalConfidence: Float,
+        explicitSessionId: String? = null
     ): DetectionResult {
         // Build full conversation including this new message
         val fullHistory = history + "[${sms.sender}]: ${sms.body}"
@@ -227,8 +240,10 @@ class ScamDetectionEngine(context: Context) {
 
         // Persist any new evidence entities revealed by the attacker in this follow-up
         withContext(Dispatchers.IO) {
-            val datePart = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(sms.timestamp))
-            val sessionId = "${sms.sender}_$datePart"
+            val sessionId = explicitSessionId ?: run {
+                val datePart = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(sms.timestamp))
+                "${sms.sender}_$datePart"
+            }
             val evidenceList = mutableListOf<ScamEvidence>()
             val entities = preprocessed.extractedEntities
 
@@ -237,6 +252,9 @@ class ScamDetectionEngine(context: Context) {
             entities.accountNumbers.filter{ it.isNotBlank() }.forEach { evidenceList.add(ScamEvidence(sessionId = sessionId, sourceSender = sms.sender, entityType = "ACCOUNT",  entityValue = it, sourceMessageText = sms.body, analysisLogId = null, timestamp = sms.timestamp)) }
             entities.urls.filter        { it.isNotBlank() }.forEach { evidenceList.add(ScamEvidence(sessionId = sessionId, sourceSender = sms.sender, entityType = "URL",         entityValue = it, sourceMessageText = sms.body, analysisLogId = null, timestamp = sms.timestamp)) }
             entities.amounts.filter     { it.isNotBlank() }.forEach { evidenceList.add(ScamEvidence(sessionId = sessionId, sourceSender = sms.sender, entityType = "AMOUNT",      entityValue = it, sourceMessageText = sms.body, analysisLogId = null, timestamp = sms.timestamp)) }
+
+            // LLM is not re-run for follow-ups, so we only extract regex entities for follow-ups
+            // (Unless we want to re-run it just for extraction, but fast-path implies we skip LLM)
 
             if (evidenceList.isNotEmpty()) {
                 db.knowledgeBaseDao().insertEvidenceBatch(evidenceList)
@@ -258,11 +276,13 @@ class ScamDetectionEngine(context: Context) {
             confidence = originalConfidence,
             reasoning = "⚠️ Scam session active. This message is a continuation of a confirmed " +
                 "$originalScamType scam. New information from the attacker has been captured.",
-            extractedEntities = (preprocessed.extractedEntities.phoneNumbers +
-                preprocessed.extractedEntities.upiIds +
-                preprocessed.extractedEntities.accountNumbers +
-                preprocessed.extractedEntities.urls +
-                preprocessed.extractedEntities.amounts).filter { it.isNotBlank() },
+            extractedEntities = preprocessed.extractedEntities.let { e ->
+                e.phoneNumbers.filter { it.isNotBlank() }.map { ExtractedEntity("PHONE", it) } +
+                e.upiIds.filter { it.isNotBlank() }.map { ExtractedEntity("UPI_ID", it) } +
+                e.accountNumbers.filter { it.isNotBlank() }.map { ExtractedEntity("ACCOUNT", it) } +
+                e.urls.filter { it.isNotBlank() }.map { ExtractedEntity("URL", it) } +
+                e.amounts.filter { it.isNotBlank() }.map { ExtractedEntity("AMOUNT", it) }
+            },
             evidenceFlags = emptyList()
         )
 

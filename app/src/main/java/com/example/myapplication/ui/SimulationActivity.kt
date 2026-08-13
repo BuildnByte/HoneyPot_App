@@ -20,6 +20,7 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.*
@@ -36,7 +37,8 @@ class SimulationActivity : AppCompatActivity() {
     private lateinit var sendButton: MaterialButton
     private lateinit var consentManager: ConsentPreferenceManager
 
-    private val sessionId = UUID.randomUUID().toString()
+    private lateinit var sessionId: String
+    private var currentSession: com.example.myapplication.model.SimulationSession? = null
     private var isEngineReady = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,6 +47,23 @@ class SimulationActivity : AppCompatActivity() {
 
         db = KnowledgeBaseDatabase.getInstance(this)
         consentManager = ConsentPreferenceManager(this)
+
+        sessionId = intent.getStringExtra("EXTRA_SESSION_ID") ?: UUID.randomUUID().toString()
+        
+        lifecycleScope.launch {
+            currentSession = db.knowledgeBaseDao().getSession(sessionId)
+            withContext(kotlinx.coroutines.Dispatchers.Main) {
+                currentSession?.let { session ->
+                    supportActionBar?.title = session.name
+                    supportActionBar?.subtitle = when {
+                        session.attackerSenderId.isNotBlank() && session.attackerPhone.isNotBlank() ->
+                            "${session.attackerSenderId} (${session.attackerPhone})"
+                        session.attackerSenderId.isNotBlank() -> session.attackerSenderId
+                        else -> session.attackerPhone
+                    }
+                }
+            }
+        }
 
         setupUI()
         loadHistory()
@@ -148,20 +167,31 @@ class SimulationActivity : AppCompatActivity() {
             .map { "[${it.senderType}]: ${it.content}" }
 
         try {
-            val sms = IncomingSms(message.senderType, message.content)
+            val sender = currentSession?.let { 
+                it.attackerSenderId.takeIf { s -> s.isNotBlank() } ?: it.attackerPhone.takeIf { p -> p.isNotBlank() }
+            } ?: message.senderType
+            
+            val sms = IncomingSms(
+                sender = sender,
+                body = message.content,
+                timestamp = message.timestamp,
+                subscriptionId = currentSession?.subscriptionId ?: -1,
+                serviceCenterAddress = currentSession?.serviceCenterAddress ?: ""
+            )
 
             // --- Session Scam Lock ---
             val priorScamLog = db.knowledgeBaseDao().getFirstScamLogForSession(sessionId)
-            val result = if (priorScamLog != null) {
-                engine.processConfirmedScamFollowUp(
-                    sms = sms,
-                    history = engineHistory,
-                    originalScamType = priorScamLog.scamType,
-                    originalConfidence = priorScamLog.confidence
-                )
-            } else {
-                engine.processMessage(sms, engineHistory)
-            }
+                val result = if (priorScamLog != null) {
+                    engine.processConfirmedScamFollowUp(
+                        sms = sms,
+                        history = engineHistory,
+                        originalScamType = priorScamLog.scamType,
+                        originalConfidence = priorScamLog.confidence,
+                        explicitSessionId = currentSession?.id
+                    )
+                } else {
+                    engine.processMessage(sms, engineHistory, explicitSessionId = currentSession?.id)
+                }
 
             if (result.scamResult != null) {
 

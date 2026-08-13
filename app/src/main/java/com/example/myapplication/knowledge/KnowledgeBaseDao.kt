@@ -20,7 +20,26 @@ interface KnowledgeBaseDao {
     @Query("SELECT COUNT(*) FROM knowledge_base")
     suspend fun count(): Int
 
-    // Simulation related
+    // Simulation Session related
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertSession(session: com.example.myapplication.model.SimulationSession)
+
+    @Query("SELECT * FROM simulation_sessions WHERE isArchived = 0 ORDER BY createdAt DESC")
+    suspend fun getAllSessions(): List<com.example.myapplication.model.SimulationSession>
+
+    @Query("SELECT * FROM simulation_sessions WHERE id = :id LIMIT 1")
+    suspend fun getSession(id: String): com.example.myapplication.model.SimulationSession?
+
+    @androidx.room.Update
+    suspend fun updateSession(session: com.example.myapplication.model.SimulationSession)
+
+    @Query("UPDATE simulation_sessions SET isArchived = 1 WHERE id = :id")
+    suspend fun archiveSession(id: String)
+
+    @Query("DELETE FROM simulation_sessions WHERE id = :id")
+    suspend fun deleteSession(id: String)
+
+    // Simulation Message related
     @Insert
     suspend fun insertSimulatedMessage(message: com.example.myapplication.model.SimulatedMessage): Long
 
@@ -45,6 +64,9 @@ interface KnowledgeBaseDao {
 
     @Query("SELECT * FROM scam_evidence ORDER BY timestamp DESC")
     suspend fun getAllEvidence(): List<com.example.myapplication.model.ScamEvidence>
+
+    @Query("SELECT sessionId, sourceSender, MAX(timestamp) as lastTimestamp, COUNT(*) as evidenceCount FROM scam_evidence GROUP BY sessionId, sourceSender ORDER BY lastTimestamp DESC")
+    suspend fun getEvidenceSessionSummaries(): List<EvidenceSessionSummary>
 
     @Query("SELECT * FROM scam_evidence WHERE sessionId = :sessionId ORDER BY timestamp ASC")
     suspend fun getEvidenceForSession(sessionId: String): List<com.example.myapplication.model.ScamEvidence>
@@ -88,3 +110,10 @@ interface KnowledgeBaseDao {
     """)
     suspend fun getFirstScamLogForSession(sessionId: String): com.example.myapplication.model.AiAnalysisLog?
 }
+
+data class EvidenceSessionSummary(
+    val sessionId: String,
+    val sourceSender: String,
+    val lastTimestamp: Long,
+    val evidenceCount: Int
+)

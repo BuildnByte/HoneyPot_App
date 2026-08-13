@@ -64,6 +64,12 @@
             android:exported="false"/>
 
         <activity
+            android:name=".ui.SessionListActivity"
+            android:exported="false"
+            android:label="Simulation Lab"
+            android:theme="@style/Theme.MyApplication" />
+
+        <activity
             android:name=".ui.SimulationActivity"
             android:exported="false"
             android:label="Simulation Lab"
@@ -73,6 +79,12 @@
             android:name=".ui.EvidenceActivity"
             android:exported="false"
             android:label="Evidence Vault"
+            android:theme="@style/Theme.MyApplication" />
+
+        <activity
+            android:name=".ui.EvidenceDetailActivity"
+            android:exported="false"
+            android:label="Session Evidence"
             android:theme="@style/Theme.MyApplication" />
 
     </application>

@@ -3,6 +3,7 @@ package com.example.myapplication.llm
 import android.content.Context
 import android.util.Log
 import com.example.myapplication.model.ScamResult
+import com.example.myapplication.model.ExtractedEntity
 import com.example.myapplication.preprocessor.SmsPreprocessor
 import com.example.myapplication.verification.FactCheckResult
 import com.google.mediapipe.tasks.genai.llminference.LlmInference
@@ -124,11 +125,12 @@ EXTERNAL FACT-CHECK RESULTS:
 $factCheckResults
 
 Weigh external fact-check results and prior evidence matches more heavily than pattern similarity alone. A MALICIOUS verdict from fact-check should strongly increase confidence; conflicting signals should be explained in reasoning.
+Extract any mentioned Names, Roles (e.g. Manager), Companies, or Account Numbers into the extractedEntities list.
 
 Your output must be ONLY the JSON object, with no other text.
 Do not include "JSON SCHEMA:" or markdown fences.
 Required JSON format:
-{"isScam": true, "scamType": "phishing", "confidence": 0.9, "reasoning": "Detailed explanation here.", "extractedEntities": [], "evidenceFlags": []}
+{"isScam": true, "scamType": "phishing", "confidence": 0.9, "reasoning": "Detailed explanation here.", "extractedEntities": [{"type": "NAME", "value": "John"}, {"type": "ROLE", "value": "Manager"}], "evidenceFlags": []}
 """
     }
 
@@ -229,11 +231,13 @@ Required JSON format:
             Regex(""""$key"\s*:\s*([0-9]*\.?[0-9]+)""")
                 .find(raw)?.groupValues?.get(1)?.toFloatOrNull()
 
-        fun findStringList(key: String): List<String> =
-            Regex(""""$key"\s*:\s*\[([^\]]*)]""")
-                .find(raw)?.groupValues?.get(1)
-                ?.let { Regex(""""([^"]+)"""").findAll(it).map { m -> m.groupValues[1] }.toList() }
-                ?: emptyList()
+        fun findEntityList(key: String): List<ExtractedEntity> {
+            val listBlock = Regex(""""$key"\s*:\s*\[([^\]]*)]""").find(raw)?.groupValues?.get(1) ?: return emptyList()
+            return Regex("""\{\s*"type"\s*:\s*"([^"]+)"\s*,\s*"value"\s*:\s*"([^"]+)"\s*}""")
+                .findAll(listBlock)
+                .map { m -> ExtractedEntity(m.groupValues[1], m.groupValues[2]) }
+                .toList()
+        }
 
         val isScam     = findBool("isScam") ?: false
         val scamType   = findString("scamType") ?: "unknown"
@@ -241,7 +245,7 @@ Required JSON format:
         val reasoning  = findString("reasoning")
             ?: raw.take(300).replace(Regex("[\"{}\\[\\]]"), "").trim()
                 .ifBlank { "Could not parse model response." }
-        val entities   = findStringList("extractedEntities")
+        val entities   = findEntityList("extractedEntities")
 
         Log.d("ScamLlmClassifier", "Regex extraction → isScam=$isScam type=$scamType conf=$confidence")
         return ScamResult(isScam, scamType, confidence, reasoning, entities, emptyList())

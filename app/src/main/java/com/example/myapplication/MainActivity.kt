@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         simulationButton.setOnClickListener {
-            startActivity(android.content.Intent(this, com.example.myapplication.ui.SimulationActivity::class.java))
+            startActivity(android.content.Intent(this, com.example.myapplication.ui.SessionListActivity::class.java))
         }
 
         evidenceButton.setOnClickListener {

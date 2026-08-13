@@ -2,49 +2,38 @@ package com.example.myapplication.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.format.DateUtils
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.R
+import com.example.myapplication.knowledge.EvidenceSessionSummary
 import com.example.myapplication.knowledge.KnowledgeBaseDatabase
-import com.example.myapplication.model.ScamEvidence
 import com.google.android.material.appbar.MaterialToolbar
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import kotlinx.coroutines.withContext
 
 class EvidenceActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
-    private lateinit var adapter: EvidenceAdapter
+    private lateinit var adapter: EvidenceSessionAdapter
     private lateinit var db: KnowledgeBaseDatabase
-    private var rawEvidence = listOf<ScamEvidence>()
+    private lateinit var emptyText: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_evidence)
+        setContentView(R.layout.activity_evidence) // we reuse the layout but hide FAB
 
         db = KnowledgeBaseDatabase.getInstance(this)
 
         setupUI()
-        loadEvidence()
-    }
-
-    override fun onCreateOptionsMenu(menu: android.view.Menu): Boolean {
-        menuInflater.inflate(R.menu.evidence_menu, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: android.view.MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_share_all -> {
-                shareFullReport()
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
+        loadSessions()
     }
 
     private fun setupUI() {
@@ -55,112 +44,84 @@ class EvidenceActivity : AppCompatActivity() {
             finish()
         }
 
+        emptyText = findViewById<TextView>(R.id.emptyText)
+        if (emptyText == null) {
+            // activity_evidence.xml might not have emptyText, let's just tolerate it if missing
+        }
+
         recyclerView = findViewById(R.id.evidenceRecyclerView)
-        adapter = EvidenceAdapter { sessionId ->
-            shareSessionReport(sessionId)
+        adapter = EvidenceSessionAdapter { summary ->
+            val intent = Intent(this, EvidenceDetailActivity::class.java).apply {
+                putExtra("EXTRA_SESSION_ID", summary.sessionId)
+                putExtra("EXTRA_SOURCE_SENDER", summary.sourceSender)
+            }
+            startActivity(intent)
         }
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
     }
 
-    private fun loadEvidence() {
-        lifecycleScope.launch {
-            rawEvidence = db.knowledgeBaseDao().getAllEvidence()
+    private fun loadSessions() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val sessions = db.knowledgeBaseDao().getEvidenceSessionSummaries()
             
-            // Group by session and then by message text
-            val sessionGrouped = rawEvidence.groupBy { it.sessionId }
-            val displayItems = mutableListOf<EvidenceAdapter.EvidenceDisplayItem>()
-            
-            sessionGrouped.forEach { (sessionId, sessionItems) ->
-                displayItems.add(EvidenceAdapter.EvidenceDisplayItem.Header(sessionId))
-                
-                // Within each session, group by the message text
-                val messageGrouped = sessionItems.groupBy { it.sourceMessageText }
-                messageGrouped.forEach { (messageText, messageItems) ->
-                    val first = messageItems.first()
-                    displayItems.add(EvidenceAdapter.EvidenceDisplayItem.Group(
-                        EvidenceGroup(
-                            sourceSender = first.sourceSender,
-                            sourceMessageText = messageText,
-                            timestamp = first.timestamp,
-                            items = messageItems
-                        )
-                    ))
+            withContext(Dispatchers.Main) {
+                if (sessions.isEmpty()) {
+                    emptyText?.visibility = View.VISIBLE
+                    emptyText?.text = "No scam evidence captured yet."
+                } else {
+                    emptyText?.visibility = View.GONE
                 }
-            }
-            
-            adapter.submitList(displayItems)
-        }
-    }
-
-    private fun shareSessionReport(sessionId: String) {
-        val sessionItems = rawEvidence.filter { it.sessionId == sessionId }
-        if (sessionItems.isEmpty()) return
-
-        val sender = sessionItems.first().sourceSender
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-        
-        val report = StringBuilder()
-        report.appendLine("=== SCAM EVIDENCE REPORT ===")
-        report.appendLine("Target Identifier: $sender")
-        report.appendLine("Session ID: $sessionId")
-        report.appendLine("Generated: ${dateFormat.format(Date())}")
-        report.appendLine("\n--- EXTRACTED EVIDENCE ---")
-
-        sessionItems.sortedBy { it.timestamp }.forEach { item ->
-            report.appendLine("[${dateFormat.format(Date(item.timestamp))}]")
-            report.appendLine("TYPE: ${item.entityType}")
-            report.appendLine("VALUE: ${item.entityValue}")
-            report.appendLine("SOURCE MESSAGE: \"${item.sourceMessageText}\"")
-            report.appendLine("-------------------------")
-        }
-
-        report.appendLine("\nThis report was generated by SMS Honeypot Lab for reporting to authorities.")
-
-        val shareIntent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/plain"
-            putExtra(Intent.EXTRA_SUBJECT, "Scam Evidence Report - $sender")
-            putExtra(Intent.EXTRA_TEXT, report.toString())
-        }
-        
-        startActivity(Intent.createChooser(shareIntent, "Share Report via"))
-    }
-
-    private fun shareFullReport() {
-        if (rawEvidence.isEmpty()) return
-
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-        val report = StringBuilder()
-        report.appendLine("=== FULL SCAM EVIDENCE VAULT REPORT ===")
-        report.appendLine("Generated: ${dateFormat.format(Date())}")
-        report.appendLine("Total Entries: ${rawEvidence.size}")
-        
-        val grouped = rawEvidence.groupBy { it.sessionId }
-        
-        grouped.forEach { (sessionId, items) ->
-            val sender = items.first().sourceSender
-            report.appendLine("\n==============================")
-            report.appendLine("SESSION: $sessionId")
-            report.appendLine("SENDER: $sender")
-            report.appendLine("==============================")
-            
-            items.sortedBy { it.timestamp }.forEach { item ->
-                report.appendLine("[${dateFormat.format(Date(item.timestamp))}]")
-                report.appendLine("TYPE: ${item.entityType}")
-                report.appendLine("VALUE: ${item.entityValue}")
-                report.appendLine("MSG: \"${item.sourceMessageText}\"")
-                report.appendLine("-------------------------")
+                adapter.setItems(sessions)
             }
         }
+    }
+}
 
-        report.appendLine("\nEnd of Report.")
+class EvidenceSessionAdapter(
+    private val onClick: (EvidenceSessionSummary) -> Unit
+) : RecyclerView.Adapter<EvidenceSessionAdapter.ViewHolder>() {
 
-        val shareIntent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/plain"
-            putExtra(Intent.EXTRA_SUBJECT, "Full Scam Evidence Report")
-            putExtra(Intent.EXTRA_TEXT, report.toString())
+    private var items = listOf<EvidenceSessionSummary>()
+
+    fun setItems(newItems: List<EvidenceSessionSummary>) {
+        items = newItems
+        notifyDataSetChanged()
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_evidence_session, parent, false)
+        return ViewHolder(view, onClick)
+    }
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        holder.bind(items[position])
+    }
+
+    override fun getItemCount() = items.size
+
+    class ViewHolder(
+        view: View,
+        val onClick: (EvidenceSessionSummary) -> Unit
+    ) : RecyclerView.ViewHolder(view) {
+        private val senderText = view.findViewById<TextView>(R.id.sessionSender)
+        private val dateText = view.findViewById<TextView>(R.id.sessionDate)
+        private val countText = view.findViewById<TextView>(R.id.sessionEvidenceCount)
+
+        fun bind(summary: EvidenceSessionSummary) {
+            senderText.text = summary.sourceSender
+            
+            dateText.text = DateUtils.getRelativeTimeSpanString(
+                summary.lastTimestamp,
+                System.currentTimeMillis(),
+                DateUtils.DAY_IN_MILLIS,
+                DateUtils.FORMAT_ABBREV_RELATIVE
+            )
+            
+            countText.text = "${summary.evidenceCount} Evidence Items Captured"
+
+            itemView.setOnClickListener { onClick(summary) }
         }
-        
-        startActivity(Intent.createChooser(shareIntent, "Share Full Report via"))
     }
 }

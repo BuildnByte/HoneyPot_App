@@ -108,7 +108,7 @@ object SmsPreprocessor {
     }
 
     private fun classifySender(sender: String): SenderType {
-        val DLT_REGEX = Regex("^[A-Z]{2}-[A-Z]{6}$")
+        val DLT_REGEX = Regex("^[A-Z]{2}-[A-Z0-9]{6}(-[A-Z]+)?$")
         val MOBILE_IN = Regex("^(\\+91|91)?[6-9]\\d{9}$")
         val INTERNATIONAL = Regex("^\\+(?!91)\\d{7,15}$")
         val SHORT_CODE = Regex("^\\d{3,6}$")

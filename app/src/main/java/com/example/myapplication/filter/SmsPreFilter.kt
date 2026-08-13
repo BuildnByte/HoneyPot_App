@@ -2,7 +2,7 @@ package com.example.myapplication.filter
 
 object SmsPreFilter {
 
-    private val DLT_HEADER_REGEX = Regex("^[A-Z]{2}-[A-Z]{6}$")
+    private val DLT_HEADER_REGEX = Regex("^[A-Z]{2}-[A-Z0-9]{6}(-[A-Z]+)?$")
 
     private val OTP_PATTERNS = listOf(
         Regex("\\b(OTP|one.?time.?password|verification.?code|auth.?code)\\b", RegexOption.IGNORE_CASE),
