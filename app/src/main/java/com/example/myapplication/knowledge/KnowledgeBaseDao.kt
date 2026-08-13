@@ -37,10 +37,10 @@ interface KnowledgeBaseDao {
     suspend fun deleteSimulation(sessionId: String)
 
     // Evidence related
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertEvidence(evidence: com.example.myapplication.model.ScamEvidence)
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertEvidenceBatch(evidence: List<com.example.myapplication.model.ScamEvidence>)
 
     @Query("SELECT * FROM scam_evidence ORDER BY timestamp DESC")
@@ -73,4 +73,18 @@ interface KnowledgeBaseDao {
 
     @Query("SELECT * FROM scam_evidence WHERE entityValue = :value")
     suspend fun getEvidenceMatchingValue(value: String): List<com.example.myapplication.model.ScamEvidence>
+
+    /**
+     * Returns the first AI analysis log where isScam=1 for a given simulation session.
+     * Used to detect whether the session has already been confirmed as a scam,
+     * so subsequent attacker messages can skip re-classification.
+     */
+    @Query("""
+        SELECT a.* FROM ai_analysis_logs a
+        INNER JOIN simulated_messages m ON a.messageId = m.id
+        WHERE m.sessionId = :sessionId AND a.isScam = 1
+        ORDER BY a.timestamp ASC
+        LIMIT 1
+    """)
+    suspend fun getFirstScamLogForSession(sessionId: String): com.example.myapplication.model.AiAnalysisLog?
 }

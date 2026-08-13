@@ -35,11 +35,22 @@ class HoneypotApp : Application() {
             val manager = getSystemService(NotificationManager::class.java)
             manager.createNotificationChannel(scamAlertChannel)
             manager.createNotificationChannel(warningChannel)
+
+            // Channel for background service
+            val serviceChannel = NotificationChannel(
+                CHANNEL_SERVICE,
+                "Background Analysis",
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = "Active while analyzing messages"
+            }
+            manager.createNotificationChannel(serviceChannel)
         }
     }
 
     companion object {
         const val CHANNEL_SCAM_ALERT = "scam_alert"
         const val CHANNEL_WARNING = "scam_warning"
+        const val CHANNEL_SERVICE = "background_service"
     }
 }

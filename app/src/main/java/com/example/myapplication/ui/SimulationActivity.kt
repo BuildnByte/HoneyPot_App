@@ -144,13 +144,29 @@ class SimulationActivity : AppCompatActivity() {
 
         try {
             val sms = IncomingSms(message.senderType, message.content)
-            val result = engine.processMessage(sms, engineHistory)
+
+            // --- Session Scam Lock ---
+            // If this session has already been confirmed as a scam, skip re-classification.
+            // The attacker's follow-up messages are treated as scam continuations:
+            // evidence is still captured and a new honeypot reply is generated.
+            val priorScamLog = db.knowledgeBaseDao().getFirstScamLogForSession(sessionId)
+            val result = if (priorScamLog != null) {
+                engine.processConfirmedScamFollowUp(
+                    sms = sms,
+                    history = engineHistory,
+                    originalScamType = priorScamLog.scamType,
+                    originalConfidence = priorScamLog.confidence
+                )
+            } else {
+                engine.processMessage(sms, engineHistory)
+            }
 
             if (result.scamResult != null) {
                 val log = AiAnalysisLog(
                     messageId = message.id,
                     confidence = result.scamResult.confidence,
                     isScam = result.scamResult.isScam,
+                    scamType = result.scamResult.scamType,
                     reason = if (result.scamResult.reasoning == "Parse failed") 
                         "AI returned invalid format. Please try again." else result.scamResult.reasoning,
                     firedTriggers = result.triggerResult?.firedTriggers?.joinToString(",") ?: "",
@@ -158,6 +174,7 @@ class SimulationActivity : AppCompatActivity() {
                         "${it.entry.scamType} (${String.format(Locale.getDefault(), "%.2f", it.similarity)})" 
                     },
                     evidenceFlagsJson = Json.encodeToString(result.scamResult.evidenceFlags),
+                    suggestedReply = result.suggestedReply,
                     timestamp = System.currentTimeMillis()
                 )
                 db.knowledgeBaseDao().insertAiAnalysisLog(log)

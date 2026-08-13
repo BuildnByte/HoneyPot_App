@@ -113,4 +113,41 @@
         android:fontFamily="monospace"
         android:textAppearance="?attr/textAppearanceBodySmall" />
 
+    <!-- Honeypot Reply Suggestion — only visible when isScam=true -->
+    <LinearLayout
+        android:id="@+id/replySuggestionSection"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/bg_reply_suggestion"
+        android:padding="16dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="💬 Suggested Honeypot Reply"
+            android:textAppearance="?attr/textAppearanceTitleSmall"
+            android:textColor="?attr/colorPrimary"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/suggestedReplyText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textStyle="italic"
+            android:layout_marginBottom="12dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/copyReplyButton"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Copy to Clipboard"
+            app:icon="@android:drawable/ic_menu_send" />
+
+    </LinearLayout>
+
 </LinearLayout>

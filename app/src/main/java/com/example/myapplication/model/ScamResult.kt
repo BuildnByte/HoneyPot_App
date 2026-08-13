@@ -14,10 +14,10 @@ data class EvidenceFlag(
 @OptIn(InternalSerializationApi::class)
 @Serializable
 data class ScamResult(
-    val isScam: Boolean,
-    val scamType: String,
-    val confidence: Float,
-    val reasoning: String,
-    val extractedEntities: List<String>,
+    val isScam: Boolean = false,
+    val scamType: String = "unknown",
+    val confidence: Float = 0f,
+    val reasoning: String = "",
+    val extractedEntities: List<String> = emptyList(),
     val evidenceFlags: List<EvidenceFlag> = emptyList()
 )

@@ -1,5 +1,8 @@
 package com.example.myapplication.ui
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,9 +12,11 @@ import com.example.myapplication.R
 import com.example.myapplication.model.AiAnalysisLog
 import com.example.myapplication.model.EvidenceFlag
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.progressindicator.LinearProgressIndicator
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.serialization.json.Json
 
 class AnalysisBottomSheet : BottomSheetDialogFragment() {
@@ -84,6 +89,24 @@ class AnalysisBottomSheet : BottomSheetDialogFragment() {
         } catch (e: Exception) {
             evidenceLabel.visibility = View.GONE
             evidenceGroup.visibility = View.GONE
+        }
+
+        // --- Honeypot Reply Suggestion ---
+        val replySection = view.findViewById<View>(R.id.replySuggestionSection)
+        val replyText   = view.findViewById<TextView>(R.id.suggestedReplyText)
+        val copyButton  = view.findViewById<MaterialButton>(R.id.copyReplyButton)
+
+        val reply = currentLog.suggestedReply
+        if (currentLog.isScam && reply.isNotBlank()) {
+            replySection.visibility = View.VISIBLE
+            replyText.text = reply
+            copyButton.setOnClickListener {
+                val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                clipboard.setPrimaryClip(ClipData.newPlainText("Suggested Reply", reply))
+                Snackbar.make(view, "Reply copied to clipboard", Snackbar.LENGTH_SHORT).show()
+            }
+        } else {
+            replySection.visibility = View.GONE
         }
     }
 

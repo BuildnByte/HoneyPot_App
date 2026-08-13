@@ -20,8 +20,11 @@ class ScamTextEmbedder(private val context: Context) {
             // Check if asset exists
             context.assets.open(MODEL_PATH).close()
         } catch (e: Exception) {
-            Log.e("ScamTextEmbedder", "Model asset not found: $MODEL_PATH")
-            throw IllegalStateException("Model asset $MODEL_PATH missing from assets folder.")
+            Log.e("ScamTextEmbedder", "Model asset not found: $MODEL_PATH. Vector search will be disabled.")
+            // Instead of throwing, we can set a flag or just let it fail later
+            // But engine.initialize() depends on this.
+            // For now, let's keep it throwing but with a better message.
+            throw IllegalStateException("Model asset $MODEL_PATH missing from assets folder. Please download it and place it in app/src/main/assets/")
         }
 
         val baseOptions = BaseOptions.builder()

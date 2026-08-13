@@ -19,6 +19,10 @@ class SmsReceiver : BroadcastReceiver() {
 
         Log.d("SmsReceiver", "SMS from: $sender | body: $body")
 
-        // TODO: pass to SmsProcessingService
+        val serviceIntent = Intent(context, com.example.myapplication.service.SmsProcessingService::class.java).apply {
+            putExtra("sms", com.example.myapplication.model.IncomingSms(sender, body))
+        }
+        
+        context.startForegroundService(serviceIntent)
     }
 }

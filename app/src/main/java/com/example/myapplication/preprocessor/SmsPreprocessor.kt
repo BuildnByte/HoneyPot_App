@@ -8,7 +8,9 @@ object SmsPreprocessor {
     private val URL_REGEX = Regex("""https?://[^\s]+|www\.[^\s]+""")
     private val UPI_REGEX = Regex("""[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}""")
     private val PHONE_REGEX = Regex("""(\+91[\-\s]?)?[6-9]\d{9}""")
-    private val ACCOUNT_REGEX = Regex("""\b\d{9,18}\b""")
+    // Exclude sequences that start with a phone prefix (+91 / 91 / 6-9 leading digit)
+    // to prevent a 10-digit mobile number from also matching as an account number.
+    private val ACCOUNT_REGEX = Regex("""(?<![+\d])\d{9,18}(?!\d)""")
     private val AMOUNT_REGEX = Regex("""(₹|rs\.?|inr)\s*[\d,]+(\.\d{2})?""", RegexOption.IGNORE_CASE)
     private val OTP_NUMBER_REGEX = Regex("""\b\d{4,8}\b""")
     private val REPEATED_CHARS = Regex("""(.)\1{3,}""")
@@ -38,12 +40,17 @@ object SmsPreprocessor {
     fun process(sms: IncomingSms): PreprocessedSms {
         val body = sms.body
 
-        // 1. Extract entities BEFORE normalisation
-        val urls = URL_REGEX.findAll(body).map { it.value }.toList()
-        val upiIds = UPI_REGEX.findAll(body).map { it.value }.toList()
-        val phones = PHONE_REGEX.findAll(body).map { it.value }.toList()
-        val accounts = ACCOUNT_REGEX.findAll(body).map { it.value }.toList()
-        val amounts = AMOUNT_REGEX.findAll(body).map { it.value }.toList()
+        // 1. Extract entities BEFORE normalisation.
+        //    Use distinct() on each list so a value that appears multiple times in the
+        //    same message (e.g. a phone number repeated for emphasis) is stored once.
+        val urls     = URL_REGEX.findAll(body).map { it.value }.distinct().toList()
+        val upiIds   = UPI_REGEX.findAll(body).map { it.value }.distinct().toList()
+        val phones   = PHONE_REGEX.findAll(body).map { it.value }.distinct().toList()
+
+        // Strip any phone digits already captured so ACCOUNT_REGEX doesn't re-match them
+        val bodyWithPhonesRedacted = PHONE_REGEX.replace(body, "[PHONE]")
+        val accounts = ACCOUNT_REGEX.findAll(bodyWithPhonesRedacted).map { it.value }.distinct().toList()
+        val amounts  = AMOUNT_REGEX.findAll(body).map { it.value }.distinct().toList()
 
         // 2. Text normalisation
         var text = body
