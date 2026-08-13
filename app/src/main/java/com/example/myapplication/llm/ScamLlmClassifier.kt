@@ -249,67 +249,65 @@ Required JSON format:
 
     /**
      * Generates a suggested honeypot reply for the user to send to the suspected scammer.
-     * Uses a dedicated, focused prompt (plain text output — no JSON) to avoid parsing issues.
      *
-     * The latest attacker message is explicitly isolated in its own prompt section so that
-     * Gemma 1B (which tends to anchor on the most prominent message in a conversation dump)
-     * replies to the correct, most recent message instead of the first one.
+     * ## Strategy (hybrid)
      *
-     * @param conversationHistory The full list of "[Sender]: message" lines from the session.
-     *                            Only actual chat messages — no reasoning or analysis text.
-     * @param scamType The scam category detected (e.g. "phishing", "prize_scam").
+     * **First reply** (no prior victim messages in the session):
+     *   → Use the Gemma LLM. The first message has no context-tracking problem.
+     *
+     * **Follow-up replies** (victim has already sent at least one reply):
+     *   → Use [ReplyProgressionEngine] instead of the LLM.
+     *   Gemma 1B cannot reliably track what was already asked and produce a meaningfully
+     *   different follow-up — this is a hard model-size limitation, not fixable with prompting.
+     *   The progression engine detects what entities the attacker has revealed and what
+     *   topics the victim already asked about, then deterministically selects the next
+     *   best question from a curated script.
+     *
+     * @param conversationHistory Full list of "[A]: ..." and "[V]: ..." lines from the session.
+     * @param scamType            The classified scam type (e.g. "phishing", "prize_scam").
      */
     suspend fun generateReplyHint(
         conversationHistory: List<String>,
         scamType: String
     ): String = withContext(Dispatchers.Default) {
+
+        val recentHistory = conversationHistory.takeLast(15)
+
+        // Determine if the victim has already sent any replies in this session.
+        val victimHasReplied = recentHistory.any { it.startsWith("[V]:") }
+
+        // ── Follow-up: use the deterministic progression engine ───────────────
+        if (victimHasReplied) {
+            Log.d("ScamLlmClassifier", "Reply hint → using ReplyProgressionEngine (turn 2+)")
+            return@withContext ReplyProgressionEngine.nextReply(recentHistory, scamType)
+        }
+
+        // ── First reply: use the LLM ──────────────────────────────────────────
         val currentLlm = llmInference
             ?: return@withContext fallbackReply(scamType)
 
-        // Cap at last 15 messages and find the latest attacker message explicitly
-        val recentHistory = conversationHistory.takeLast(15)
-
-        // Extract the last attacker message — this is what the user must reply to
         val lastAttackerMessage = recentHistory
             .lastOrNull { it.startsWith("[A]:") }
             ?.removePrefix("[A]:")
             ?.trim()
             ?: return@withContext fallbackReply(scamType)
 
-        // Include any prior victim replies so the model understands what has already been asked,
-        // but only translate [V]: lines (what the victim already said) to avoid confusion.
-        // [A]: lines are intentionally excluded from prior context — the model must NOT treat
-        // the scammer's details (names, numbers) as the victim's own information.
-        val lastAttackerIndex = recentHistory.indexOfLast { it.startsWith("[A]:") }
-        val priorVictimReplies = recentHistory
-            .take(lastAttackerIndex)
-            .filter { it.startsWith("[V]:") }
-            .joinToString("\n") { "You previously said: \"${it.removePrefix("[V]:").trim()}\"" }
-
-        // Minimal, example-driven prompt — small models follow examples far better than
-        // long bullet-point rule lists, which cause role confusion and name hallucination.
         val prompt = buildString {
             appendLine("Someone sent you this suspicious message:")
             appendLine("\"$lastAttackerMessage\"")
             appendLine()
-            if (priorVictimReplies.isNotBlank()) {
-                appendLine(priorVictimReplies)
-                appendLine()
-            }
             appendLine("Write one short, curious reply (1-2 sentences) asking for more details.")
             appendLine("Do not mention your name. Do not share personal info.")
             append("Ask only about their details (who they are, their contact, how to verify).")
         }
 
-        Log.d("ScamLlmClassifier", "Reply hint → last attacker msg: $lastAttackerMessage")
+        Log.d("ScamLlmClassifier", "Reply hint → LLM first reply, msg: $lastAttackerMessage")
 
         return@withContext try {
             val raw = currentLlm.generateResponse(prompt).trim()
             val cleaned = raw
                 .removePrefix("\"").removeSuffix("\"")
                 .removePrefix("'").removeSuffix("'")
-                // Reject if model output starts with a role label — means it continued
-                // the conversation instead of writing just the reply
                 .lines().firstOrNull { line ->
                     line.isNotBlank() &&
                     !line.startsWith("SCAMMER:") &&
@@ -322,6 +320,7 @@ Required JSON format:
             fallbackReply(scamType)
         }
     }
+
 
     /**
      * Returns a contextually relevant fallback reply when the model fails or produces no output.

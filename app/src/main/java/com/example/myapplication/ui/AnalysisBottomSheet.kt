@@ -92,14 +92,25 @@ class AnalysisBottomSheet : BottomSheetDialogFragment() {
         }
 
         // --- Honeypot Reply Suggestion ---
-        val replySection = view.findViewById<View>(R.id.replySuggestionSection)
-        val replyText   = view.findViewById<TextView>(R.id.suggestedReplyText)
-        val copyButton  = view.findViewById<MaterialButton>(R.id.copyReplyButton)
+        val replySection   = view.findViewById<View>(R.id.replySuggestionSection)
+        val replyText      = view.findViewById<TextView>(R.id.suggestedReplyText)
+        val copyButton     = view.findViewById<MaterialButton>(R.id.copyReplyButton)
+        val replySourceBadge = view.findViewById<TextView?>(R.id.replySourceBadge)
 
         val reply = currentLog.suggestedReply
         if (currentLog.isScam && reply.isNotBlank()) {
             replySection.visibility = View.VISIBLE
             replyText.text = reply
+
+            // Show which engine generated the reply
+            replySourceBadge?.apply {
+                visibility = View.VISIBLE
+                text = if (currentLog.suggestedReplySource == "cloud")
+                    "☁️ Generated with Gemini API"
+                else
+                    "📱 Generated on-device"
+            }
+
             copyButton.setOnClickListener {
                 val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 clipboard.setPrimaryClip(ClipData.newPlainText("Suggested Reply", reply))

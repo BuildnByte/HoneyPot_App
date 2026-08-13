@@ -2,6 +2,7 @@ package com.example.myapplication.ui
 
 import android.os.Bundle
 import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -10,15 +11,19 @@ import com.example.myapplication.R
 import com.example.myapplication.engine.ScamDetectionEngine
 import com.example.myapplication.engine.ScamDetectionEngineManager
 import com.example.myapplication.knowledge.KnowledgeBaseDatabase
+import com.example.myapplication.llm.CloudReplyGenerator
+import com.example.myapplication.llm.ConsentPreferenceManager
 import com.example.myapplication.model.AiAnalysisLog
 import com.example.myapplication.model.IncomingSms
 import com.example.myapplication.model.SimulatedMessage
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.*
+import kotlin.coroutines.resume
 
 class SimulationActivity : AppCompatActivity() {
 
@@ -29,7 +34,8 @@ class SimulationActivity : AppCompatActivity() {
     private lateinit var messageInput: EditText
     private lateinit var senderToggle: MaterialButtonToggleGroup
     private lateinit var sendButton: MaterialButton
-    
+    private lateinit var consentManager: ConsentPreferenceManager
+
     private val sessionId = UUID.randomUUID().toString()
     private var isEngineReady = false
 
@@ -38,6 +44,7 @@ class SimulationActivity : AppCompatActivity() {
         setContentView(R.layout.activity_simulation)
 
         db = KnowledgeBaseDatabase.getInstance(this)
+        consentManager = ConsentPreferenceManager(this)
 
         setupUI()
         loadHistory()
@@ -90,7 +97,6 @@ class SimulationActivity : AppCompatActivity() {
             val history = db.knowledgeBaseDao().getSimulationHistory(sessionId)
             adapter.submitList(history)
             
-            // Load existing analysis logs for this session
             val logs = mutableListOf<AiAnalysisLog>()
             history.forEach { msg ->
                 db.knowledgeBaseDao().getAnalysisForMessage(msg.id)?.let { logs.add(it) }
@@ -131,7 +137,6 @@ class SimulationActivity : AppCompatActivity() {
     }
 
     private suspend fun processWithEngine(message: SimulatedMessage) {
-        // Prevent duplicate processing
         val existingLog = db.knowledgeBaseDao().getAnalysisForMessage(message.id)
         if (existingLog != null) return
 
@@ -146,9 +151,6 @@ class SimulationActivity : AppCompatActivity() {
             val sms = IncomingSms(message.senderType, message.content)
 
             // --- Session Scam Lock ---
-            // If this session has already been confirmed as a scam, skip re-classification.
-            // The attacker's follow-up messages are treated as scam continuations:
-            // evidence is still captured and a new honeypot reply is generated.
             val priorScamLog = db.knowledgeBaseDao().getFirstScamLogForSession(sessionId)
             val result = if (priorScamLog != null) {
                 engine.processConfirmedScamFollowUp(
@@ -162,31 +164,58 @@ class SimulationActivity : AppCompatActivity() {
             }
 
             if (result.scamResult != null) {
+
+                // --- Cloud Reply Override ---
+                // If scam is confirmed, check per-contact cloud consent.
+                // If consent is not yet recorded for this sender, show the dialog now.
+                val finalReply: String
+                val usedCloud: Boolean
+
+                if (result.scamResult.isScam) {
+                    val contactNumber = sms.sender
+                    val consent = resolveCloudConsent(contactNumber, engineHistory + "[${sms.sender}]: ${sms.body}")
+
+                    if (consent) {
+                        // Cloud path: GPT-4o-mini generates the reply
+                        val cloudHistory = engineHistory + "[${sms.sender}]: ${sms.body}"
+                        finalReply = CloudReplyGenerator.generateReply(cloudHistory, result.scamResult.scamType)
+                        usedCloud = true
+                    } else {
+                        // Local path: use what the engine already generated
+                        finalReply = result.suggestedReply
+                        usedCloud = false
+                    }
+                } else {
+                    finalReply = result.suggestedReply
+                    usedCloud = false
+                }
+
                 val log = AiAnalysisLog(
                     messageId = message.id,
                     confidence = result.scamResult.confidence,
                     isScam = result.scamResult.isScam,
                     scamType = result.scamResult.scamType,
-                    reason = if (result.scamResult.reasoning == "Parse failed") 
+                    reason = if (result.scamResult.reasoning == "Parse failed")
                         "AI returned invalid format. Please try again." else result.scamResult.reasoning,
                     firedTriggers = result.triggerResult?.firedTriggers?.joinToString(",") ?: "",
-                    kbMatches = result.kbResults.joinToString("\n") { 
-                        "${it.entry.scamType} (${String.format(Locale.getDefault(), "%.2f", it.similarity)})" 
+                    kbMatches = result.kbResults.joinToString("\n") {
+                        "${it.entry.scamType} (${String.format(Locale.getDefault(), "%.2f", it.similarity)})"
                     },
                     evidenceFlagsJson = Json.encodeToString(result.scamResult.evidenceFlags),
-                    suggestedReply = result.suggestedReply,
+                    suggestedReply = finalReply,
+                    suggestedReplySource = if (usedCloud) "cloud" else "local",
                     timestamp = System.currentTimeMillis()
                 )
                 db.knowledgeBaseDao().insertAiAnalysisLog(log)
                 adapter.addAnalysisResult(log)
+
             } else {
-                // Result was null (e.g. low priority, no KB matches)
                 val reason = when {
                     result.filterResult == com.example.myapplication.filter.FilterResult.IGNORE -> "Message ignored by pre-filter."
                     result.triggerResult?.shouldProcess == false -> "No suspicious triggers detected."
                     else -> "Low risk message. No detailed analysis required."
                 }
-                
+
                 val log = AiAnalysisLog(
                     messageId = message.id,
                     confidence = 0f,
@@ -206,13 +235,50 @@ class SimulationActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Resolves cloud consent for a contact number.
+     * - If consent is already stored (granted or declined) → returns it immediately.
+     * - If consent has never been asked → suspends until the user responds to the dialog,
+     *   stores the result, then resumes.
+     */
+    private suspend fun resolveCloudConsent(
+        contactNumber: String,
+        conversationHistory: List<String>
+    ): Boolean {
+        val stored = consentManager.getConsent(contactNumber)
+        if (stored != null) return stored
+
+        // Never asked for this contact — show the dialog on the main thread and suspend
+        return suspendCancellableCoroutine { cont ->
+            runOnUiThread {
+                AlertDialog.Builder(this, com.google.android.material.R.style.ThemeOverlay_Material3_MaterialAlertDialog)
+                    .setTitle("🛡️ Let AI craft smarter replies?")
+                    .setMessage(
+                        "A scam from $contactNumber was detected.\n\n" +
+                        "To suggest more natural replies, the conversation can be sent to Google's Gemini API.\n\n" +
+                        "✅ What gets sent: message text only\n" +
+                        "🔒 What stays local: your number, all detection & evidence"
+                    )
+                    .setPositiveButton("Enable Cloud AI") { _, _ ->
+                        consentManager.setConsent(contactNumber, true)
+                        if (cont.isActive) cont.resume(true)
+                    }
+                    .setNegativeButton("Keep Local") { _, _ ->
+                        consentManager.setConsent(contactNumber, false)
+                        if (cont.isActive) cont.resume(false)
+                    }
+                    .setCancelable(false)
+                    .show()
+            }
+        }
+    }
+
     private fun handleBrainClick(messageId: Int) {
         lifecycleScope.launch {
             val log = db.knowledgeBaseDao().getAnalysisForMessage(messageId)
             if (log != null) {
                 AnalysisBottomSheet.newInstance(log).show(supportFragmentManager, AnalysisBottomSheet.TAG)
             } else {
-                // If no log, try to trigger inference (if it failed or was skipped)
                 val messages = db.knowledgeBaseDao().getSimulationHistory(sessionId)
                 val message = messages.find { it.id == messageId }
                 if (message != null && message.senderType == "A") {
@@ -230,6 +296,6 @@ class SimulationActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        // Do not close global engine here, it might be used by the background service
     }
 }
+

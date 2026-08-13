@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -147,6 +148,18 @@
             android:layout_height="wrap_content"
             android:text="Copy to Clipboard"
             app:icon="@android:drawable/ic_menu_send" />
+
+        <!-- Source badge: "☁️ Generated with Gemini API" or "📱 Generated on-device" -->
+        <TextView
+            android:id="@+id/replySourceBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textAppearance="?attr/textAppearanceLabelSmall"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:alpha="0.7"
+            android:visibility="gone"
+            tools:text="☁️ Generated with Gemini API" />
 
     </LinearLayout>
 

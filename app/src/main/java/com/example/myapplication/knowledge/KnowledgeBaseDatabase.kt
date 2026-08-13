@@ -15,7 +15,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         com.example.myapplication.model.ScamEvidence::class,
         IndicatorEntry::class
     ],
-    version = 9,
+    version = 10,
     exportSchema = false
 )
 abstract class KnowledgeBaseDatabase : RoomDatabase() {
@@ -86,6 +86,15 @@ abstract class KnowledgeBaseDatabase : RoomDatabase() {
             }
         }
 
+        /** Adds suggestedReplySource column to track local vs cloud reply generation. */
+        private val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE ai_analysis_logs ADD COLUMN suggestedReplySource TEXT NOT NULL DEFAULT 'local'"
+                )
+            }
+        }
+
         fun getInstance(context: Context): KnowledgeBaseDatabase =
             INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room.databaseBuilder(
@@ -93,7 +102,7 @@ abstract class KnowledgeBaseDatabase : RoomDatabase() {
                     KnowledgeBaseDatabase::class.java,
                     "knowledge_base.db"
                 )
-                    .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
+                    .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
                     .fallbackToDestructiveMigration()
                     .build()
                     .also { INSTANCE = it }

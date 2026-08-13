@@ -6,14 +6,16 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "ai_analysis_logs")
 data class AiAnalysisLog(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val messageId: Int, // Refers to SimulatedMessage.id
+    val messageId: Int,
     val confidence: Float,
     val isScam: Boolean,
-    val scamType: String = "unknown",     // LLM-classified scam category
+    val scamType: String = "unknown",
     val reason: String,
-    val firedTriggers: String, // Comma separated list
-    val kbMatches: String, // JSON or formatted summary of KB hits
-    val evidenceFlagsJson: String = "[]", // JSON-serialized EvidenceFlag list
-    val suggestedReply: String = "",    // Honeypot reply suggestion (only set when isScam=true)
+    val firedTriggers: String,
+    val kbMatches: String,
+    val evidenceFlagsJson: String = "[]",
+    val suggestedReply: String = "",
+    /** "local" = on-device engine/progression, "cloud" = OpenAI GPT-4o-mini */
+    val suggestedReplySource: String = "local",
     val timestamp: Long
 )

@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -17,6 +20,16 @@ android {
         versionCode = 1
         versionName = "1.0"
 
+        // API key is read from local.properties and injected at build time.
+        // local.properties is excluded from git so the key is never committed.
+        val localProperties = Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            localProperties.load(FileInputStream(localPropertiesFile))
+        }
+        val geminiKey = localProperties.getProperty("GEMINI_API_KEY", "")
+        buildConfigField("String", "GEMINI_API_KEY", "\"$geminiKey\"")
+
         ndk {
             abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
         }
@@ -33,6 +46,10 @@ android {
 
     kotlinOptions {
         jvmTarget = "1.8"
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 }
 
@@ -58,6 +75,9 @@ dependencies {
 
     // Kotlin Serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
+
+    // OkHttp — used for cloud API (OpenAI GPT-4o-mini) reply generation
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     // Lifecycle
     implementation("androidx.lifecycle:lifecycle-service:2.8.4")
