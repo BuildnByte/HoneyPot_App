@@ -242,9 +242,19 @@ Required JSON format:
         val isScam     = findBool("isScam") ?: false
         val scamType   = findString("scamType") ?: "unknown"
         val confidence = findFloat("confidence") ?: if (isScam) 0.5f else 0.0f
-        val reasoning  = findString("reasoning")
-            ?: raw.take(300).replace(Regex("[\"{}\\[\\]]"), "").trim()
-                .ifBlank { "Could not parse model response." }
+
+        // Reasoning: try regex first, then extract any long text-like content, 
+        // but NEVER dump raw JSON — strip all structural characters.
+        val reasoning = findString("reasoning")?.takeIf { it.isNotBlank() }
+            ?: run {
+                // Pull out all quoted string values and pick the longest one that looks like a sentence
+                val quoted = Regex(""""[^"]{20,}"""").findAll(raw)
+                    .map { it.value.removeSurrounding("\"") }
+                    .filter { v -> !v.startsWith("{") && !v.startsWith("[") && !v.contains("isScam") }
+                    .maxByOrNull { it.length }
+                quoted?.take(300)?.trim() ?: "Model analysis complete. See confidence score above."
+            }
+
         val entities   = findEntityList("extractedEntities")
 
         Log.d("ScamLlmClassifier", "Regex extraction → isScam=$isScam type=$scamType conf=$confidence")
@@ -278,7 +288,8 @@ Required JSON format:
         val recentHistory = conversationHistory.takeLast(15)
 
         // Determine if the victim has already sent any replies in this session.
-        val victimHasReplied = recentHistory.any { it.startsWith("[V]:") }
+        // Also treat [U]: as a victim message (live honeypot user-sent messages use [U]: prefix)
+        val victimHasReplied = recentHistory.any { it.startsWith("[V]:") || it.startsWith("[U]:") }
 
         // ── Follow-up: use the deterministic progression engine ───────────────
         if (victimHasReplied) {

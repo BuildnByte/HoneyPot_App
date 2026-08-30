@@ -24,7 +24,9 @@ class ChatAdapter(private val onBrainClick: (Int) -> Unit) :
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (messages[position].senderType == "V") TYPE_V else TYPE_A
+        val type = messages[position].senderType
+        // Both "V" (victim/simulation) and "U" (user in live honeypot) are outgoing bubbles
+        return if (type == "V" || type == "U") TYPE_V else TYPE_A
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {

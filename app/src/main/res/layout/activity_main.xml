@@ -92,6 +92,59 @@
                 android:padding="12dp"
                 android:text="View Evidence Vault"
                 app:icon="@android:drawable/ic_menu_info_details" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/liveHoneypotButton"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:padding="12dp"
+                android:text="View Live Honeypots"
+                android:textColor="?attr/colorError"
+                app:icon="@android:drawable/ic_dialog_alert"
+                app:iconTint="?attr/colorError" />
+
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="⚙️ Debug Tools"
+                android:textAppearance="?attr/textAppearanceLabelLarge"
+                android:textColor="?attr/colorOnSurfaceVariant"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/injectSmsButton"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:padding="12dp"
+                android:text="Inject Test SMS (bypass network)"
+                app:icon="@android:drawable/ic_menu_send" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/directProcessButton"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:padding="12dp"
+                android:text="Direct: Start SmsProcessingService"
+                app:icon="@android:drawable/ic_media_play" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/testSafeBrowsingButton"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:padding="12dp"
+                android:text="Test Safe Browsing API"
+                app:icon="@android:drawable/ic_menu_search" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

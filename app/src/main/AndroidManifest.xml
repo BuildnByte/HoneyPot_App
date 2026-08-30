@@ -2,12 +2,19 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Network access — required for Safe Browsing API and Gemini Cloud reply generation -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <!-- SMS Permissions -->
     <uses-permission android:name="android.permission.RECEIVE_SMS"/>
     <uses-permission android:name="android.permission.READ_SMS"/>
+    <uses-permission android:name="android.permission.SEND_SMS"/>
 
     <!-- Phone state -->
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+
+    <!-- Boot receiver -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <!-- Foreground service -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
@@ -48,11 +55,13 @@
         </activity>
 
         <!-- SMS BroadcastReceiver -->
+        <!-- NOTE: Do NOT add android:permission here. That attribute restricts who can SEND
+             the broadcast TO this receiver. Since the OS itself sends SMS_RECEIVED, adding
+             BROADCAST_SMS silently blocks all delivery on modern Android. -->
         <receiver
             android:name=".receiver.SmsReceiver"
-            android:exported="true"
-            android:permission="android.permission.BROADCAST_SMS">
-            <intent-filter android:priority="1000">
+            android:exported="true">
+            <intent-filter android:priority="999">
                 <action android:name="android.provider.Telephony.SMS_RECEIVED"/>
             </intent-filter>
         </receiver>
@@ -85,6 +94,13 @@
             android:name=".ui.EvidenceDetailActivity"
             android:exported="false"
             android:label="Session Evidence"
+            android:theme="@style/Theme.MyApplication" />
+
+        <activity
+            android:name=".ui.HoneypotConversationActivity"
+            android:exported="false"
+            android:label="Live Honeypot Conversation"
+            android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.MyApplication" />
 
     </application>

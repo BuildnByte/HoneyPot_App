@@ -128,8 +128,24 @@ class ScamDetectionEngine(context: Context) {
             extractedEntities = preprocessed.extractedEntities
         )
 
-        val scamResult = withContext(Dispatchers.Default) {
+        val rawScamResult = withContext(Dispatchers.Default) {
             llmClassifier.classify(reasoningContext)
+        }
+
+        // --- Confidence Blending ---
+        // Gemma 1B has a high hallucination rate for confidence (often outputs 0.95+ for everything).
+        // We blend the raw LLM confidence with the heuristic Trigger score for a more honest number.
+        val scamResult = if (rawScamResult.isScam) {
+            val triggerScore = when (triggerResult.priority) {
+                TriggerEngine.Priority.CRITICAL -> 1.0f
+                TriggerEngine.Priority.HIGH -> 0.8f
+                TriggerEngine.Priority.MEDIUM -> 0.5f
+                TriggerEngine.Priority.LOW -> 0.2f
+            }
+            val blendedConf = (rawScamResult.confidence * 0.6f) + (triggerScore * 0.4f)
+            rawScamResult.copy(confidence = blendedConf)
+        } else {
+            rawScamResult
         }
 
         // --- STAGE 7: Evidence Extraction ---

@@ -49,8 +49,8 @@ class HoneypotApp : Application() {
     }
 
     companion object {
-        const val CHANNEL_SCAM_ALERT = "scam_alert"
-        const val CHANNEL_WARNING = "scam_warning"
-        const val CHANNEL_SERVICE = "background_service"
+        const val CHANNEL_SCAM_ALERT = "scam_alert_channel"
+        const val CHANNEL_WARNING = "scam_warning_channel"
+        const val CHANNEL_SERVICE = "sms_analysis_service_channel"
     }
 }

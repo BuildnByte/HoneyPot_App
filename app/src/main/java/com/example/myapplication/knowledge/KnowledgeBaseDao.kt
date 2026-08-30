@@ -24,11 +24,17 @@ interface KnowledgeBaseDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSession(session: com.example.myapplication.model.SimulationSession)
 
-    @Query("SELECT * FROM simulation_sessions WHERE isArchived = 0 ORDER BY createdAt DESC")
-    suspend fun getAllSessions(): List<com.example.myapplication.model.SimulationSession>
+    @Query("SELECT * FROM simulation_sessions WHERE isArchived = 0 AND name NOT LIKE '[LIVE] %' ORDER BY createdAt DESC")
+    suspend fun getSimulatedSessions(): List<com.example.myapplication.model.SimulationSession>
+
+    @Query("SELECT * FROM simulation_sessions WHERE isArchived = 0 AND name LIKE '[LIVE] %' ORDER BY createdAt DESC")
+    suspend fun getLiveSessions(): List<com.example.myapplication.model.SimulationSession>
 
     @Query("SELECT * FROM simulation_sessions WHERE id = :id LIMIT 1")
     suspend fun getSession(id: String): com.example.myapplication.model.SimulationSession?
+
+    @Query("SELECT * FROM simulation_sessions WHERE attackerPhone = :phone AND name LIKE '[LIVE] %' LIMIT 1")
+    suspend fun getLiveSessionByAttackerPhone(phone: String): com.example.myapplication.model.SimulationSession?
 
     @androidx.room.Update
     suspend fun updateSession(session: com.example.myapplication.model.SimulationSession)
@@ -46,14 +52,54 @@ interface KnowledgeBaseDao {
     @Query("SELECT * FROM simulated_messages WHERE sessionId = :sessionId ORDER BY timestamp ASC")
     suspend fun getSimulationHistory(sessionId: String): List<com.example.myapplication.model.SimulatedMessage>
 
+    /**
+     * Reactive version of [getSimulationHistory].
+     * Room emits a new list every time any row in simulated_messages for this session changes.
+     * Used by HoneypotConversationActivity to update the chat UI in real-time without polling.
+     */
+    @Query("SELECT * FROM simulated_messages WHERE sessionId = :sessionId ORDER BY timestamp ASC")
+    fun observeSessionMessages(sessionId: String): kotlinx.coroutines.flow.Flow<List<com.example.myapplication.model.SimulatedMessage>>
+
     @Insert
     suspend fun insertAiAnalysisLog(log: com.example.myapplication.model.AiAnalysisLog)
 
     @Query("SELECT * FROM ai_analysis_logs WHERE messageId = :messageId LIMIT 1")
     suspend fun getAnalysisForMessage(messageId: Int): com.example.myapplication.model.AiAnalysisLog?
 
+    /**
+     * Reactively emits the most recent AiAnalysisLog that has a non-empty suggestedReply
+     * for any message in this session. Used to auto-surface the suggestion bar whenever
+     * SmsProcessingService finishes analysing a follow-up message without user interaction.
+     */
+    @Query("""
+        SELECT a.* FROM ai_analysis_logs a
+        INNER JOIN simulated_messages m ON a.messageId = m.id
+        WHERE m.sessionId = :sessionId
+          AND a.suggestedReply != ''
+        ORDER BY a.timestamp DESC
+        LIMIT 1
+    """)
+    fun observeLatestSuggestedReply(sessionId: String): kotlinx.coroutines.flow.Flow<com.example.myapplication.model.AiAnalysisLog?>
+
     @Query("DELETE FROM simulated_messages WHERE sessionId = :sessionId")
     suspend fun deleteSimulation(sessionId: String)
+
+    /**
+     * Deletes all AI analysis logs whose parent message belongs to this session.
+     * Called alongside [deleteSimulation] and [deleteEvidenceForSession] when a session
+     * is permanently deleted, so no orphaned rows accumulate in the database.
+     */
+    @Query("""
+        DELETE FROM ai_analysis_logs
+        WHERE messageId IN (
+            SELECT id FROM simulated_messages WHERE sessionId = :sessionId
+        )
+    """)
+    suspend fun deleteAnalysisLogsForSession(sessionId: String)
+
+    /** Deletes all scam evidence captured for a session. */
+    @Query("DELETE FROM scam_evidence WHERE sessionId = :sessionId")
+    suspend fun deleteEvidenceForSession(sessionId: String)
 
     // Evidence related
     @Insert(onConflict = OnConflictStrategy.IGNORE)

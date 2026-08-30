@@ -65,12 +65,10 @@ class FactCheckService(private val context: Context) {
 
     // 3. Check domain reputation via Google Safe Browsing API
     suspend fun checkDomainReputation(domain: String): FactCheckResult = withContext(Dispatchers.IO) {
-        // TODO: Supply your own API key in gradle.properties or local.properties
-        // val apiKey = com.example.myapplication.BuildConfig.SAFE_BROWSING_API_KEY
-        val apiKey = "YOUR_API_KEY_HERE" 
-        
-        if (apiKey == "YOUR_API_KEY_HERE") {
-            return@withContext FactCheckResult("DOMAIN", domain, "UNVERIFIED", 0.0f, "safe_browsing_config_missing")
+        val apiKey = com.example.myapplication.BuildConfig.SAFE_BROWSING_API_KEY
+
+        if (apiKey.isBlank()) {
+            return@withContext FactCheckResult("DOMAIN", domain, "UNVERIFIED", 0.0f, "safe_browsing_key_not_configured")
         }
 
         try {
@@ -133,9 +131,9 @@ class FactCheckService(private val context: Context) {
         
         val domainChecks = entities.urls.map { url ->
             async { 
-                // Basic domain extraction for Safe Browsing
-                val domain = url.removePrefix("http://").removePrefix("https://").split("/").first()
-                checkDomainReputation(domain)
+                // Safe Browsing evaluates exact URLs (including paths), not just root domains.
+                // e.g. bit.ly/malicious is dangerous, but bit.ly root is safe.
+                checkDomainReputation(url)
             }
         }
 

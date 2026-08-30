@@ -30,6 +30,9 @@ android {
         val geminiKey = localProperties.getProperty("GEMINI_API_KEY", "")
         buildConfigField("String", "GEMINI_API_KEY", "\"$geminiKey\"")
 
+        val safeBrowsingKey = localProperties.getProperty("SAFE_BROWSING_API_KEY", "")
+        buildConfigField("String", "SAFE_BROWSING_API_KEY", "\"$safeBrowsingKey\"")
+
         ndk {
             abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
         }

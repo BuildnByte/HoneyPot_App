@@ -70,7 +70,9 @@ object TriggerEngine {
         if (preprocessed.extractedEntities.upiIds.isNotEmpty()) {
             firedTriggers.add("upi_id_present")
         }
-        if (preprocessed.senderType == SmsPreprocessor.SenderType.INTERNATIONAL) {
+        // Flag international senders but exclude Indian numbers (+91) which are domestic
+        if (preprocessed.senderType == SmsPreprocessor.SenderType.INTERNATIONAL &&
+            !preprocessed.originalSender.startsWith("+91")) {
             firedTriggers.add("international_sender")
         }
 
@@ -79,7 +81,10 @@ object TriggerEngine {
             for ((pattern1, pattern2) in CONVERSATION_ESCALATION_PATTERNS) {
                 if (Regex(pattern1).containsMatchIn(fullConversation) &&
                     Regex(pattern2).containsMatchIn(text)) {
-                    firedTriggers.add("conversation_escalation")
+                    // Guard: only add once even if multiple escalation patterns match
+                    if ("conversation_escalation" !in firedTriggers) {
+                        firedTriggers.add("conversation_escalation")
+                    }
                     break
                 }
             }

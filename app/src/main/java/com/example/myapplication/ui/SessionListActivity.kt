@@ -21,6 +21,7 @@ class SessionListActivity : AppCompatActivity() {
 
     private lateinit var sessionAdapter: SessionAdapter
     private lateinit var emptyText: TextView
+    private var isLiveMode = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,12 +36,25 @@ class SessionListActivity : AppCompatActivity() {
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
         val fab = findViewById<ExtendedFloatingActionButton>(R.id.fabAddSession)
 
+        isLiveMode = intent.getBooleanExtra("EXTRA_LIVE_MODE", false)
+        if (isLiveMode) {
+            supportActionBar?.title = "Live Honeypots"
+            fab.visibility = View.GONE
+        }
+
         sessionAdapter = SessionAdapter(
             onClick = { session ->
-                val intent = Intent(this, SimulationActivity::class.java).apply {
-                    putExtra("EXTRA_SESSION_ID", session.id)
+                if (isLiveMode) {
+                    val intent = Intent(this, HoneypotConversationActivity::class.java).apply {
+                        putExtra("EXTRA_SESSION_ID", session.id)
+                    }
+                    startActivity(intent)
+                } else {
+                    val intent = Intent(this, SimulationActivity::class.java).apply {
+                        putExtra("EXTRA_SESSION_ID", session.id)
+                    }
+                    startActivity(intent)
                 }
-                startActivity(intent)
             },
             onLongClick = { session ->
                 showSessionOptionsDialog(session.id, session.name)
@@ -70,7 +84,11 @@ class SessionListActivity : AppCompatActivity() {
     private fun loadSessions() {
         lifecycleScope.launch(Dispatchers.IO) {
             val db = KnowledgeBaseDatabase.getInstance(this@SessionListActivity)
-            val sessions = db.knowledgeBaseDao().getAllSessions()
+            val sessions = if (isLiveMode) {
+                db.knowledgeBaseDao().getLiveSessions()
+            } else {
+                db.knowledgeBaseDao().getSimulatedSessions()
+            }
             
             withContext(Dispatchers.Main) {
                 if (sessions.isEmpty()) {
@@ -112,9 +130,14 @@ class SessionListActivity : AppCompatActivity() {
             .setPositiveButton("Delete") { _, _ ->
                 lifecycleScope.launch(Dispatchers.IO) {
                     val db = KnowledgeBaseDatabase.getInstance(this@SessionListActivity)
-                    // Delete associated messages first
+                    // Delete in dependency order:
+                    // 1. Analysis logs (reference messages by messageId)
+                    db.knowledgeBaseDao().deleteAnalysisLogsForSession(sessionId)
+                    // 2. Evidence records for this session
+                    db.knowledgeBaseDao().deleteEvidenceForSession(sessionId)
+                    // 3. Messages themselves
                     db.knowledgeBaseDao().deleteSimulation(sessionId)
-                    // Then delete the session itself
+                    // 4. The session row
                     db.knowledgeBaseDao().deleteSession(sessionId)
                     loadSessions()
                 }

@@ -179,11 +179,17 @@ object CloudReplyGenerator {
 
         for (line in history) {
             val role = when {
-                line.startsWith("[A]:") -> "user"
-                line.startsWith("[V]:") -> "model"
-                else -> continue
+                line.startsWith("[A]:")            -> "user"
+                line.startsWith("[V]:")            -> "model"
+                line.startsWith("[U]:")            -> "model"  // live honeypot user-sent
+                else                              -> continue
             }
-            val text = line.substring(4).trim()
+            val text = when {
+                line.startsWith("[A]:") -> line.substring(4).trim()
+                line.startsWith("[V]:") -> line.substring(4).trim()
+                line.startsWith("[U]:") -> line.substring(4).trim()
+                else -> line
+            }
             if (text.isEmpty()) continue
 
             if (role != currentRole) {
