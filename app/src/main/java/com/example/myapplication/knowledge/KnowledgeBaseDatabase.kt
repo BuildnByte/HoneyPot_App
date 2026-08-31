@@ -16,7 +16,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         com.example.myapplication.model.SimulationSession::class,
         IndicatorEntry::class
     ],
-    version = 11,
+    version = 12,
     exportSchema = false
 )
 abstract class KnowledgeBaseDatabase : RoomDatabase() {
@@ -115,6 +115,15 @@ abstract class KnowledgeBaseDatabase : RoomDatabase() {
             }
         }
 
+        /** Adds reportedAt column to simulation_sessions. */
+        private val MIGRATION_11_12 = object : Migration(11, 12) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE simulation_sessions ADD COLUMN reportedAt INTEGER DEFAULT NULL"
+                )
+            }
+        }
+
         fun getInstance(context: Context): KnowledgeBaseDatabase =
             INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room.databaseBuilder(
@@ -122,7 +131,7 @@ abstract class KnowledgeBaseDatabase : RoomDatabase() {
                     KnowledgeBaseDatabase::class.java,
                     "knowledge_base.db"
                 )
-                    .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
+                    .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12)
                     .fallbackToDestructiveMigration()
                     .build()
                     .also { INSTANCE = it }

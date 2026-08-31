@@ -16,6 +16,14 @@
             app:title="Scam Evidence Vault"
             app:navigationIcon="@drawable/abc_ic_ab_back_material" />
 
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/filterTabs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:tabMode="scrollable"
+            app:tabIndicatorAnimationMode="elastic"
+            android:background="?attr/colorSurface" />
+
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.recyclerview.widget.RecyclerView

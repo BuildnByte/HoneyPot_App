@@ -111,11 +111,32 @@ interface KnowledgeBaseDao {
     @Query("SELECT * FROM scam_evidence ORDER BY timestamp DESC")
     suspend fun getAllEvidence(): List<com.example.myapplication.model.ScamEvidence>
 
-    @Query("SELECT sessionId, sourceSender, MAX(timestamp) as lastTimestamp, COUNT(*) as evidenceCount FROM scam_evidence GROUP BY sessionId, sourceSender ORDER BY lastTimestamp DESC")
+    @Query("""
+        SELECT 
+            e.sessionId, 
+            e.sourceSender, 
+            MAX(e.timestamp) as lastTimestamp, 
+            COUNT(e.id) as evidenceCount,
+            s.reportedAt,
+            (SELECT MAX(a.confidence) FROM ai_analysis_logs a INNER JOIN simulated_messages m ON a.messageId = m.id WHERE m.sessionId = e.sessionId) as maxConfidence
+        FROM scam_evidence e
+        LEFT JOIN simulation_sessions s ON e.sessionId = s.id
+        GROUP BY e.sessionId, e.sourceSender, s.reportedAt
+        ORDER BY lastTimestamp DESC
+    """)
     suspend fun getEvidenceSessionSummaries(): List<EvidenceSessionSummary>
+
+    @Query("UPDATE simulation_sessions SET reportedAt = :timestamp WHERE id = :sessionId")
+    suspend fun markSessionReported(sessionId: String, timestamp: Long)
 
     @Query("SELECT * FROM scam_evidence WHERE sessionId = :sessionId ORDER BY timestamp ASC")
     suspend fun getEvidenceForSession(sessionId: String): List<com.example.myapplication.model.ScamEvidence>
+
+    @Query("SELECT COUNT(DISTINCT sessionId) FROM scam_evidence WHERE entityType = :entityType AND entityValue = :entityValue AND sessionId != :currentSessionId")
+    suspend fun getCrossSessionCount(entityType: String, entityValue: String, currentSessionId: String): Int
+
+    @Query("SELECT DISTINCT sourceSender FROM scam_evidence WHERE entityType = :entityType AND entityValue = :entityValue AND sessionId != :currentSessionId")
+    suspend fun getCrossSessionSenders(entityType: String, entityValue: String, currentSessionId: String): List<String>
 
     @Query("SELECT * FROM scam_evidence WHERE entityType = :type ORDER BY timestamp DESC")
     suspend fun getEvidenceByType(type: String): List<com.example.myapplication.model.ScamEvidence>
@@ -161,5 +182,7 @@ data class EvidenceSessionSummary(
     val sessionId: String,
     val sourceSender: String,
     val lastTimestamp: Long,
-    val evidenceCount: Int
+    val evidenceCount: Int,
+    val maxConfidence: Float?,
+    val reportedAt: Long?
 )

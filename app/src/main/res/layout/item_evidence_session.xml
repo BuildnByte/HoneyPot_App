@@ -56,5 +56,41 @@
             android:textColor="?attr/colorOnSurface"
             tools:text="12 Evidence Items Captured" />
 
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp"
+            android:layout_marginStart="36dp">
+
+            <TextView
+                android:id="@+id/riskBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:background="@android:color/transparent"
+                android:textAppearance="?attr/textAppearanceLabelSmall"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:visibility="visible"
+                tools:text="HIGH RISK" />
+
+            <TextView
+                android:id="@+id/reportedBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:background="#E8F5E9"
+                android:textColor="#2E7D32"
+                android:textAppearance="?attr/textAppearanceLabelSmall"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:visibility="visible"
+                tools:text="✓ REPORTED" />
+        </LinearLayout>
+
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

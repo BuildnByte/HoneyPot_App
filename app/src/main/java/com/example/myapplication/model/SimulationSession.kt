@@ -14,5 +14,6 @@ data class SimulationSession(
     val serviceCenterAddress: String = "",
     val notes: String = "",
     val createdAt: Long = System.currentTimeMillis(),
-    val isArchived: Boolean = false
+    val isArchived: Boolean = false,
+    val reportedAt: Long? = null
 )

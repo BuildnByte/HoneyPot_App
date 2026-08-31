@@ -36,6 +36,7 @@
             tools:text="Kunal Vasant Bhoir" />
 
         <TextView
+            android:id="@+id/evidenceSourceLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
@@ -52,6 +53,21 @@
             android:textColor="?attr/colorOnSurfaceVariant"
             android:textIsSelectable="true"
             tools:text="Dear SBI User, your A/c X1134-credited by Rs.112.50 on 12Aug26 transfer from Kunal Vasant Bhoir..." />
+
+        <!-- Badge for Cross-Session Fingerprinting -->
+        <TextView
+            android:id="@+id/evidenceSeenElsewhere"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="?attr/colorErrorContainer"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="4dp"
+            android:textAppearance="?attr/textAppearanceLabelSmall"
+            android:textColor="?attr/colorOnErrorContainer"
+            android:visibility="gone"
+            tools:text="🔗 Also seen in 2 other sessions"
+            tools:visibility="visible" />
     </LinearLayout>
 
 </LinearLayout>
