@@ -11,7 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="64dp"
-        app:cardBackgroundColor="#E3F2FD"
+        app:cardBackgroundColor="?attr/colorPrimaryContainer"
         app:cardCornerRadius="16dp"
         app:cardElevation="0dp"
         app:strokeWidth="0dp">
@@ -27,7 +27,7 @@
                 android:layout_height="wrap_content"
                 android:text="Victim (V)"
                 android:textAppearance="?attr/textAppearanceLabelSmall"
-                android:textColor="#1976D2"
+                android:textColor="?attr/colorOnPrimaryContainer"
                 android:layout_marginBottom="4dp"/>
 
             <TextView
@@ -35,7 +35,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?attr/textAppearanceBodyLarge"
-                android:textColor="#0D47A1" />
+                android:textColor="?attr/colorOnPrimaryContainer" />
 
             <TextView
                 android:id="@+id/timeText"
@@ -43,7 +43,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
                 android:textAppearance="?attr/textAppearanceLabelSmall"
-                android:textColor="#64B5F6"
+                android:textColor="?attr/colorOnPrimaryContainer"
                 android:layout_marginTop="4dp" />
 
         </LinearLayout>

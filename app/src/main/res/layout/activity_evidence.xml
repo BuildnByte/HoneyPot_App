@@ -13,7 +13,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Scam Evidence Vault"
+            app:title="History"
             app:navigationIcon="@drawable/abc_ic_ab_back_material" />
 
         <com.google.android.material.tabs.TabLayout
@@ -38,7 +38,7 @@
         android:id="@+id/emptyText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="No scam evidence captured yet."
+        android:text="No history to show yet."
         android:layout_gravity="center"
         android:textAppearance="?attr/textAppearanceBodyLarge"
         android:textColor="?attr/colorOnSurfaceVariant"

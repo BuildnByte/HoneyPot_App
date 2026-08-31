@@ -4,6 +4,12 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
+import com.example.myapplication.model.AiAnalysisLog
+import com.example.myapplication.model.ScamEvidence
+import com.example.myapplication.model.SimulatedMessage
+import com.example.myapplication.model.SimulationSession
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface KnowledgeBaseDao {
@@ -22,22 +28,22 @@ interface KnowledgeBaseDao {
 
     // Simulation Session related
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertSession(session: com.example.myapplication.model.SimulationSession)
+    suspend fun insertSession(session: SimulationSession)
 
     @Query("SELECT * FROM simulation_sessions WHERE isArchived = 0 AND name NOT LIKE '[LIVE] %' ORDER BY createdAt DESC")
-    suspend fun getSimulatedSessions(): List<com.example.myapplication.model.SimulationSession>
+    suspend fun getSimulatedSessions(): List<SimulationSession>
 
     @Query("SELECT * FROM simulation_sessions WHERE isArchived = 0 AND name LIKE '[LIVE] %' ORDER BY createdAt DESC")
-    suspend fun getLiveSessions(): List<com.example.myapplication.model.SimulationSession>
+    suspend fun getLiveSessions(): List<SimulationSession>
 
     @Query("SELECT * FROM simulation_sessions WHERE id = :id LIMIT 1")
-    suspend fun getSession(id: String): com.example.myapplication.model.SimulationSession?
+    suspend fun getSession(id: String): SimulationSession?
 
     @Query("SELECT * FROM simulation_sessions WHERE attackerPhone = :phone AND name LIKE '[LIVE] %' LIMIT 1")
-    suspend fun getLiveSessionByAttackerPhone(phone: String): com.example.myapplication.model.SimulationSession?
+    suspend fun getLiveSessionByAttackerPhone(phone: String): SimulationSession?
 
-    @androidx.room.Update
-    suspend fun updateSession(session: com.example.myapplication.model.SimulationSession)
+    @Update
+    suspend fun updateSession(session: SimulationSession)
 
     @Query("UPDATE simulation_sessions SET isArchived = 1 WHERE id = :id")
     suspend fun archiveSession(id: String)
@@ -47,10 +53,10 @@ interface KnowledgeBaseDao {
 
     // Simulation Message related
     @Insert
-    suspend fun insertSimulatedMessage(message: com.example.myapplication.model.SimulatedMessage): Long
+    suspend fun insertSimulatedMessage(message: SimulatedMessage): Long
 
     @Query("SELECT * FROM simulated_messages WHERE sessionId = :sessionId ORDER BY timestamp ASC")
-    suspend fun getSimulationHistory(sessionId: String): List<com.example.myapplication.model.SimulatedMessage>
+    suspend fun getSimulationHistory(sessionId: String): List<SimulatedMessage>
 
     /**
      * Reactive version of [getSimulationHistory].
@@ -58,13 +64,13 @@ interface KnowledgeBaseDao {
      * Used by HoneypotConversationActivity to update the chat UI in real-time without polling.
      */
     @Query("SELECT * FROM simulated_messages WHERE sessionId = :sessionId ORDER BY timestamp ASC")
-    fun observeSessionMessages(sessionId: String): kotlinx.coroutines.flow.Flow<List<com.example.myapplication.model.SimulatedMessage>>
+    fun observeSessionMessages(sessionId: String): Flow<List<SimulatedMessage>>
 
     @Insert
-    suspend fun insertAiAnalysisLog(log: com.example.myapplication.model.AiAnalysisLog)
+    suspend fun insertAiAnalysisLog(log: AiAnalysisLog)
 
     @Query("SELECT * FROM ai_analysis_logs WHERE messageId = :messageId LIMIT 1")
-    suspend fun getAnalysisForMessage(messageId: Int): com.example.myapplication.model.AiAnalysisLog?
+    suspend fun getAnalysisForMessage(messageId: Int): AiAnalysisLog?
 
     /**
      * Reactively emits the most recent AiAnalysisLog that has a non-empty suggestedReply
@@ -79,7 +85,7 @@ interface KnowledgeBaseDao {
         ORDER BY a.timestamp DESC
         LIMIT 1
     """)
-    fun observeLatestSuggestedReply(sessionId: String): kotlinx.coroutines.flow.Flow<com.example.myapplication.model.AiAnalysisLog?>
+    fun observeLatestSuggestedReply(sessionId: String): Flow<AiAnalysisLog?>
 
     @Query("DELETE FROM simulated_messages WHERE sessionId = :sessionId")
     suspend fun deleteSimulation(sessionId: String)
@@ -103,13 +109,13 @@ interface KnowledgeBaseDao {
 
     // Evidence related
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertEvidence(evidence: com.example.myapplication.model.ScamEvidence)
+    suspend fun insertEvidence(evidence: ScamEvidence)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertEvidenceBatch(evidence: List<com.example.myapplication.model.ScamEvidence>)
+    suspend fun insertEvidenceBatch(evidence: List<ScamEvidence>)
 
     @Query("SELECT * FROM scam_evidence ORDER BY timestamp DESC")
-    suspend fun getAllEvidence(): List<com.example.myapplication.model.ScamEvidence>
+    suspend fun getAllEvidence(): List<ScamEvidence>
 
     @Query("""
         SELECT 
@@ -130,7 +136,7 @@ interface KnowledgeBaseDao {
     suspend fun markSessionReported(sessionId: String, timestamp: Long)
 
     @Query("SELECT * FROM scam_evidence WHERE sessionId = :sessionId ORDER BY timestamp ASC")
-    suspend fun getEvidenceForSession(sessionId: String): List<com.example.myapplication.model.ScamEvidence>
+    suspend fun getEvidenceForSession(sessionId: String): List<ScamEvidence>
 
     @Query("SELECT COUNT(DISTINCT sessionId) FROM scam_evidence WHERE entityType = :entityType AND entityValue = :entityValue AND sessionId != :currentSessionId")
     suspend fun getCrossSessionCount(entityType: String, entityValue: String, currentSessionId: String): Int
@@ -139,10 +145,10 @@ interface KnowledgeBaseDao {
     suspend fun getCrossSessionSenders(entityType: String, entityValue: String, currentSessionId: String): List<String>
 
     @Query("SELECT * FROM scam_evidence WHERE entityType = :type ORDER BY timestamp DESC")
-    suspend fun getEvidenceByType(type: String): List<com.example.myapplication.model.ScamEvidence>
+    suspend fun getEvidenceByType(type: String): List<ScamEvidence>
 
     @Query("SELECT * FROM scam_evidence WHERE sourceSender = :sender ORDER BY timestamp DESC")
-    suspend fun getEvidenceForSender(sender: String): List<com.example.myapplication.model.ScamEvidence>
+    suspend fun getEvidenceForSender(sender: String): List<ScamEvidence>
 
     @Query("DELETE FROM scam_evidence WHERE id = :id")
     suspend fun deleteEvidence(id: Int)
@@ -161,7 +167,7 @@ interface KnowledgeBaseDao {
     suspend fun getIndicatorsByType(type: String): List<IndicatorEntry>
 
     @Query("SELECT * FROM scam_evidence WHERE entityValue = :value")
-    suspend fun getEvidenceMatchingValue(value: String): List<com.example.myapplication.model.ScamEvidence>
+    suspend fun getEvidenceMatchingValue(value: String): List<ScamEvidence>
 
     /**
      * Returns the first AI analysis log where isScam=1 for a given simulation session.
@@ -175,7 +181,7 @@ interface KnowledgeBaseDao {
         ORDER BY a.timestamp ASC
         LIMIT 1
     """)
-    suspend fun getFirstScamLogForSession(sessionId: String): com.example.myapplication.model.AiAnalysisLog?
+    suspend fun getFirstScamLogForSession(sessionId: String): AiAnalysisLog?
 }
 
 data class EvidenceSessionSummary(

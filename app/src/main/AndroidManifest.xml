@@ -54,6 +54,12 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".ui.SettingsActivity"
+            android:exported="false"
+            android:label="Settings"
+            android:theme="@style/Theme.MyApplication" />
+
         <!-- SMS BroadcastReceiver -->
         <!-- NOTE: Do NOT add android:permission here. That attribute restricts who can SEND
              the broadcast TO this receiver. Since the OS itself sends SMS_RECEIVED, adding
@@ -75,19 +81,19 @@
         <activity
             android:name=".ui.SessionListActivity"
             android:exported="false"
-            android:label="Simulation Lab"
+            android:label="Testing Sandbox"
             android:theme="@style/Theme.MyApplication" />
 
         <activity
             android:name=".ui.SimulationActivity"
             android:exported="false"
-            android:label="Simulation Lab"
+            android:label="Testing Session"
             android:theme="@style/Theme.MyApplication" />
 
         <activity
             android:name=".ui.EvidenceActivity"
             android:exported="false"
-            android:label="Evidence Vault"
+            android:label="History"
             android:theme="@style/Theme.MyApplication" />
 
         <activity
@@ -99,7 +105,7 @@
         <activity
             android:name=".ui.HoneypotConversationActivity"
             android:exported="false"
-            android:label="Live Honeypot Conversation"
+            android:label="Flagged Conversation"
             android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.MyApplication" />
 

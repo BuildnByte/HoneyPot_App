@@ -1,152 +1,181 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="?android:attr/colorBackground">
-
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="?attr/colorSurface">
     <com.google.android.material.appbar.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/ThemeOverlay.Material3.Dark.ActionBar">
-
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:title="SMS Honeypot Lab" />
-
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:background="?attr/colorSurface" android:elevation="0dp">
+        <FrameLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/toolbar" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:minHeight="?attr/actionBarSize"
+                android:paddingEnd="56dp"
+                app:title="Honeypot" app:subtitle="SMS threat analysis" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/settingsButton"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="48dp" android:layout_height="48dp"
+                android:layout_gravity="end|center_vertical"
+                android:contentDescription="Open settings" android:padding="12dp"
+                app:icon="@drawable/ic_settings" app:iconTint="?attr/colorOnSurface"
+                app:backgroundTint="@android:color/transparent" />
+        </FrameLayout>
     </com.google.android.material.appbar.AppBarLayout>
-
     <androidx.core.widget.NestedScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:id="@+id/homeContent"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:clipToPadding="false" android:paddingBottom="96dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="?attr/colorOutlineVariant">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Pipeline Status"
-                        android:textAppearance="?attr/textAppearanceTitleMedium"
-                        android:textColor="?attr/colorPrimary"
-                        android:layout_marginBottom="8dp"/>
-
-                    <TextView
-                        android:id="@+id/resultText"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="monospace"
-                        android:text="Ready for testing..."
-                        android:textAppearance="?attr/textAppearanceBodySmall" />
-
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:paddingHorizontal="20dp" android:paddingTop="12dp">
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="Your protection overview" android:textAppearance="?attr/textAppearanceHeadlineSmall" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="4dp" android:text="Monitor incoming messages and test the detection pipeline when needed."
+                android:textAppearance="?attr/textAppearanceBodyMedium" android:textColor="?attr/colorOnSurfaceVariant" />
+            <com.google.android.material.card.MaterialCardView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="20dp" app:cardBackgroundColor="?attr/colorPrimaryContainer"
+                app:cardCornerRadius="24dp" app:cardElevation="0dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical" android:padding="20dp">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Pipeline status" android:textAppearance="?attr/textAppearanceTitleLarge"
+                        android:textColor="?attr/colorOnPrimaryContainer" />
+                    <TextView android:id="@+id/resultText" android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp" android:text="Permissions are being checked…"
+                        android:textAppearance="?attr/textAppearanceBodyMedium" android:textColor="?attr/colorOnPrimaryContainer" />
+                    <com.google.android.material.button.MaterialButton android:id="@+id/testButton"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp"
+                        android:text="Run diagnostics" android:textColor="?attr/colorOnPrimary"
+                        app:backgroundTint="?attr/colorPrimary" app:icon="@android:drawable/ic_media_play" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="28dp"
+                android:text="Explore" android:textAppearance="?attr/textAppearanceTitleMedium" />
+            <com.google.android.material.card.MaterialCardView android:id="@+id/liveHoneypotButton"
+                android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp"
+                android:clickable="true" android:focusable="true" app:cardCornerRadius="20dp" app:cardElevation="0dp"
+                app:strokeColor="?attr/colorOutlineVariant" app:strokeWidth="1dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:padding="18dp">
+                    <ImageView android:layout_width="28dp" android:layout_height="28dp" android:contentDescription="Flagged messages"
+                        android:src="@android:drawable/ic_dialog_alert" app:tint="?attr/colorError" />
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:layout_weight="1" android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Flagged messages" android:textAppearance="?attr/textAppearanceTitleMedium" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:text="Review live honeypot conversations" android:textAppearance="?attr/textAppearanceBodySmall" android:textColor="?attr/colorOnSurfaceVariant" />
+                    </LinearLayout>
+                    <ImageView android:layout_width="24dp" android:layout_height="24dp" android:contentDescription="Open" android:src="@android:drawable/ic_media_play" app:tint="?attr/colorOnSurfaceVariant" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:orientation="horizontal">
+                <com.google.android.material.button.MaterialButton android:id="@+id/simulationButton" style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Testing sandbox" app:icon="@android:drawable/ic_menu_edit" />
+                <com.google.android.material.button.MaterialButton android:id="@+id/evidenceButton" style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="10dp" android:layout_weight="1" android:text="History" app:icon="@android:drawable/ic_menu_recent_history" />
+            </LinearLayout>
+            <com.google.android.material.card.MaterialCardView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20dp"
+                app:cardBackgroundColor="?attr/colorSurfaceContainer" app:cardCornerRadius="16dp" app:cardElevation="0dp">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="16dp"
+                    android:text="Call Manager  •  Coming soon\nA dedicated space for call analysis will be added in a future update."
+                    android:textAppearance="?attr/textAppearanceBodyMedium" android:textColor="?attr/colorOnSurfaceVariant" />
+            </com.google.android.material.card.MaterialCardView>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/testButton"
-                style="@style/Widget.Material3.Button"
+            <LinearLayout
+                android:id="@+id/advancedTools"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="12dp"
-                android:text="Run Pipeline Diagnostics"
-                app:icon="@android:drawable/ic_media_play" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/simulationButton"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:padding="12dp"
-                android:text="Enter Simulation Lab"
-                app:icon="@android:drawable/ic_menu_edit" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/evidenceButton"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:padding="12dp"
-                android:text="View Evidence Vault"
-                app:icon="@android:drawable/ic_menu_info_details" />
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/liveHoneypotButton"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:padding="12dp"
-                android:text="View Live Honeypots"
-                android:textColor="?attr/colorError"
-                app:icon="@android:drawable/ic_dialog_alert"
-                app:iconTint="?attr/colorError" />
-
-            <com.google.android.material.divider.MaterialDivider
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="8dp"/>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="⚙️ Debug Tools"
-                android:textAppearance="?attr/textAppearanceLabelLarge"
-                android:textColor="?attr/colorOnSurfaceVariant"/>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/injectSmsButton"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:padding="12dp"
-                android:text="Inject Test SMS (bypass network)"
-                app:icon="@android:drawable/ic_menu_send" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/directProcessButton"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:padding="12dp"
-                android:text="Direct: Start SmsProcessingService"
-                app:icon="@android:drawable/ic_media_play" />
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/testSafeBrowsingButton"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:padding="12dp"
-                android:text="Test Safe Browsing API"
-                app:icon="@android:drawable/ic_menu_search" />
-
+                android:layout_marginTop="24dp"
+                android:orientation="vertical"
+                android:visibility="gone">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Advanced tools"
+                    android:textAppearance="?attr/textAppearanceTitleMedium" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/injectSmsButton"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Inject test SMS" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/directProcessButton"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Start processing service" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/testSafeBrowsingButton"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Test Safe Browsing API" />
+            </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
-
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/messagesContent"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:paddingBottom="96dp" android:visibility="gone"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:padding="20dp">
+            <androidx.recyclerview.widget.RecyclerView android:id="@+id/messagesRecyclerView"
+                android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20dp"
+                android:nestedScrollingEnabled="false" android:clipToPadding="false" />
+            <TextView android:id="@+id/messagesEmptyText" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="28dp" android:gravity="center" android:text="No flagged messages yet"
+                android:textAppearance="?attr/textAppearanceTitleMedium" android:textColor="?attr/colorOnSurfaceVariant" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/openMessagesButton" style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_horizontal" android:layout_marginTop="16dp" android:text="Refresh messages" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/historyContent"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:paddingBottom="96dp" android:visibility="gone"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
+            <androidx.recyclerview.widget.RecyclerView android:id="@+id/historyRecyclerView"
+                android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20dp"
+                android:nestedScrollingEnabled="false" android:clipToPadding="false" />
+            <TextView android:id="@+id/historyEmptyText" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="28dp" android:gravity="center" android:text="No history to show yet"
+                android:textAppearance="?attr/textAppearanceTitleMedium" android:textColor="?attr/colorOnSurfaceVariant" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/openHistoryButton" style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_horizontal" android:layout_marginTop="16dp" android:text="Refresh history" app:icon="@drawable/ic_history" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/sandboxContent"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:paddingBottom="96dp" android:visibility="gone"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
+            <androidx.recyclerview.widget.RecyclerView android:id="@+id/sandboxRecyclerView"
+                android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20dp"
+                android:nestedScrollingEnabled="false" android:clipToPadding="false" />
+            <TextView android:id="@+id/sandboxEmptyText" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="28dp" android:gravity="center" android:text="No testing sessions yet"
+                android:textAppearance="?attr/textAppearanceTitleMedium" android:textColor="?attr/colorOnSurfaceVariant" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/openSandboxButton" style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_horizontal" android:layout_marginTop="16dp" android:text="New testing session" app:icon="@drawable/ic_sandbox" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigation"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_gravity="bottom"
+        android:background="?attr/colorSurfaceContainer"
+        android:elevation="8dp"
+        android:gravity="center"
+        app:itemIconTint="?attr/colorPrimary"
+        app:itemIconSize="22dp"
+        app:itemPaddingTop="0dp"
+        app:itemPaddingBottom="0dp"
+        app:itemTextColor="?attr/colorOnSurface"
+        app:labelVisibilityMode="labeled"
+        app:menu="@menu/main_bottom_nav" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

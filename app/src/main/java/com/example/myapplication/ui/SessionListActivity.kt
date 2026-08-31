@@ -26,6 +26,7 @@ class SessionListActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_session_list)
+        SystemBars.apply(this, findViewById(android.R.id.content))
 
         val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
@@ -38,7 +39,8 @@ class SessionListActivity : AppCompatActivity() {
 
         isLiveMode = intent.getBooleanExtra("EXTRA_LIVE_MODE", false)
         if (isLiveMode) {
-            supportActionBar?.title = "Live Honeypots"
+            supportActionBar?.title = "Flagged Messages"
+            supportActionBar?.subtitle = "Live honeypot conversations"
             fab.visibility = View.GONE
         }
 

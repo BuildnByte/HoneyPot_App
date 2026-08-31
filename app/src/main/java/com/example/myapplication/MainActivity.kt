@@ -16,14 +16,22 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.filter.SmsPreFilter
 import com.example.myapplication.model.IncomingSms
 import com.example.myapplication.preprocessor.SmsPreprocessor
 import com.example.myapplication.trigger.TriggerEngine
 import com.example.myapplication.ui.EvidenceActivity
 import com.example.myapplication.ui.SessionListActivity
+import com.example.myapplication.ui.SettingsActivity
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.example.myapplication.ui.SystemBars
+import com.example.myapplication.knowledge.KnowledgeBaseDatabase
 import com.example.myapplication.verification.FactCheckService
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
 
@@ -33,13 +41,52 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var resultText: TextView
+    private lateinit var liveAdapter: com.example.myapplication.ui.SessionAdapter
+    private lateinit var sandboxAdapter: com.example.myapplication.ui.SessionAdapter
+    private lateinit var historyAdapter: com.example.myapplication.ui.EvidenceSessionAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        SystemBars.apply(this, findViewById(android.R.id.content))
         setSupportActionBar(findViewById(R.id.toolbar))
 
+        val mainToolbar = findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbar)
+        mainToolbar.inflateMenu(R.menu.main_menu)
+        mainToolbar.setOnMenuItemClickListener { item ->
+                if (item.itemId == R.id.action_settings) {
+                    startActivity(Intent(this, SettingsActivity::class.java))
+                    true
+                } else false
+            }
+
+        findViewById<View>(R.id.settingsButton).setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
+
+        findViewById<BottomNavigationView>(R.id.bottomNavigation)
+            .setOnItemSelectedListener { item ->
+                when (item.itemId) {
+                    R.id.nav_home -> { showPage(R.id.homeContent, "Honeypot", "SMS threat analysis"); true }
+                    R.id.nav_messages -> {
+                        showPage(R.id.messagesContent, "Flagged messages", "Live honeypot conversations"); true
+                    }
+                    R.id.nav_history -> {
+                        showPage(R.id.historyContent, "History", "Captured evidence and sessions"); true
+                    }
+                    R.id.nav_sandbox -> {
+                        showPage(R.id.sandboxContent, "Testing Sandbox", "Controlled pipeline sessions"); true
+                    }
+                    else -> false
+                }
+            }
+
+        if (intent.getBooleanExtra("SHOW_ADVANCED_TOOLS", false)) {
+            findViewById<View>(R.id.advancedTools).visibility = View.VISIBLE
+        }
+
         resultText = findViewById(R.id.resultText)
+        setupInlineSections()
 
         requestAllPermissions()
 
@@ -47,17 +94,25 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.testButton).setOnClickListener { runPipelineTest() }
 
         findViewById<Button>(R.id.simulationButton).setOnClickListener {
-            startActivity(Intent(this, SessionListActivity::class.java))
+            findViewById<BottomNavigationView>(R.id.bottomNavigation).selectedItemId = R.id.nav_sandbox
         }
 
         findViewById<View>(R.id.evidenceButton).setOnClickListener {
-            startActivity(Intent(this, EvidenceActivity::class.java))
+            findViewById<BottomNavigationView>(R.id.bottomNavigation).selectedItemId = R.id.nav_history
         }
 
         findViewById<View>(R.id.liveHoneypotButton).setOnClickListener {
-            startActivity(Intent(this, SessionListActivity::class.java).apply {
-                putExtra("EXTRA_LIVE_MODE", true)
-            })
+            findViewById<BottomNavigationView>(R.id.bottomNavigation).selectedItemId = R.id.nav_messages
+        }
+
+        findViewById<View>(R.id.openMessagesButton).setOnClickListener {
+            loadInlineSections()
+        }
+        findViewById<View>(R.id.openHistoryButton).setOnClickListener {
+            loadInlineSections()
+        }
+        findViewById<View>(R.id.openSandboxButton).setOnClickListener {
+            showCreateSessionSheet()
         }
 
         // ── Debug buttons ───────────────────────────────────────────────────
@@ -84,9 +139,68 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun showPage(pageId: Int, title: String, subtitle: String) {
+        listOf(R.id.homeContent, R.id.messagesContent, R.id.historyContent, R.id.sandboxContent).forEach { id ->
+            findViewById<View>(id).visibility = if (id == pageId) View.VISIBLE else View.GONE
+        }
+        findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbar).apply {
+            this.title = title
+            this.subtitle = subtitle
+        }
+    }
+
+    private fun setupInlineSections() {
+        liveAdapter = com.example.myapplication.ui.SessionAdapter(
+            onClick = { session -> startActivity(Intent(this, com.example.myapplication.ui.HoneypotConversationActivity::class.java).apply { putExtra("EXTRA_SESSION_ID", session.id) }) },
+            onLongClick = { }
+        )
+        sandboxAdapter = com.example.myapplication.ui.SessionAdapter(
+            onClick = { session -> startActivity(Intent(this, com.example.myapplication.ui.SimulationActivity::class.java).apply { putExtra("EXTRA_SESSION_ID", session.id) }) },
+            onLongClick = { }
+        )
+        historyAdapter = com.example.myapplication.ui.EvidenceSessionAdapter { summary ->
+            startActivity(Intent(this, com.example.myapplication.ui.EvidenceDetailActivity::class.java).apply {
+                putExtra("EXTRA_SESSION_ID", summary.sessionId)
+                putExtra("EXTRA_SOURCE_SENDER", summary.sourceSender)
+            })
+        }
+        findViewById<RecyclerView>(R.id.messagesRecyclerView).apply { layoutManager = LinearLayoutManager(this@MainActivity); adapter = liveAdapter }
+        findViewById<RecyclerView>(R.id.sandboxRecyclerView).apply { layoutManager = LinearLayoutManager(this@MainActivity); adapter = sandboxAdapter }
+        findViewById<RecyclerView>(R.id.historyRecyclerView).apply { layoutManager = LinearLayoutManager(this@MainActivity); adapter = historyAdapter }
+        loadInlineSections()
+    }
+
+    private fun loadInlineSections() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val dao = KnowledgeBaseDatabase.getInstance(this@MainActivity).knowledgeBaseDao()
+            val live = dao.getLiveSessions()
+            val sandbox = dao.getSimulatedSessions()
+            val history = dao.getEvidenceSessionSummaries()
+            withContext(Dispatchers.Main) {
+                liveAdapter.submitList(live)
+                sandboxAdapter.submitList(sandbox)
+                historyAdapter.setItems(history)
+                findViewById<View>(R.id.messagesEmptyText).visibility = if (live.isEmpty()) View.VISIBLE else View.GONE
+                findViewById<View>(R.id.historyEmptyText).visibility = if (history.isEmpty()) View.VISIBLE else View.GONE
+                findViewById<View>(R.id.sandboxEmptyText).visibility = if (sandbox.isEmpty()) View.VISIBLE else View.GONE
+            }
+        }
+    }
+
+    private fun showCreateSessionSheet() {
+        val sheet = com.example.myapplication.ui.CreateSessionBottomSheet { newSession ->
+            lifecycleScope.launch(Dispatchers.IO) {
+                KnowledgeBaseDatabase.getInstance(this@MainActivity).knowledgeBaseDao().insertSession(newSession)
+                loadInlineSections()
+            }
+        }
+        sheet.show(supportFragmentManager, "CreateSessionBottomSheet")
+    }
+
     override fun onResume() {
         super.onResume()
         updatePermissionStatus()
+        if (::liveAdapter.isInitialized) loadInlineSections()
     }
 
     // ── Safe Browsing API test ────────────────────────────────────────────────

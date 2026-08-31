@@ -14,7 +14,8 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Simulation Lab"
+            app:title="Testing Sandbox"
+            app:subtitle="Create and review detection sessions"
             app:navigationIcon="?attr/homeAsUpIndicator"/>
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -23,7 +24,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:padding="8dp"
+        android:paddingHorizontal="12dp"
+        android:paddingTop="12dp"
         android:clipToPadding="false"
         android:paddingBottom="88dp" />
 
@@ -31,7 +33,7 @@
         android:id="@+id/emptyText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="No sessions yet. Create one to begin testing."
+        android:text="No testing sessions yet. Create one to begin."
         android:layout_gravity="center"
         android:textAppearance="?attr/textAppearanceBodyLarge"
         android:textColor="?attr/colorOnSurfaceVariant"
@@ -42,8 +44,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
-        android:text="New Session"
+        android:layout_margin="20dp"
+        android:text="New testing session"
         app:icon="@android:drawable/ic_input_add" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

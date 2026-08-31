@@ -7,7 +7,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:fitsSystemWindows="true"
     android:background="?attr/colorSurface">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -19,7 +18,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Live Honeypot"
+            app:title="Flagged Conversation"
             app:subtitle="Loading..."
             app:navigationIcon="?attr/homeAsUpIndicator"/>
     </com.google.android.material.appbar.AppBarLayout>
@@ -47,7 +46,7 @@
         android:paddingHorizontal="12dp"
         android:paddingVertical="8dp"
         android:gravity="center_vertical"
-        android:background="?attr/colorSurfaceVariant"
+        android:background="?attr/colorSurfaceContainer"
         android:visibility="gone"
         tools:visibility="visible">
 
@@ -73,6 +72,7 @@
                 android:ellipsize="end"
                 android:textIsSelectable="true"
                 android:textAppearance="?attr/textAppearanceBodySmall"
+                android:textColor="?attr/colorOnSurface"
                 tools:text="Could you tell me your full name and the process to verify?"/>
         </LinearLayout>
 
@@ -91,37 +91,50 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="8dp"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="8dp"
         android:gravity="center_vertical"
-        android:background="?attr/colorSurface">
+        android:background="?attr/colorSurfaceContainer">
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense"
+            app:boxBackgroundColor="?attr/colorSurface"
             app:boxCornerRadiusBottomEnd="24dp"
             app:boxCornerRadiusBottomStart="24dp"
             app:boxCornerRadiusTopEnd="24dp"
-            app:boxCornerRadiusTopStart="24dp">
+            app:boxCornerRadiusTopStart="24dp"
+            app:boxStrokeColor="?attr/colorOutline">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/messageInput"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Type reply..."
+                android:textColor="?attr/colorOnSurface"
+                android:textColorHint="?attr/colorOnSurfaceVariant"
                 android:maxLines="4"
                 android:inputType="textMultiLine|textCapSentences"/>
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/sendButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
             android:layout_marginStart="8dp"
-            app:fabSize="mini"
-            android:src="@android:drawable/ic_menu_send"
+            android:minWidth="56dp"
+            android:minHeight="56dp"
+            android:padding="0dp"
+            android:text=""
+            app:cornerRadius="28dp"
+            app:backgroundTint="?attr/colorPrimary"
+            app:icon="@drawable/ic_send"
+            app:iconSize="24dp"
+            app:iconTint="?attr/colorOnPrimary"
             android:contentDescription="Send"/>
     </LinearLayout>
 

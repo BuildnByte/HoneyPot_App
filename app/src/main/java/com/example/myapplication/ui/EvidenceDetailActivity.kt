@@ -36,6 +36,7 @@ class EvidenceDetailActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_evidence_detail)
+        SystemBars.apply(this, findViewById(android.R.id.content))
 
         val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)

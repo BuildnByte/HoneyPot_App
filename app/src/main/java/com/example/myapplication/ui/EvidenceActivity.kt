@@ -33,6 +33,7 @@ class EvidenceActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_evidence) // we reuse the layout but hide FAB
+        SystemBars.apply(this, findViewById(android.R.id.content))
 
         db = KnowledgeBaseDatabase.getInstance(this)
 
@@ -51,7 +52,7 @@ class EvidenceActivity : AppCompatActivity() {
         emptyText = findViewById<TextView>(R.id.emptyText)
 
         filterTabs = findViewById(R.id.filterTabs)
-        filterTabs.addTab(filterTabs.newTab().setText("All Sessions"))
+        filterTabs.addTab(filterTabs.newTab().setText("All"))
         filterTabs.addTab(filterTabs.newTab().setText("Phones"))
         filterTabs.addTab(filterTabs.newTab().setText("UPI IDs"))
         filterTabs.addTab(filterTabs.newTab().setText("Accounts"))
@@ -97,7 +98,7 @@ class EvidenceActivity : AppCompatActivity() {
             withContext(Dispatchers.Main) {
                 if (sessions.isEmpty()) {
                     emptyText.visibility = View.VISIBLE
-                    emptyText.text = "No scam evidence captured yet."
+                    emptyText.text = "No history to show yet."
                 } else {
                     emptyText.visibility = View.GONE
                 }

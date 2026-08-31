@@ -12,11 +12,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="64dp"
-        app:cardBackgroundColor="#F3E5F5"
+        app:cardBackgroundColor="?attr/colorTertiaryContainer"
         app:cardCornerRadius="16dp"
         app:cardElevation="2dp"
         app:strokeWidth="1dp"
-        app:strokeColor="#CE93D8"
+        app:strokeColor="?attr/colorTertiary"
         android:clickable="true"
         android:focusable="true">
 
@@ -31,7 +31,7 @@
                 android:layout_height="wrap_content"
                 android:text="Attacker (A)"
                 android:textAppearance="?attr/textAppearanceLabelSmall"
-                android:textColor="#7B1FA2"
+                android:textColor="?attr/colorOnTertiaryContainer"
                 android:layout_marginBottom="4dp"/>
 
             <TextView
@@ -39,7 +39,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?attr/textAppearanceBodyLarge"
-                android:textColor="#4A148C" />
+                android:textColor="?attr/colorOnTertiaryContainer" />
 
             <TextView
                 android:id="@+id/timeText"
@@ -47,7 +47,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="start"
                 android:textAppearance="?attr/textAppearanceLabelSmall"
-                android:textColor="#BA68C8"
+                android:textColor="?attr/colorOnTertiaryContainer"
                 android:layout_marginTop="4dp" />
 
             <TextView
@@ -58,7 +58,7 @@
                 android:text="🧠 Tap for AI analysis"
                 android:visibility="gone"
                 android:textAppearance="?attr/textAppearanceLabelSmall"
-                android:textColor="#9C27B0"
+                android:textColor="?attr/colorOnTertiaryContainer"
                 android:layout_marginTop="4dp"
                 android:fontStyle="italic" />
 

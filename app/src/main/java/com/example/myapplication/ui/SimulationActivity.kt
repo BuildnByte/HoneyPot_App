@@ -44,6 +44,7 @@ class SimulationActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_simulation)
+        SystemBars.apply(this, findViewById(android.R.id.content))
 
         db = KnowledgeBaseDatabase.getInstance(this)
         consentManager = ConsentPreferenceManager(this)

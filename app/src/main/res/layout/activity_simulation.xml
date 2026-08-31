@@ -16,7 +16,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="SMS Simulation Lab"
+            app:title="Testing Session"
             app:navigationIcon="@drawable/abc_ic_ab_back_material" />
 
     </com.google.android.material.appbar.AppBarLayout>

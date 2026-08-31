@@ -1,7 +1,6 @@
 package com.example.myapplication.ui
 
 import android.Manifest
-import android.app.AlertDialog
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.telephony.SmsManager
@@ -27,6 +26,7 @@ import com.example.myapplication.model.AiAnalysisLog
 import com.example.myapplication.model.IncomingSms
 import com.example.myapplication.model.SimulatedMessage
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
@@ -63,6 +63,7 @@ class HoneypotConversationActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_honeypot_conversation)
+        SystemBars.apply(this, findViewById(android.R.id.content))
 
         db = KnowledgeBaseDatabase.getInstance(this)
         consentManager = ConsentPreferenceManager(this)
@@ -180,7 +181,7 @@ class HoneypotConversationActivity : AppCompatActivity() {
             }
             attackerPhone = session.attackerPhone
             withContext(Dispatchers.Main) {
-                supportActionBar?.title = "Live Honeypot"
+                supportActionBar?.title = "Flagged Conversation"
                 supportActionBar?.subtitle = session.attackerPhone
             }
         }
@@ -334,7 +335,7 @@ class HoneypotConversationActivity : AppCompatActivity() {
 
         return suspendCancellableCoroutine { cont ->
             runOnUiThread {
-                AlertDialog.Builder(this, com.google.android.material.R.style.ThemeOverlay_Material3_MaterialAlertDialog)
+                MaterialAlertDialogBuilder(this)
                     .setTitle("🛡️ Let AI craft smarter replies?")
                     .setMessage(
                         "A scam from $contactNumber was detected.\n\n" +
