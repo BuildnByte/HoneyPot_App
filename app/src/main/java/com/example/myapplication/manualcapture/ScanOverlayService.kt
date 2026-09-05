@@ -50,6 +50,7 @@ class ScanOverlayService : LifecycleService() {
 
     private val prefs by lazy { ManualCapturePrefs(this) }
     private var overlayController: OverlayController? = null
+    private val inPlaceLensController by lazy { InPlaceLensController(this) }
 
     private val job = SupervisorJob()
     private val scope = CoroutineScope(Dispatchers.Main + job)
@@ -65,6 +66,11 @@ class ScanOverlayService : LifecycleService() {
 
     override fun onCreate() {
         super.onCreate()
+        if (HoneypotAccessibilityService.isServiceRunning) {
+            HoneypotAccessibilityService.showOverlay()
+            stopSelf()
+            return
+        }
         createNotificationChannel()
         startServiceInForeground()
         startOverlay()
@@ -109,12 +115,10 @@ class ScanOverlayService : LifecycleService() {
                     performCapture()
                 } else {
                     Toast.makeText(this, "Tap 'Downloaded apps' \u2794 'Honeypot' to enable", Toast.LENGTH_LONG).show()
-                    startActivity(HoneypotAccessibilityService.buildSettingsIntent(this))
+                    val accessIntent = HoneypotAccessibilityService.buildSettingsIntent(this)
+                    accessIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    startActivity(accessIntent)
                 }
-            },
-            onViewResult = {
-                val captureId = prefs.unviewedCaptureId ?: return@OverlayController
-                startActivity(ManualAnalysisActivity.buildIntent(this, captureId))
             },
             onClose = {
                 prefs.overlayEnabled = false
@@ -147,11 +151,17 @@ class ScanOverlayService : LifecycleService() {
             try {
                 // Short delay so overlay is excluded from the screenshot
                 delay(120L)
-                HoneypotAccessibilityService.captureCurrentScreen(this@ScanOverlayService) { success, errorMsg ->
-                    overlayController?.restoreVisibility()
+                HoneypotAccessibilityService.captureCurrentScreen(this@ScanOverlayService) { success, errorMsg, captureId, bitmap ->
                     isCapturing = false
-                    if (!success && errorMsg != null) {
-                        Toast.makeText(this@ScanOverlayService, errorMsg, Toast.LENGTH_SHORT).show()
+                    if (success && captureId != null && bitmap != null) {
+                        inPlaceLensController.show(captureId, bitmap) {
+                            overlayController?.restoreVisibility()
+                        }
+                    } else {
+                        overlayController?.restoreVisibility()
+                        if (!success && errorMsg != null) {
+                            Toast.makeText(this@ScanOverlayService, errorMsg, Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
             } catch (e: Exception) {
@@ -336,6 +346,12 @@ class ScanOverlayService : LifecycleService() {
                     return@launch
                 }
 
+                val reviewBitmap = try {
+                    bitmap.copy(Bitmap.Config.ARGB_8888, false)
+                } catch (e: Exception) {
+                    bitmap
+                }
+
                 withContext(Dispatchers.IO) {
                     val captureDir = File(filesDir, "evidence_captures").also { it.mkdirs() }
                     val captureId = UUID.randomUUID().toString()
@@ -346,7 +362,9 @@ class ScanOverlayService : LifecycleService() {
                         bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
                         out.flush()
                     }
-                    bitmap.recycle()
+                    if (reviewBitmap != bitmap) {
+                        bitmap.recycle()
+                    }
                     tmpFile.renameTo(finalFile)
 
                     val sha256 = computeSha256(finalFile)
@@ -364,23 +382,21 @@ class ScanOverlayService : LifecycleService() {
                     val db = KnowledgeBaseDatabase.getInstance(applicationContext)
                     db.knowledgeBaseDao().insertManualCapture(capture)
 
-                    val reviewIntent = Intent(this@ScanOverlayService, CaptureReviewActivity::class.java).apply {
-                        putExtra(CaptureReviewActivity.EXTRA_CAPTURE_ID, captureId)
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    withContext(Dispatchers.Main) {
+                        inPlaceLensController.show(captureId, reviewBitmap) {
+                            overlayController?.restoreVisibility()
+                        }
                     }
-                    startActivity(reviewIntent)
                 }
 
             } catch (e: Exception) {
                 Log.e(TAG, "Capture execution error", e)
                 withContext(Dispatchers.Main) {
+                    overlayController?.restoreVisibility()
                     Toast.makeText(this@ScanOverlayService, "Capture error: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             } finally {
-                withContext(Dispatchers.Main) {
-                    overlayController?.restoreVisibility()
-                    isCapturing = false
-                }
+                isCapturing = false
             }
         }
     }
@@ -423,10 +439,15 @@ class ScanOverlayService : LifecycleService() {
 
     override fun onDestroy() {
         isCaptureReady = false
+        inPlaceLensController.dismiss()
         job.cancel()
         releaseProjectionResources()
         overlayController?.hide()
         overlayController = null
+        try {
+            val nm = getSystemService(NotificationManager::class.java)
+            nm?.cancel(NOTIF_ID)
+        } catch (_: Exception) {}
         super.onDestroy()
     }
 
@@ -440,10 +461,12 @@ class ScanOverlayService : LifecycleService() {
             val channel = NotificationChannel(
                 CHANNEL_ID,
                 "Scan overlay",
-                NotificationManager.IMPORTANCE_LOW
+                NotificationManager.IMPORTANCE_MIN
             ).apply {
                 description = "Honeypot scan overlay is active"
                 setShowBadge(false)
+                enableLights(false)
+                enableVibration(false)
             }
             getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
         }
@@ -454,8 +477,8 @@ class ScanOverlayService : LifecycleService() {
             .setSmallIcon(R.drawable.ic_scan)
             .setContentTitle("Honeypot scan overlay active")
             .setContentText("Tap to scan a suspicious message")
-            .setPriority(NotificationCompat.PRIORITY_LOW)
-            .setOngoing(true)
+            .setPriority(NotificationCompat.PRIORITY_MIN)
+            .setOngoing(false)
             .build()
 
     companion object {

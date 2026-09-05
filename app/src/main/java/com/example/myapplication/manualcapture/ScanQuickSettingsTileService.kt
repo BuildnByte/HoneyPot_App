@@ -39,8 +39,23 @@ class ScanQuickSettingsTileService : TileService() {
 
     override fun onClick() {
         super.onClick()
-        val overlayGranted = Settings.canDrawOverlays(this)
 
+        // 1. If overlay is currently enabled, user tapped to REMOVE / TURN OFF the overlay!
+        if (prefs.overlayEnabled) {
+            prefs.overlayEnabled = false
+            HoneypotAccessibilityService.hideOverlay()
+            stopOverlayService()
+            updateTileState()
+
+            // Automatically collapse the notification / Quick Settings shade
+            Handler(Looper.getMainLooper()).postDelayed({
+                HoneypotAccessibilityService.dismissNotificationShade()
+            }, 100)
+            return
+        }
+
+        // 2. User tapped to ENABLE the overlay:
+        val overlayGranted = Settings.canDrawOverlays(this)
         if (!overlayGranted) {
             // Open overlay permission settings — user must grant before we enable
             val overlayIntent = Intent(
@@ -51,8 +66,10 @@ class ScanQuickSettingsTileService : TileService() {
             return
         }
 
-        // Check if Accessibility Service is enabled before enabling overlay
-        if (!HoneypotAccessibilityService.isServiceRunning) {
+        val isAccessRunning = HoneypotAccessibilityService.isServiceRunning ||
+                HoneypotAccessibilityService.isAccessibilityEnabledInSettings(this)
+
+        if (!isAccessRunning) {
             Toast.makeText(
                 this,
                 "Tap 'Downloaded apps' \u2794 'Honeypot' to enable",
@@ -63,13 +80,12 @@ class ScanQuickSettingsTileService : TileService() {
             return
         }
 
-        val nowEnabled = !prefs.overlayEnabled
-        prefs.overlayEnabled = nowEnabled
-
-        if (nowEnabled) {
-            startOverlayService()
-        } else {
+        prefs.overlayEnabled = true
+        if (HoneypotAccessibilityService.isServiceRunning) {
+            HoneypotAccessibilityService.showOverlay()
             stopOverlayService()
+        } else {
+            startOverlayService()
         }
 
         updateTileState()
@@ -109,6 +125,10 @@ class ScanQuickSettingsTileService : TileService() {
 
     private fun stopOverlayService() {
         stopService(Intent(this, ScanOverlayService::class.java))
+        try {
+            val nm = getSystemService(Context.NOTIFICATION_SERVICE) as? android.app.NotificationManager
+            nm?.cancel(9002)
+        } catch (_: Exception) {}
     }
 
     private fun launchSettings(intent: Intent) {

@@ -18,8 +18,8 @@
             android:minHeight="?attr/actionBarSize"
             android:paddingStart="8dp"
             android:paddingEnd="8dp"
-            app:title="Scan message"
-            app:subtitle="Cross-app suspicious message scanner" />
+            app:title="Cross-app scanning"
+            app:subtitle="Settings and evidence" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -37,11 +37,11 @@
                 android:gravity="center_vertical"
                 android:layout_marginBottom="8dp">
                 <ImageView
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
                     android:src="@drawable/ic_scan"
                     android:contentDescription="@null"
-                    android:tint="?attr/colorPrimary"
+                    app:tint="?attr/colorPrimary"
                     android:layout_marginEnd="12dp" />
                 <TextView
                     android:layout_width="0dp"
@@ -55,201 +55,107 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
-                android:text="Manually scan suspicious messages from WhatsApp, Telegram, or Instagram by taking a one-time screenshot."
+                android:text="Scan suspicious messages from WhatsApp, Telegram, or Instagram using the floating screen overlay."
                 android:textAppearance="?attr/textAppearanceBodyMedium"
                 android:textColor="?attr/colorOnSurfaceVariant" />
 
-            <!-- Quick Settings Tile -->
+            <!-- Scan Overlay & Accessibility Section -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Quick Settings tile"
-                android:textAppearance="?attr/textAppearanceTitleMedium" />
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Add the \'Scan message\' tile to your notification shade for one-tap access."
-                android:textAppearance="?attr/textAppearanceBodyMedium"
-                android:textColor="?attr/colorOnSurfaceVariant" />
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAddTile"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="Add \'Scan message\' Quick Setting"
-                app:icon="@drawable/ic_scan" />
-
-            <!-- Overlay status -->
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="28dp"
                 android:text="Scan overlay"
                 android:textAppearance="?attr/textAppearanceTitleMedium" />
-            <TextView
-                android:id="@+id/tvOverlayStatus"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Overlay is disabled"
-                android:textAppearance="?attr/textAppearanceBodyMedium"
-                android:textColor="?attr/colorOnSurfaceVariant" />
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnToggleOverlay"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="Enable overlay" />
 
-            <!-- Silent Capture (Accessibility) -->
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="28dp"
-                android:text="Silent capture (Google Lens style)"
-                android:textAppearance="?attr/textAppearanceTitleMedium" />
             <TextView
                 android:id="@+id/tvAccessibilityStatus"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="Accessibility service is disabled"
+                android:text="Checking service status…"
                 android:textAppearance="?attr/textAppearanceBodyMedium"
                 android:textColor="?attr/colorOnSurfaceVariant" />
+
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnToggleAccessibility"
+                android:id="@+id/btnOpenAccessibility"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:text="Enable in Accessibility Settings"
+                android:text="Open Accessibility Settings"
                 app:icon="@drawable/ic_scan" />
 
-            <!-- Message layout preference -->
-            <TextView
+            <!-- Steps to Turn Off / Manage Accessibility Card -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="28dp"
-                android:text="Message layout"
-                android:textAppearance="?attr/textAppearanceTitleMedium" />
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Tell Honeypot which side your own messages appear on."
-                android:textAppearance="?attr/textAppearanceBodyMedium"
-                android:textColor="?attr/colorOnSurfaceVariant" />
-            <RadioGroup
-                android:id="@+id/settingsLayoutGroup"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp">
-                <RadioButton
-                    android:id="@+id/settingsRadioRightIsMine"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="My messages appear on the Right (default)" />
-                <RadioButton
-                    android:id="@+id/settingsRadioLeftIsMine"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="My messages appear on the Left (RTL)" />
-            </RadioGroup>
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutlineVariant"
+                app:cardBackgroundColor="?attr/colorSurfaceContainerLow">
 
-            <!-- Allowed apps for scanning -->
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="28dp"
-                android:text="Allowed apps for scanning"
-                android:textAppearance="?attr/textAppearanceTitleMedium" />
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Control which applications Honeypot is allowed to capture."
-                android:textAppearance="?attr/textAppearanceBodyMedium"
-                android:textColor="?attr/colorOnSurfaceVariant" />
-            <RadioGroup
-                android:id="@+id/settingsAllowedAppsGroup"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp">
-                <RadioButton
-                    android:id="@+id/settingsRadioAllApps"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="All apps (scan any chat screen)" />
-                <RadioButton
-                    android:id="@+id/settingsRadioSelectedApps"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Selected apps only" />
-            </RadioGroup>
-            <LinearLayout
-                android:id="@+id/settingsSelectedAppsLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingStart="28dp"
-                android:paddingEnd="0dp"
-                android:visibility="gone">
-                <CheckBox
-                    android:id="@+id/settingsCbWhatsApp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="WhatsApp" />
-                <CheckBox
-                    android:id="@+id/settingsCbTelegram"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Telegram" />
-                <CheckBox
-                    android:id="@+id/settingsCbInstagram"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Instagram" />
-            </LinearLayout>
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-            <!-- Supported apps -->
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="28dp"
-                android:text="Supported apps"
-                android:textAppearance="?attr/textAppearanceTitleMedium" />
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Layout detection has been verified for:\n• WhatsApp (one-to-one chats)\n• Telegram (one-to-one chats)\n• Instagram DMs\n\nOther apps can be scanned but sender-side inference may be unreliable."
-                android:textAppearance="?attr/textAppearanceBodyMedium"
-                android:textColor="?attr/colorOnSurfaceVariant" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="How to turn off accessibility:"
+                        android:textAppearance="?attr/textAppearanceTitleSmall"
+                        android:textColor="?attr/colorOnSurface" />
 
-            <!-- Saved captures -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="1. Tap \'Open Accessibility Settings\' above.\n2. Tap \'Downloaded apps\' (or \'Installed services\').\n3. Select \'Honeypot\'.\n4. Turn the switch to OFF."
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:lineSpacingExtra="4dp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="Tip: You can also tap the \'Scan message\' Quick Settings tile in your notification shade to quickly show or hide the floating scan button without disabling the service."
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="?attr/colorOnSurfaceVariant" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="28dp" />
+
+            <!-- Saved captures section -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="28dp"
                 android:text="Saved captures"
                 android:textAppearance="?attr/textAppearanceTitleMedium" />
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="Screenshots are stored in app-private storage and are not shared with any third party by default."
+                android:text="Screenshots and analysis results are stored securely in app-private storage and are not shared with any third party."
                 android:textAppearance="?attr/textAppearanceBodyMedium"
                 android:textColor="?attr/colorOnSurfaceVariant" />
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnManageCaptures"
-                style="@style/Widget.Material3.Button.OutlinedButton"
+                style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:text="Manage saved captures" />
+                android:text="Manage saved captures"
+                app:icon="@drawable/ic_history" />
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnClearCaptures"
                 style="@style/Widget.Material3.Button.OutlinedButton"

@@ -1,49 +1,49 @@
 package com.example.myapplication.manualcapture
 
 import android.content.Context
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.graphics.PixelFormat
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
 import android.view.ContextThemeWrapper
 import android.view.Gravity
+import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.TextView
+import android.widget.Toast
 import com.example.myapplication.R
-import com.google.android.material.button.MaterialButton
 
 /**
- * Controls the floating scan overlay window.
+ * Controls the floating scan bubble overlay window.
  *
- * The overlay is a small draggable shield button. Tapping it expands to a
- * compact card with:
- *  - "View response" → opens the latest ManualAnalysisActivity result.
- *  - "Capture & analyse" → launches CaptureConsentActivity.
- *
- * This controller does NOT hold a Service reference; it is passed callbacks.
- * Accessibility: all interactive elements have contentDescriptions; state changes
- * are announced via ViewCompat.setAccessibilityLiveRegion where applicable.
+ * Designed for instantaneous, zero-friction interaction:
+ * - Single tap on bubble: immediately triggers silent screen capture and in-place Lens overlay.
+ * - Drag: reposition bubble anywhere on screen (snaps cleanly to nearest edge on release).
+ * - Drag to bottom target: drop on the bottom dismiss pill to immediately remove the overlay from screen.
+ * - Long press: close/disable the overlay bubble.
  */
 class OverlayController(
     private val context: Context,
     private val prefs: ManualCapturePrefs,
     private val onCapture: () -> Unit,
-    private val onViewResult: () -> Unit,
     private val onClose: () -> Unit
 ) {
 
     private val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     private var overlayView: View? = null
-    private var isExpanded = false
+    private var dismissTargetView: View? = null
 
     private var initialX = 0
     private var initialY = 0
     private var initialTouchX = 0f
     private var initialTouchY = 0f
     private var isDragging = false
+    private var isOverDismissTarget = false
 
     fun show() {
         if (overlayView != null) return
@@ -54,6 +54,30 @@ class OverlayController(
 
         val themedContext = ContextThemeWrapper(context, R.style.Theme_MyApplication)
         val inflater = LayoutInflater.from(themedContext)
+
+        // 1. Add bottom dismiss target (hidden by default, non-touchable passthrough)
+        val paramsDismiss = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+            else
+                @Suppress("DEPRECATION")
+                WindowManager.LayoutParams.TYPE_PHONE,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+            PixelFormat.TRANSLUCENT
+        ).also {
+            it.gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+            it.y = 0
+        }
+        val dismissView = inflater.inflate(R.layout.overlay_dismiss_target, null)
+        dismissView.visibility = View.GONE
+        dismissTargetView = dismissView
+        windowManager.addView(dismissView, paramsDismiss)
+
+        // 2. Add floating scan squircle button
         val view = inflater.inflate(R.layout.overlay_scan, null)
         overlayView = view
 
@@ -75,19 +99,14 @@ class OverlayController(
 
         setupViews(view, params)
         windowManager.addView(view, params)
-        refreshBadge()
     }
 
     private fun setupViews(view: View, params: WindowManager.LayoutParams) {
         val shieldBtn = view.findViewById<View>(R.id.btnShield)
         val cardExpanded = view.findViewById<View>(R.id.cardExpanded)
-        val btnCapture = view.findViewById<MaterialButton>(R.id.btnCapture)
-        val btnViewResult = view.findViewById<MaterialButton>(R.id.btnViewResult)
-        val btnCloseOverlay = view.findViewById<View>(R.id.btnClose)
+        cardExpanded?.visibility = View.GONE
 
-        cardExpanded.visibility = View.GONE
-
-        // Drag support on shield button
+        // Drag & single-tap support on shield button
         shieldBtn.setOnTouchListener { v, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
@@ -96,30 +115,92 @@ class OverlayController(
                     initialTouchX = event.rawX
                     initialTouchY = event.rawY
                     isDragging = false
+                    isOverDismissTarget = false
                     true
                 }
                 MotionEvent.ACTION_MOVE -> {
                     val dx = event.rawX - initialTouchX
                     val dy = event.rawY - initialTouchY
-                    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) isDragging = true
+                    if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+                        isDragging = true
+                    }
                     if (isDragging) {
-                        params.x = initialX + dx.toInt()
-                        params.y = initialY + dy.toInt()
+                        val metrics = context.resources.displayMetrics
+                        val density = metrics.density
+                        val screenHeight = metrics.heightPixels
+                        val screenWidth = metrics.widthPixels
+
+                        // Reveal dismiss target at bottom if hidden
+                        dismissTargetView?.let { dtView ->
+                            if (dtView.visibility != View.VISIBLE) {
+                                dtView.visibility = View.VISIBLE
+                                dtView.alpha = 0f
+                                dtView.animate().alpha(1f).setDuration(150).start()
+                            }
+                        }
+
+                        // Move floating button
+                        params.x = (initialX + dx).toInt()
+                        params.y = (initialY + dy).toInt()
                         windowManager.updateViewLayout(view, params)
+
+                        // Check if dragged to dismiss zone (bottom ~140dp & within center ~280dp)
+                        val bottomThreshold = screenHeight - (140 * density)
+                        val xDistFromCenter = Math.abs(event.rawX - (screenWidth / 2f))
+                        val horizontalThreshold = 140 * density
+                        val currentlyOver = event.rawY > bottomThreshold && xDistFromCenter < horizontalThreshold
+
+                        val layoutDismiss = dismissTargetView?.findViewById<View>(R.id.layoutDismissCircle)
+                        val tvDismiss = dismissTargetView?.findViewById<TextView>(R.id.tvDismissText)
+
+                        if (currentlyOver && !isOverDismissTarget) {
+                            isOverDismissTarget = true
+                            v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                            layoutDismiss?.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#EF4444"))
+                            layoutDismiss?.animate()?.scaleX(1.15f)?.scaleY(1.15f)?.setDuration(120)?.start()
+                            tvDismiss?.text = "Release to remove"
+                            view.animate().scaleX(0.75f).scaleY(0.75f).alpha(0.6f).setDuration(120).start()
+                        } else if (!currentlyOver && isOverDismissTarget) {
+                            isOverDismissTarget = false
+                            layoutDismiss?.backgroundTintList = null
+                            layoutDismiss?.animate()?.scaleX(1.0f)?.scaleY(1.0f)?.setDuration(120)?.start()
+                            tvDismiss?.text = "Drag here to remove"
+                            view.animate().scaleX(1.0f).scaleY(1.0f).alpha(1.0f).setDuration(120).start()
+                        }
                     }
                     true
                 }
                 MotionEvent.ACTION_UP -> {
-                    if (!isDragging) {
-                        // Toggle expanded card
-                        isExpanded = !isExpanded
-                        cardExpanded.visibility = if (isExpanded) View.VISIBLE else View.GONE
-                        // Need focus to handle button clicks in card
-                        val flags = if (isExpanded)
-                            params.flags and WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE.inv()
-                        else
-                            params.flags or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                        params.flags = flags
+                    // Hide bottom dismiss target
+                    dismissTargetView?.let { dtView ->
+                        dtView.animate().alpha(0f).setDuration(150).withEndAction {
+                            dtView.visibility = View.GONE
+                            val layoutDismiss = dtView.findViewById<View>(R.id.layoutDismissCircle)
+                            layoutDismiss?.backgroundTintList = null
+                            layoutDismiss?.scaleX = 1.0f
+                            layoutDismiss?.scaleY = 1.0f
+                        }.start()
+                    }
+
+                    view.animate().scaleX(1.0f).scaleY(1.0f).alpha(1.0f).setDuration(100).start()
+
+                    if (isOverDismissTarget) {
+                        // User dropped the overlay on the dismiss target!
+                        v.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+                        Toast.makeText(context, "Scan overlay removed", Toast.LENGTH_SHORT).show()
+                        onClose()
+                    } else if (!isDragging) {
+                        // Single tap: trigger capture immediately!
+                        onCapture()
+                    } else {
+                        // Snaps cleanly to the nearest screen edge (left or right)
+                        val metrics = context.resources.displayMetrics
+                        val screenWidth = metrics.widthPixels
+                        val density = metrics.density
+                        val buttonWidth = 52 * density
+                        val currentCenterX = params.x + buttonWidth / 2f
+                        val targetX = if (currentCenterX < screenWidth / 2f) (16 * density).toInt() else (screenWidth - (68 * density)).toInt()
+                        params.x = targetX.coerceIn(0, (screenWidth - buttonWidth).toInt())
                         windowManager.updateViewLayout(view, params)
                     }
                     true
@@ -128,51 +209,20 @@ class OverlayController(
             }
         }
 
-        btnCapture.setOnClickListener {
-            collapse(view, params)
-            onCapture()
-        }
-
-        btnViewResult.setOnClickListener {
-            collapse(view, params)
-            onViewResult()
-        }
-
-        btnCloseOverlay.setOnClickListener {
+        shieldBtn.setOnLongClickListener {
+            Toast.makeText(context, "Scan overlay removed", Toast.LENGTH_SHORT).show()
             onClose()
+            true
         }
     }
 
-    private fun collapse(view: View, params: WindowManager.LayoutParams) {
-        isExpanded = false
-        view.findViewById<View>(R.id.cardExpanded).visibility = View.GONE
-        params.flags = params.flags or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-        windowManager.updateViewLayout(view, params)
-    }
-
-    /**
-     * Update the "View response" badge based on whether there is an unviewed result.
-     */
     fun refreshBadge() {
-        val view = overlayView ?: return
-        val btnViewResult = view.findViewById<MaterialButton>(R.id.btnViewResult)
-        val hasPending = prefs.unviewedCaptureId != null
-        val isAnalysing = prefs.isAnalysing
-        btnViewResult.text = when {
-            isAnalysing -> "Analysing…"
-            hasPending -> "View response ●"
-            else -> "View response"
-        }
-        btnViewResult.isEnabled = hasPending || (!isAnalysing)
-        btnViewResult.contentDescription = when {
-            isAnalysing -> "Analysis is in progress"
-            hasPending -> "New scan result available — View response"
-            else -> "View the latest scan response"
-        }
+        // Redundant with in-place analysis; kept for API compatibility
     }
 
     fun hideTemporarily() {
         overlayView?.visibility = View.GONE
+        dismissTargetView?.visibility = View.GONE
     }
 
     fun restoreVisibility() {
@@ -180,11 +230,15 @@ class OverlayController(
     }
 
     fun hide() {
+        dismissTargetView?.let {
+            try { windowManager.removeView(it) } catch (_: Exception) {}
+        }
+        dismissTargetView = null
+
         overlayView?.let {
             try { windowManager.removeView(it) } catch (_: Exception) {}
         }
         overlayView = null
-        isExpanded = false
     }
 
     companion object {

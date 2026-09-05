@@ -112,20 +112,6 @@
         android:paddingTop="8dp"
         android:clipToPadding="false">
 
-        <!-- L/R Orientation Toggle Floating Button -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/fabOrientation"
-            style="@style/Widget.Material3.Button.TonalButton"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:minWidth="48dp"
-            android:text="R"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            app:cornerRadius="24dp"
-            app:elevation="6dp"
-            android:contentDescription="Toggle sender message orientation (L / R)" />
-
         <Space
             android:layout_width="0dp"
             android:layout_height="1dp"

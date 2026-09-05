@@ -4,22 +4,8 @@
     android:viewportWidth="24"
     android:viewportHeight="24"
     android:tint="?attr/colorControlNormal">
-    <!--
-        Shield with a magnifying glass overlay — represents the "scan suspicious
-        message" Quick Settings tile. Kept as a simple Material-style vector.
-    -->
+    <!-- Modern Optical Scanner / Lens Viewfinder Icon -->
     <path
-        android:fillColor="@android:color/transparent"
-        android:pathData="M12,2L4,5.5V11c0,4.97,3.4,9.62,8,10.93C17.6,20.62,21,15.97,21,11V5.5L12,2Z"
-        android:strokeColor="#FF000000"
-        android:strokeWidth="1.5" />
-    <path
-        android:fillColor="#FF000000"
-        android:pathData="M12,2L4,5.5V11c0,4.97,3.4,9.62,8,10.93C17.6,20.62,21,15.97,21,11V5.5L12,2ZM12,4.18L19,7.14V11c0,3.93-2.65,7.65-7,8.94C7.65,18.65,5,14.93,5,11V7.14L12,4.18Z" />
-    <path
-        android:fillColor="#FF000000"
-        android:pathData="M14.5,9A2.5,2.5 0,0 0,12 6.5,2.5 2.5,0 0,0 9.5,9a2.5,2.5 0,0 0,2.5 2.5A2.5,2.5 0,0 0,14.5 9ZM11,9a1,1 0,0 1,1 -1,1 1,0 0,1 1,1A1,1 0,0 1,12 10,1 1,0 0,1 11,9Z" />
-    <path
-        android:fillColor="#FF000000"
-        android:pathData="M15.66,14.25L14.25,15.66L17.59,19L19,17.59L15.66,14.25Z" />
+        android:fillColor="@android:color/white"
+        android:pathData="M12,8c-2.21,0 -4,1.79 -4,4s1.79,4 4,4 4,-1.79 4,-4 -1.79,-4 -4,-4zM5,15H3v4c0,1.1 0.9,2 2,2h4v-2H5v-4zM5,5h4V3H5c-1.1,0 -2,0.9 -2,2v4h2V5zM19,3h-4v2h4v4h2V5c0,-1.1 -0.9,-2 -2,-2zM19,19h-4v2h4c1.1,0 2,-0.9 2,-2v-4h-2v4z" />
 </vector>

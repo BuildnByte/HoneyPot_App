@@ -21,22 +21,37 @@ import java.io.FileOutputStream
 import java.security.MessageDigest
 import java.util.UUID
 
+import android.app.NotificationManager
+import android.provider.Settings
+import android.widget.Toast
+import kotlinx.coroutines.delay
+
 /**
  * Accessibility service that provides Google Lens / Assistant-style silent screen capture.
  *
  * Uses Android 11+ [takeScreenshot] API to capture directly from the hardware buffer
  * without showing any "recording or casting" dialogs or status bar recording indicators.
+ * Also hosts the floating overlay bubble directly without requiring a foreground notification.
  */
 class HoneypotAccessibilityService : AccessibilityService() {
 
     private val job = SupervisorJob()
     private val scope = CoroutineScope(Dispatchers.IO + job)
 
+    private var overlayController: OverlayController? = null
+    private val inPlaceLensController by lazy { InPlaceLensController(this) }
+    private val prefs by lazy { ManualCapturePrefs(this) }
+    private var isCapturing = false
+
     override fun onServiceConnected() {
         super.onServiceConnected()
         instance = this
         isServiceRunning = true
         Log.i(TAG, "HoneypotAccessibilityService connected and active")
+
+        if (prefs.overlayEnabled && Settings.canDrawOverlays(this)) {
+            showOverlayInternal()
+        }
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -54,6 +69,7 @@ class HoneypotAccessibilityService : AccessibilityService() {
 
     override fun onDestroy() {
         isServiceRunning = false
+        hideOverlayInternal()
         if (instance === this) {
             instance = null
         }
@@ -61,13 +77,90 @@ class HoneypotAccessibilityService : AccessibilityService() {
         super.onDestroy()
     }
 
+    private fun showOverlayInternal() {
+        if (overlayController != null) return
+        if (!Settings.canDrawOverlays(this)) return
+
+        // Stop legacy ScanOverlayService and dismiss any lingering foreground notification
+        try {
+            stopService(Intent(this, ScanOverlayService::class.java))
+            val nm = getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+            nm?.cancel(9002)
+        } catch (_: Exception) {}
+
+        overlayController = OverlayController(
+            context = this,
+            prefs = prefs,
+            onCapture = {
+                performAccessibilityCapture()
+            },
+            onClose = {
+                prefs.overlayEnabled = false
+                hideOverlayInternal()
+                ScanQuickSettingsTileService.requestTileUpdate(this)
+            }
+        )
+        overlayController?.show()
+    }
+
+    private fun hideOverlayInternal() {
+        overlayController?.hide()
+        overlayController = null
+        inPlaceLensController.dismiss()
+    }
+
+    private fun performAccessibilityCapture() {
+        if (isCapturing) {
+            Log.w(TAG, "Capture already in progress, ignoring duplicate call")
+            return
+        }
+
+        val fgPackage = lastForegroundPackage ?: AppForegroundDetector.getForegroundPackage(this)
+        val appName = AppForegroundDetector.getAppName(this, fgPackage)
+
+        if (!AppForegroundDetector.isAppAllowed(prefs, fgPackage)) {
+            Toast.makeText(this, "Capture not allowed for $appName per settings", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        isCapturing = true
+        overlayController?.hideTemporarily()
+
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                // Short delay so overlay is excluded from the screenshot
+                delay(120L)
+                captureScreen(this@HoneypotAccessibilityService) { success, errorMsg, captureId, bitmap ->
+                    isCapturing = false
+                    if (success && captureId != null && bitmap != null) {
+                        inPlaceLensController.show(captureId, bitmap) {
+                            overlayController?.restoreVisibility()
+                        }
+                    } else {
+                        overlayController?.restoreVisibility()
+                        if (!success && errorMsg != null) {
+                            Toast.makeText(this@HoneypotAccessibilityService, errorMsg, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Accessibility capture error", e)
+                overlayController?.restoreVisibility()
+                isCapturing = false
+            }
+        }
+    }
+
     /**
      * Captures the current screen silently from the hardware buffer,
      * writes the image to evidence storage, persists a DB row, and launches [CaptureReviewActivity].
      */
-    fun captureScreen(context: Context, onComplete: (Boolean, String?) -> Unit) {
+    fun captureScreen(
+        context: Context,
+        onComplete: (success: Boolean, error: String?, captureId: String?, bitmap: Bitmap?) -> Unit
+    ) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-            onComplete(false, "Silent screenshot requires Android 11 or newer")
+            onComplete(false, "Silent screenshot requires Android 11 or newer", null, null)
             return
         }
 
@@ -84,7 +177,7 @@ class HoneypotAccessibilityService : AccessibilityService() {
                     
                     if (rawBitmap == null) {
                         hardwareBuffer.close()
-                        onComplete(false, "Failed to decode screenshot from hardware buffer")
+                        onComplete(false, "Failed to decode screenshot from hardware buffer", null, null)
                         return
                     }
 
@@ -129,17 +222,12 @@ class HoneypotAccessibilityService : AccessibilityService() {
                             db.knowledgeBaseDao().insertManualCapture(capture)
 
                             withContext(Dispatchers.Main) {
-                                val reviewIntent = Intent(context, CaptureReviewActivity::class.java).apply {
-                                    putExtra(CaptureReviewActivity.EXTRA_CAPTURE_ID, captureId)
-                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                }
-                                context.startActivity(reviewIntent)
-                                onComplete(true, null)
+                                onComplete(true, null, captureId, softwareBitmap)
                             }
                         } catch (e: Exception) {
                             Log.e(TAG, "Error saving capture from accessibility service", e)
                             withContext(Dispatchers.Main) {
-                                onComplete(false, e.message)
+                                onComplete(false, e.message, null, null)
                             }
                         }
                     }
@@ -154,7 +242,7 @@ class HoneypotAccessibilityService : AccessibilityService() {
                         ERROR_TAKE_SCREENSHOT_INVALID_DISPLAY -> "Invalid display"
                         else -> "Capture failed (code $errorCode)"
                     }
-                    onComplete(false, errorMsg)
+                    onComplete(false, errorMsg, null, null)
                 }
             }
         )
@@ -184,13 +272,47 @@ class HoneypotAccessibilityService : AccessibilityService() {
         var lastForegroundPackage: String? = null
             private set
 
-        fun captureCurrentScreen(context: Context, onComplete: (Boolean, String?) -> Unit) {
+        fun captureCurrentScreen(
+            context: Context,
+            onComplete: (success: Boolean, error: String?, captureId: String?, bitmap: Bitmap?) -> Unit
+        ) {
             val service = instance
             if (service == null) {
-                onComplete(false, "Accessibility Service is not enabled")
+                onComplete(false, "Accessibility Service is not enabled", null, null)
                 return
             }
             service.captureScreen(context, onComplete)
+        }
+
+        fun showOverlay(): Boolean {
+            val service = instance ?: return false
+            service.showOverlayInternal()
+            return true
+        }
+
+        fun hideOverlay() {
+            instance?.hideOverlayInternal()
+        }
+
+        /**
+         * Checks whether Honeypot is enabled in Android's secure accessibility settings.
+         */
+        fun isAccessibilityEnabledInSettings(context: Context): Boolean {
+            val enabledServices = Settings.Secure.getString(
+                context.contentResolver,
+                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+            ) ?: return false
+            val colonSplitter = android.text.TextUtils.SimpleStringSplitter(':')
+            colonSplitter.setString(enabledServices)
+            val myComponentName = android.content.ComponentName(context, HoneypotAccessibilityService::class.java).flattenToString()
+            while (colonSplitter.hasNext()) {
+                val componentName = colonSplitter.next()
+                if (componentName.equals(myComponentName, ignoreCase = true) ||
+                    componentName.contains(context.packageName, ignoreCase = true)) {
+                    return true
+                }
+            }
+            return false
         }
 
         /**

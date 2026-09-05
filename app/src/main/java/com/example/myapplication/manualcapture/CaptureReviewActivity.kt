@@ -44,7 +44,6 @@ class CaptureReviewActivity : AppCompatActivity() {
     private lateinit var btnClearBoxes: Button
     private lateinit var btnAutoSelectIncoming: Button
     private lateinit var btnSelectAll: Button
-    private lateinit var fabOrientation: MaterialButton
     private lateinit var fabViewText: ExtendedFloatingActionButton
     private lateinit var btnAnalyse: ExtendedFloatingActionButton
 
@@ -75,7 +74,6 @@ class CaptureReviewActivity : AppCompatActivity() {
         btnClearBoxes = findViewById(R.id.btnClearBoxes)
         btnAutoSelectIncoming = findViewById(R.id.btnAutoSelectIncoming)
         btnSelectAll = findViewById(R.id.btnSelectAll)
-        fabOrientation = findViewById(R.id.fabOrientation)
         fabViewText = findViewById(R.id.fabViewText)
         btnAnalyse = findViewById(R.id.btnAnalyse)
 
@@ -91,12 +89,6 @@ class CaptureReviewActivity : AppCompatActivity() {
         }
         btnSelectAll.setOnClickListener {
             overlayView.selectAll()
-        }
-
-        // Floating orientation toggle (L | R)
-        updateOrientationFab()
-        fabOrientation.setOnClickListener {
-            toggleOrientation()
         }
 
         // Floating view text button opens modal bottom sheet
@@ -116,39 +108,6 @@ class CaptureReviewActivity : AppCompatActivity() {
         loadCaptureAndRunOcr()
     }
 
-    private fun updateOrientationFab() {
-        val isLeft = prefs.senderLayout == ManualCapturePrefs.LAYOUT_LEFT_IS_MINE
-        fabOrientation.text = if (isLeft) "L" else "R"
-    }
-
-    private fun toggleOrientation() {
-        val isCurrentlyLeft = prefs.senderLayout == ManualCapturePrefs.LAYOUT_LEFT_IS_MINE
-        prefs.senderLayout = if (isCurrentlyLeft) {
-            ManualCapturePrefs.DEFAULT_LAYOUT
-        } else {
-            ManualCapturePrefs.LAYOUT_LEFT_IS_MINE
-        }
-        updateOrientationFab()
-
-        val width = capturedBitmap?.width?.toFloat() ?: 1f
-        val height = capturedBitmap?.height?.toFloat() ?: 1f
-        val classifier = MessageSideClassifier(prefs.senderLayout)
-
-        // Re-classify blocks with new layout orientation
-        ocrBlocks.forEach { block ->
-            val newSide = classifier.classifyBlock(block.bounds, width, height)
-            val newRole = classifier.inferRole(block.text, block.bounds, width, height)
-            val idx = ocrBlocks.indexOf(block)
-            if (idx >= 0) {
-                ocrBlocks[idx] = block.copy(
-                    side = newSide,
-                    role = newRole
-                )
-            }
-        }
-        overlayView.setBlocks(ocrBlocks, width)
-        refreshPreview()
-    }
 
     private fun loadCaptureAndRunOcr() {
         lifecycleScope.launch(Dispatchers.IO) {
@@ -167,7 +126,7 @@ class CaptureReviewActivity : AppCompatActivity() {
                 toolbar.subtitle = getString(R.string.ocr_running)
             }
 
-            val classifier = MessageSideClassifier(prefs.senderLayout)
+            val classifier = MessageSideClassifier(ManualCapturePrefs.DEFAULT_LAYOUT)
             val blocks = withContext(Dispatchers.Default) {
                 recognizer.recognise(bitmap, classifier)
             }
