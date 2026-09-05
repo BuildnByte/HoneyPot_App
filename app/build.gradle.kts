@@ -58,6 +58,10 @@ android {
     ksp {
         arg("room.generateKotlin", "true")
     }
+
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 dependencies {

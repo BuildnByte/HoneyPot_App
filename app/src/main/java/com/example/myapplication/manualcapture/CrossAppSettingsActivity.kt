@@ -144,13 +144,10 @@ class CrossAppSettingsActivity : AppCompatActivity() {
         btnToggleAccessibility.setOnClickListener {
             Toast.makeText(
                 this,
-                "Find 'Honeypot' under Installed Apps/Services and turn it ON.",
+                "Tap 'Downloaded apps' \u2794 'Honeypot' to enable",
                 Toast.LENGTH_LONG
             ).show()
-            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            startActivity(intent)
+            startActivity(HoneypotAccessibilityService.buildSettingsIntent(this))
         }
 
         updateOverlayStatus()
@@ -197,6 +194,16 @@ class CrossAppSettingsActivity : AppCompatActivity() {
                     Uri.parse("package:$packageName")
                 )
             )
+            return
+        }
+
+        if (!prefs.overlayEnabled && !HoneypotAccessibilityService.isServiceRunning) {
+            Toast.makeText(
+                this,
+                "Tap 'Downloaded apps' \u2794 'Honeypot' to enable",
+                Toast.LENGTH_LONG
+            ).show()
+            startActivity(HoneypotAccessibilityService.buildSettingsIntent(this))
             return
         }
 

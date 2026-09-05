@@ -40,6 +40,16 @@
         android:name="android.hardware.telephony"
         android:required="false"/>
 
+    <!-- Package queries for settings intents (Android 11+) -->
+    <queries>
+        <intent>
+            <action android:name="android.settings.ACCESSIBILITY_SETTINGS" />
+        </intent>
+        <intent>
+            <action android:name="android.settings.action.MANAGE_OVERLAY_PERMISSION" />
+        </intent>
+    </queries>
+
     <application
         android:name=".HoneypotApp"
         android:allowBackup="true"

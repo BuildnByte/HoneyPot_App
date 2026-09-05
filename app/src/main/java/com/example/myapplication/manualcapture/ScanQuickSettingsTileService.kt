@@ -1,12 +1,18 @@
 package com.example.myapplication.manualcapture
 
+import android.app.ActivityOptions
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import android.util.Log
+import android.widget.Toast
 
 /**
  * Quick Settings tile — "Scan message".
@@ -39,17 +45,21 @@ class ScanQuickSettingsTileService : TileService() {
             // Open overlay permission settings — user must grant before we enable
             val overlayIntent = Intent(
                 Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                android.net.Uri.parse("package:$packageName")
-            ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                startActivityAndCollapse(android.app.PendingIntent.getActivity(
-                    this, 0, overlayIntent,
-                    android.app.PendingIntent.FLAG_IMMUTABLE
-                ))
-            } else {
-                @Suppress("DEPRECATION")
-                startActivityAndCollapse(overlayIntent)
-            }
+                Uri.parse("package:$packageName")
+            )
+            launchSettings(overlayIntent)
+            return
+        }
+
+        // Check if Accessibility Service is enabled before enabling overlay
+        if (!HoneypotAccessibilityService.isServiceRunning) {
+            Toast.makeText(
+                this,
+                "Tap 'Downloaded apps' \u2794 'Honeypot' to enable",
+                Toast.LENGTH_LONG
+            ).show()
+            val accessIntent = HoneypotAccessibilityService.buildSettingsIntent(this)
+            launchSettings(accessIntent)
             return
         }
 
@@ -63,6 +73,11 @@ class ScanQuickSettingsTileService : TileService() {
         }
 
         updateTileState()
+
+        // Automatically collapse the notification / Quick Settings shade
+        Handler(Looper.getMainLooper()).postDelayed({
+            HoneypotAccessibilityService.dismissNotificationShade()
+        }, 100)
     }
 
     override fun onStopListening() {
@@ -94,6 +109,37 @@ class ScanQuickSettingsTileService : TileService() {
 
     private fun stopOverlayService() {
         stopService(Intent(this, ScanOverlayService::class.java))
+    }
+
+    private fun launchSettings(intent: Intent) {
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                val options = ActivityOptions.makeBasic().apply {
+                    setPendingIntentBackgroundActivityStartMode(
+                        ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
+                    )
+                }.toBundle()
+                val pendingIntent = PendingIntent.getActivity(
+                    this,
+                    0,
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+                    options
+                )
+                startActivityAndCollapse(pendingIntent)
+            } else {
+                @Suppress("DEPRECATION")
+                startActivityAndCollapse(intent)
+            }
+        } catch (e: Throwable) {
+            Log.e(TAG, "startActivityAndCollapse failed, falling back to direct startActivity", e)
+            try {
+                startActivity(intent)
+            } catch (e2: Throwable) {
+                Log.e(TAG, "Direct startActivity failed", e2)
+            }
+        }
     }
 
     companion object {

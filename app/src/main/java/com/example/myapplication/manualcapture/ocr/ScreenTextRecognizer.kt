@@ -48,40 +48,86 @@ class ScreenTextRecognizer {
         }
 
         val imageWidth = bitmap.width.toFloat()
+        val imageHeight = bitmap.height.toFloat()
         val blocks = mutableListOf<OcrTextBlock>()
 
         for (block in result.textBlocks) {
-            val blockBounds = block.boundingBox ?: continue
-            val blockText = block.text.trim()
-            if (blockText.isBlank()) continue
+            val lines = block.lines.filter { it.text.isNotBlank() && it.boundingBox != null }
+            if (lines.isEmpty()) continue
 
-            // Confidence: ML Kit provides it per element but not always per block.
-            // Collect element-level confidences where available.
-            val confidences = mutableListOf<Float>()
-            for (line in block.lines) {
-                for (element in line.elements) {
-                    val c = element.confidence
-                    if (c != null) confidences.add(c)
+            // Cluster lines by message side and vertical proximity
+            val clusters = mutableListOf<MutableList<Text.Line>>()
+            var currentCluster = mutableListOf<Text.Line>()
+            var currentSide: MessageSide? = null
+
+            for (line in lines) {
+                val lineBounds = line.boundingBox!!
+                val lineSide = classifier.classifyBlock(lineBounds, imageWidth, imageHeight)
+
+                if (currentCluster.isEmpty()) {
+                    currentCluster.add(line)
+                    currentSide = lineSide
+                } else {
+                    val prevBounds = currentCluster.last().boundingBox!!
+                    val verticalGap = lineBounds.top - prevBounds.bottom
+                    val lineH = Math.max(prevBounds.height(), 16)
+
+                    // If same side and lines are reasonably close vertically, group into one bubble
+                    if (lineSide == currentSide && verticalGap <= lineH * 2.2f) {
+                        currentCluster.add(line)
+                    } else {
+                        clusters.add(currentCluster)
+                        currentCluster = mutableListOf(line)
+                        currentSide = lineSide
+                    }
                 }
             }
-            val confidence: Float? = if (confidences.isNotEmpty()) {
-                confidences.average().toFloat()
-            } else null
+            if (currentCluster.isNotEmpty()) {
+                clusters.add(currentCluster)
+            }
 
-            val side = classifier.classifyBlock(blockBounds, imageWidth)
-            val role = classifier.inferRole(blockText, blockBounds, imageWidth)
+            for (cluster in clusters) {
+                var left = Int.MAX_VALUE
+                var top = Int.MAX_VALUE
+                var right = Int.MIN_VALUE
+                var bottom = Int.MIN_VALUE
+                val confidences = mutableListOf<Float>()
 
-            blocks.add(
-                OcrTextBlock(
-                    text = blockText,
-                    bounds = blockBounds,
-                    confidence = confidence,
-                    side = side,
-                    role = role,
-                    // Pre-select only blocks classified as INCOMING messages
-                    isSelected = side == MessageSide.INCOMING && role == BlockRole.MESSAGE
+                for (line in cluster) {
+                    val lb = line.boundingBox!!
+                    left = minOf(left, lb.left)
+                    top = minOf(top, lb.top)
+                    right = maxOf(right, lb.right)
+                    bottom = maxOf(bottom, lb.bottom)
+
+                    for (element in line.elements) {
+                        element.confidence?.let { confidences.add(it) }
+                    }
+                }
+
+                val clusterBounds = android.graphics.Rect(left, top, right, bottom)
+                val clusterText = cluster.joinToString("\n") { it.text.trim() }.trim()
+                if (clusterText.isBlank()) continue
+
+                val confidence: Float? = if (confidences.isNotEmpty()) {
+                    confidences.average().toFloat()
+                } else null
+
+                val side = classifier.classifyBlock(clusterBounds, imageWidth, imageHeight)
+                val role = classifier.inferRole(clusterText, clusterBounds, imageWidth, imageHeight)
+
+                blocks.add(
+                    OcrTextBlock(
+                        text = clusterText,
+                        bounds = clusterBounds,
+                        confidence = confidence,
+                        side = side,
+                        role = role,
+                        // Pre-select only blocks classified as INCOMING messages
+                        isSelected = side == MessageSide.INCOMING && role == BlockRole.MESSAGE
+                    )
                 )
-            )
+            }
         }
 
         // Sort top-to-bottom

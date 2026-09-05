@@ -192,5 +192,40 @@ class HoneypotAccessibilityService : AccessibilityService() {
             }
             service.captureScreen(context, onComplete)
         }
+
+        /**
+         * Programmatically dismisses the notification shade / Quick Settings panel.
+         */
+        fun dismissNotificationShade(): Boolean {
+            val service = instance ?: return false
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val success = service.performGlobalAction(GLOBAL_ACTION_DISMISS_NOTIFICATION_SHADE)
+                if (success) true else service.performGlobalAction(GLOBAL_ACTION_BACK)
+            } else {
+                service.performGlobalAction(GLOBAL_ACTION_BACK)
+            }
+        }
+
+        /**
+         * Builds an intent that opens Accessibility settings, passing extras
+         * to highlight or deep-link to Honeypot's specific service where supported.
+         */
+        fun buildSettingsIntent(context: Context): Intent {
+            val cn = android.content.ComponentName(context, HoneypotAccessibilityService::class.java)
+            val cnString = cn.flattenToString()
+
+            return Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                putExtra(":settings:fragment_args_key", cnString)
+                val bundle = android.os.Bundle().apply {
+                    putString(":settings:fragment_args_key", cnString)
+                    putString("extra_fragment_arg_key", cnString)
+                }
+                putExtra(":settings:show_fragment_args", bundle)
+                putExtra("extra_fragment_arg_key", cnString)
+                putExtra(Intent.EXTRA_COMPONENT_NAME, cnString)
+                putExtra("android.intent.extra.COMPONENT_NAME", cnString)
+            }
+        }
     }
 }

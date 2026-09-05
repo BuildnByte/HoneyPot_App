@@ -108,9 +108,8 @@ class ScanOverlayService : LifecycleService() {
                 } else if (isCaptureReady) {
                     performCapture()
                 } else {
-                    val detectedPkg = AppForegroundDetector.getForegroundPackage(this)
-                    val appName = AppForegroundDetector.getAppName(this, detectedPkg)
-                    startActivity(CaptureConsentActivity.buildIntent(this, appName))
+                    Toast.makeText(this, "Tap 'Downloaded apps' \u2794 'Honeypot' to enable", Toast.LENGTH_LONG).show()
+                    startActivity(HoneypotAccessibilityService.buildSettingsIntent(this))
                 }
             },
             onViewResult = {
