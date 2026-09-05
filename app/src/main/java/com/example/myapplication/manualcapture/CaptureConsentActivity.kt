@@ -105,6 +105,18 @@ class CaptureConsentActivity : AppCompatActivity() {
             }
         }
 
+        findViewById<Button>(R.id.btnEnableAccessibility).setOnClickListener {
+            Toast.makeText(
+                this,
+                "Under Installed Apps / Services, find Honeypot and turn it ON.",
+                Toast.LENGTH_LONG
+            ).show()
+            val intent = Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            startActivity(intent)
+        }
+
         findViewById<Button>(R.id.btnProceed).setOnClickListener {
             val isAll = radioAllApps.isChecked
             val mode = if (isAll) ManualCapturePrefs.MODE_ALL_APPS else ManualCapturePrefs.MODE_SELECTED_APPS
@@ -133,6 +145,21 @@ class CaptureConsentActivity : AppCompatActivity() {
         }
 
         findViewById<Button>(R.id.btnCancel).setOnClickListener {
+            finish()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // If the user just came back from Accessibility Settings with Honeypot enabled,
+        // capture the screen silently right away and close this consent screen!
+        if (HoneypotAccessibilityService.isServiceRunning) {
+            Toast.makeText(this, "Honeypot Accessibility active — capturing silently…", Toast.LENGTH_SHORT).show()
+            HoneypotAccessibilityService.captureCurrentScreen(this) { success, errorMsg ->
+                if (!success && errorMsg != null) {
+                    Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show()
+                }
+            }
             finish()
         }
     }

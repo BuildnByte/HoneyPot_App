@@ -60,6 +60,44 @@
                 android:textColor="?attr/colorPrimary"
                 android:layout_marginBottom="24dp" />
 
+            <!-- Recommended: Silent Google Lens Capture Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardAccessibilityPrompt"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1.5dp"
+                app:strokeColor="?attr/colorPrimary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="✨ Google Lens-Style Silent Capture"
+                        android:textAppearance="?attr/textAppearanceTitleSmall"
+                        android:textColor="?attr/colorPrimary"
+                        android:layout_marginBottom="6dp" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Bypass 'recording or casting' popups completely. Enable Honeypot in Accessibility settings once to capture screens silently with zero prompts."
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:layout_marginBottom="12dp" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnEnableAccessibility"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Enable in Accessibility Settings" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- App Selection Card -->
             <com.google.android.material.card.MaterialCardView
                 app:cardCornerRadius="16dp"

@@ -103,7 +103,9 @@ class ScanOverlayService : LifecycleService() {
             context = this,
             prefs = prefs,
             onCapture = {
-                if (isCaptureReady) {
+                if (HoneypotAccessibilityService.isServiceRunning) {
+                    performAccessibilityCapture()
+                } else if (isCaptureReady) {
                     performCapture()
                 } else {
                     val detectedPkg = AppForegroundDetector.getForegroundPackage(this)
@@ -122,6 +124,43 @@ class ScanOverlayService : LifecycleService() {
             }
         )
         overlayController?.show()
+    }
+
+    private fun performAccessibilityCapture() {
+        if (isCapturing) {
+            Log.w(TAG, "Capture already in progress, ignoring duplicate call")
+            return
+        }
+
+        val fgPackage = HoneypotAccessibilityService.lastForegroundPackage
+            ?: AppForegroundDetector.getForegroundPackage(this)
+        val appName = AppForegroundDetector.getAppName(this, fgPackage)
+
+        if (!AppForegroundDetector.isAppAllowed(prefs, fgPackage)) {
+            Toast.makeText(this, "Capture not allowed for $appName per settings", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        isCapturing = true
+        overlayController?.hideTemporarily()
+
+        scope.launch {
+            try {
+                // Short delay so overlay is excluded from the screenshot
+                delay(120L)
+                HoneypotAccessibilityService.captureCurrentScreen(this@ScanOverlayService) { success, errorMsg ->
+                    overlayController?.restoreVisibility()
+                    isCapturing = false
+                    if (!success && errorMsg != null) {
+                        Toast.makeText(this@ScanOverlayService, errorMsg, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Accessibility capture error", e)
+                overlayController?.restoreVisibility()
+                isCapturing = false
+            }
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

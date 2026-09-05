@@ -104,6 +104,30 @@
                 android:layout_marginTop="12dp"
                 android:text="Enable overlay" />
 
+            <!-- Silent Capture (Accessibility) -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                android:text="Silent capture (Google Lens style)"
+                android:textAppearance="?attr/textAppearanceTitleMedium" />
+            <TextView
+                android:id="@+id/tvAccessibilityStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Accessibility service is disabled"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnToggleAccessibility"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Enable in Accessibility Settings"
+                app:icon="@drawable/ic_scan" />
+
             <!-- Message layout preference -->
             <TextView
                 android:layout_width="match_parent"

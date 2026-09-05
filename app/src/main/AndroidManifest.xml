@@ -146,6 +146,19 @@
                 android:value="Floating scan button overlay for scam analysis" />
         </service>
 
+        <!-- Silent Google Lens-style accessibility screenshot service -->
+        <service
+            android:name=".manualcapture.HoneypotAccessibilityService"
+            android:exported="false"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
         <!-- One-shot screen-capture service — uses MediaProjection foreground type -->
         <service
             android:name=".manualcapture.OneShotCaptureService"

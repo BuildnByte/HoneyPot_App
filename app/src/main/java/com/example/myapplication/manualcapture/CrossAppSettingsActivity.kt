@@ -34,6 +34,8 @@ class CrossAppSettingsActivity : AppCompatActivity() {
     private val prefs by lazy { ManualCapturePrefs(this) }
     private lateinit var tvOverlayStatus: TextView
     private lateinit var btnToggleOverlay: MaterialButton
+    private lateinit var tvAccessibilityStatus: TextView
+    private lateinit var btnToggleAccessibility: MaterialButton
     private lateinit var layoutGroup: RadioGroup
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -136,12 +138,43 @@ class CrossAppSettingsActivity : AppCompatActivity() {
         val btnClear = findViewById<MaterialButton>(R.id.btnClearCaptures)
         btnClear.setOnClickListener { confirmClearAll() }
 
+        // Accessibility status & settings
+        tvAccessibilityStatus = findViewById(R.id.tvAccessibilityStatus)
+        btnToggleAccessibility = findViewById(R.id.btnToggleAccessibility)
+        btnToggleAccessibility.setOnClickListener {
+            Toast.makeText(
+                this,
+                "Find 'Honeypot' under Installed Apps/Services and turn it ON.",
+                Toast.LENGTH_LONG
+            ).show()
+            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            startActivity(intent)
+        }
+
         updateOverlayStatus()
+        updateAccessibilityStatus()
     }
 
     override fun onResume() {
         super.onResume()
         updateOverlayStatus()
+        updateAccessibilityStatus()
+    }
+
+    private fun updateAccessibilityStatus() {
+        val active = HoneypotAccessibilityService.isServiceRunning
+        tvAccessibilityStatus.text = if (active) {
+            "Active — silent Google Lens capture enabled (zero popups)"
+        } else {
+            "Disabled — turn on to avoid 'recording or casting' popups"
+        }
+        btnToggleAccessibility.text = if (active) {
+            "Accessibility Settings (Active)"
+        } else {
+            "Enable in Accessibility Settings"
+        }
     }
 
     private fun updateOverlayStatus() {
