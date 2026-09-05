@@ -90,12 +90,36 @@ class ScamLlmClassifier(private val context: Context) {
     suspend fun classify(
         context: ReasoningContext
     ): ScamResult = withContext(Dispatchers.Default) {
-        val currentLlm = llmInference ?: throw IllegalStateException("LlmInference not initialized.")
+        var currentLlm = llmInference
+        if (currentLlm == null) {
+            Log.w("ScamLlmClassifier", "llmInference is null in classify(), attempting initialization...")
+            runCatching { initialize() }
+            currentLlm = llmInference
+        }
+
+        if (currentLlm == null) {
+            Log.e("ScamLlmClassifier", "llmInference could not be initialized. Returning safe fallback result.")
+            return@withContext ScamResult(
+                isScam = false,
+                scamType = "unknown",
+                confidence = 0f,
+                reasoning = "AI classification model is not initialized."
+            )
+        }
 
         val prompt = buildStructuredPrompt(context)
-        val rawResponse = currentLlm.generateResponse(prompt)
-        
-        parseResponse(rawResponse)
+        try {
+            val rawResponse = currentLlm.generateResponse(prompt)
+            parseResponse(rawResponse)
+        } catch (e: Exception) {
+            Log.e("ScamLlmClassifier", "Error during generateResponse: ${e.message}", e)
+            ScamResult(
+                isScam = false,
+                scamType = "unknown",
+                confidence = 0f,
+                reasoning = "Inference generation failed: ${e.message}"
+            )
+        }
     }
 
     private fun buildStructuredPrompt(context: ReasoningContext): String {
@@ -128,9 +152,9 @@ Weigh external fact-check results and prior evidence matches more heavily than p
 Extract any mentioned Names, Roles (e.g. Manager), Companies, or Account Numbers into the extractedEntities list.
 
 Your output must be ONLY the JSON object, with no other text.
-Do not include "JSON SCHEMA:" or markdown fences.
-Required JSON format:
-{"isScam": true, "scamType": "phishing", "confidence": 0.9, "reasoning": "Detailed explanation here.", "extractedEntities": [{"type": "NAME", "value": "John"}, {"type": "ROLE", "value": "Manager"}], "evidenceFlags": []}
+Do not include markdown fences or placeholders.
+Required JSON format example:
+{"isScam": true, "scamType": "phishing", "confidence": 0.9, "reasoning": "Explanation here.", "extractedEntities": [{"type": "NAME", "value": "John"}], "evidenceFlags": [{"indicator": "wa.me", "verdict": "MALICIOUS", "confidenceLevel": "HIGH"}]}
 """
     }
 
@@ -144,24 +168,47 @@ Required JSON format:
         tryStrategy2(raw)?.let { return it }
 
         // Strategy 3: regex field extraction — last resort, always produces a result
-        return extractFieldsWithRegex(raw)
+        return runCatching {
+            extractFieldsWithRegex(raw)
+        }.getOrElse { e ->
+            Log.e("ScamLlmClassifier", "Regex extraction also failed: ${e.message}", e)
+            ScamResult(
+                isScam = false,
+                scamType = "unknown",
+                confidence = 0f,
+                reasoning = raw.take(300).ifBlank { "Analysis could not be parsed." }
+            )
+        }
+    }
+
+    private fun cleanRawResponse(raw: String): String {
+        var cleaned = raw.trim()
+        if (cleaned.startsWith("```")) {
+            cleaned = cleaned.substringAfter("\n")
+        }
+        if (cleaned.endsWith("```")) {
+            cleaned = cleaned.substringBeforeLast("```")
+        }
+        return cleaned.replace("```json", "").replace("```", "").trim()
     }
 
     /** Strategy 1: basic fence stripping + JSON-block extraction. */
     private fun tryStrategy1(raw: String): ScamResult? = runCatching {
-        var cleaned = raw.trim()
-            .removePrefix("```json").removePrefix("```").removeSuffix("```").trim()
-        val jsonStr = Regex("""\{.*\}""", RegexOption.DOT_MATCHES_ALL).find(cleaned)?.value
-            ?: return null
+        val cleaned = cleanRawResponse(raw)
+        val firstBrace = cleaned.indexOf('{')
+        val lastBrace = cleaned.lastIndexOf('}')
+        if (firstBrace == -1 || lastBrace <= firstBrace) return null
+        val jsonStr = cleaned.substring(firstBrace, lastBrace + 1)
         json.decodeFromString<ScamResult>(jsonStr)
     }.getOrNull()
 
     /** Strategy 2: aggressive sanitization to repair common Gemma defects. */
     private fun tryStrategy2(raw: String): ScamResult? = runCatching {
-        var cleaned = raw.trim()
-            .removePrefix("```json").removePrefix("```").removeSuffix("```").trim()
-        val jsonStr = Regex("""\{.*\}""", RegexOption.DOT_MATCHES_ALL).find(cleaned)?.value
-            ?: return null
+        val cleaned = cleanRawResponse(raw)
+        val firstBrace = cleaned.indexOf('{')
+        val lastBrace = cleaned.lastIndexOf('}')
+        if (firstBrace == -1 || lastBrace <= firstBrace) return null
+        val jsonStr = cleaned.substring(firstBrace, lastBrace + 1)
         val sanitized = sanitizeJson(jsonStr)
         Log.d("ScamLlmClassifier", "Strategy-2 sanitized JSON >>> $sanitized <<<")
         json.decodeFromString<ScamResult>(sanitized)
@@ -173,37 +220,38 @@ Required JSON format:
      *  - Consecutive string tokens without a separating comma  ("a" "b" → "a", "b")
      *  - Missing comma between two JSON values ( } { , ] [ , }: {...} )
      *  - Trailing commas before ] or }
+     *  - Ambiguous booleans (true/false)
      *  - Truncated / unterminated strings at end of input
      */
     private fun sanitizeJson(input: String): String {
         var s = input
 
         // 1. Replace literal newlines / tabs inside string values with a space
-        //    We do this globally – it's safe because JSON strings must escape them anyway.
         s = s.replace("\r\n", " ").replace("\r", " ").replace("\n", " ").replace("\t", " ")
 
-        // 2. Collapse multiple consecutive spaces inside the JSON (keeps it readable)
+        // 2. Collapse multiple consecutive spaces inside the JSON
         s = s.replace(Regex("  +"), " ")
 
-        // 3. Fix missing comma between two adjacent quoted strings: "foo" "bar" → "foo", "bar"
+        // 3. Fix unquoted boolean alternatives e.g. true/false or false/true
+        s = s.replace(Regex("""\btrue\s*/\s*false\b""", RegexOption.IGNORE_CASE), "false")
+        s = s.replace(Regex("""\bfalse\s*/\s*true\b""", RegexOption.IGNORE_CASE), "false")
+        s = s.replace("…", "...")
+
+        // 4. Fix missing comma between two adjacent quoted strings: "foo" "bar" → "foo", "bar"
         s = s.replace(Regex("""(")\s+(\")"""), "$1, $2")
 
-        // 4. Fix missing comma between a value/closing bracket and the next key/value:
-        //    e.g.  0.9 "reasoning"  →  0.9, "reasoning"
-        //          true "scamType"  →  true, "scamType"
-        //          ] "evidenceFlags" → ], "evidenceFlags"
-        //          } "key" → }, "key"   (shouldn't normally occur but Gemma does it)
+        // 5. Fix missing comma between a value/closing bracket and the next key/value:
         s = s.replace(Regex("""([}\]"0-9])\s+(\")""")) { m ->
             "${m.groupValues[1]}, ${m.groupValues[2]}"
         }
 
-        // 5. Remove trailing commas before ] or }
+        // 6. Remove trailing commas before ] or }
         s = s.replace(Regex(",\\s*([}\\]])"), "$1")
 
-        // 6. If the string ends abruptly in the middle of a string value, close it
+        // 7. If the string ends abruptly in the middle of a string value, close it
         if (s.count { it == '"' } % 2 != 0) s += "\""
 
-        // 7. Close any unclosed arrays or objects (truncated output)
+        // 8. Close any unclosed arrays or objects (truncated output)
         val opens = s.count { it == '{' } - s.count { it == '}' }
         val openArr = s.count { it == '[' } - s.count { it == ']' }
         repeat(openArr.coerceAtLeast(0)) { s += "]" }

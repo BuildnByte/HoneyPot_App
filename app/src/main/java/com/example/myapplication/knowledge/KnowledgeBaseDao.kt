@@ -9,6 +9,8 @@ import com.example.myapplication.model.AiAnalysisLog
 import com.example.myapplication.model.ScamEvidence
 import com.example.myapplication.model.SimulatedMessage
 import com.example.myapplication.model.SimulationSession
+import com.example.myapplication.manualcapture.model.ManualCapture
+import com.example.myapplication.manualcapture.model.ManualCaptureAnalysis
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -182,6 +184,52 @@ interface KnowledgeBaseDao {
         LIMIT 1
     """)
     suspend fun getFirstScamLogForSession(sessionId: String): AiAnalysisLog?
+
+    // ── Manual Capture ─────────────────────────────────────────────────────────
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertManualCapture(capture: ManualCapture)
+
+    @Update
+    suspend fun updateManualCapture(capture: ManualCapture)
+
+    @Query("SELECT * FROM manual_captures WHERE id = :id LIMIT 1")
+    suspend fun getManualCapture(id: String): ManualCapture?
+
+    @Query("SELECT * FROM manual_captures ORDER BY capturedAt DESC")
+    suspend fun getAllManualCaptures(): List<ManualCapture>
+
+    @Query("SELECT * FROM manual_captures WHERE status NOT IN ('DISCARDED','FAILED') ORDER BY capturedAt DESC")
+    suspend fun getActiveManualCaptures(): List<ManualCapture>
+
+    @Query("UPDATE manual_captures SET status = :status WHERE id = :id")
+    suspend fun updateManualCaptureStatus(id: String, status: String)
+
+    @Query("UPDATE manual_captures SET status = :status, errorMessage = :error WHERE id = :id")
+    suspend fun updateManualCaptureStatusWithError(id: String, status: String, error: String)
+
+    @Query("UPDATE manual_captures SET selectedText = :text, senderLayout = :layout, status = 'REVIEWED' WHERE id = :id")
+    suspend fun updateManualCaptureReview(id: String, text: String, layout: String)
+
+    @Query("UPDATE manual_captures SET analysisSessionId = :sessionId WHERE id = :id")
+    suspend fun updateManualCaptureSessionId(id: String, sessionId: String)
+
+    @Query("UPDATE manual_captures SET viewedAt = :viewedAt WHERE id = :id")
+    suspend fun markManualCaptureViewed(id: String, viewedAt: Long)
+
+    @Query("DELETE FROM manual_captures WHERE id = :id")
+    suspend fun deleteManualCapture(id: String)
+
+    // ── Manual Capture Analysis ─────────────────────────────────────────────────
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertManualCaptureAnalysis(analysis: ManualCaptureAnalysis)
+
+    @Query("SELECT * FROM manual_capture_analyses WHERE captureId = :captureId LIMIT 1")
+    suspend fun getManualCaptureAnalysis(captureId: String): ManualCaptureAnalysis?
+
+    @Query("DELETE FROM manual_capture_analyses WHERE captureId = :captureId")
+    suspend fun deleteManualCaptureAnalysis(captureId: String)
 }
 
 data class EvidenceSessionSummary(

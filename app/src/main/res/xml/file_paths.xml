@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
     <cache-path name="reports" path="reports/" />
+    <!-- App-private evidence screenshots for manual capture feature -->
+    <files-path name="evidence_captures" path="evidence_captures/" />
 </paths>

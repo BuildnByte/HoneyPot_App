@@ -74,7 +74,8 @@ class AnalysisBottomSheet : BottomSheetDialogFragment() {
                 evidenceGroup.visibility = View.VISIBLE
                 flags.forEach { flag ->
                     val chip = Chip(context)
-                    chip.text = "${flag.indicator}: ${flag.verdict}"
+                    val label = if (flag.indicator.isNotBlank()) flag.indicator else flag.type.ifBlank { "Evidence" }
+                    chip.text = "$label: ${flag.verdict}"
                     
                     val colorRes = when (flag.confidenceLevel.uppercase()) {
                         "HIGH" -> android.R.color.holo_red_light

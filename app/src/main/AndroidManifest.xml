@@ -25,6 +25,16 @@
     <!-- Notification (Android 13+) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
+    <!-- Manual Capture: overlay window for scan button -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"
+        tools:ignore="ForegroundServicePermission"/>
+    <!-- Manual Capture: required foreground-service type for MediaProjection on API 29+ -->
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION"
+        tools:ignore="ForegroundServicePermission"/>
+
     <!-- Required when declaring SMS/Call permissions -->
     <uses-feature
         android:name="android.hardware.telephony"
@@ -107,6 +117,66 @@
             android:exported="false"
             android:label="Flagged Conversation"
             android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.MyApplication" />
+
+        <!-- ── Manual Capture Feature ───────────────────────────────────────── -->
+
+        <!-- Quick Settings tile — lets user toggle the scan overlay -->
+        <service
+            android:name=".manualcapture.ScanQuickSettingsTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_scan"
+            android:label="Scan message"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.service.quicksettings.TOGGLEABLE_TILE"
+                android:value="true" />
+        </service>
+
+        <!-- Floating overlay service — draws the scan button over other apps and captures screenshots -->
+        <service
+            android:name=".manualcapture.ScanOverlayService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse|mediaProjection">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Floating scan button overlay for scam analysis" />
+        </service>
+
+        <!-- One-shot screen-capture service — uses MediaProjection foreground type -->
+        <service
+            android:name=".manualcapture.OneShotCaptureService"
+            android:exported="false"
+            android:foregroundServiceType="mediaProjection" />
+
+        <!-- In-app MediaProjection consent explainer -->
+        <activity
+            android:name=".manualcapture.CaptureConsentActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MyApplication" />
+
+        <!-- OCR review + text selection UI -->
+        <activity
+            android:name=".manualcapture.CaptureReviewActivity"
+            android:exported="false"
+            android:label="Review captured message"
+            android:theme="@style/Theme.MyApplication" />
+
+        <!-- Analysis result view -->
+        <activity
+            android:name=".manualcapture.ManualAnalysisActivity"
+            android:exported="false"
+            android:label="Scan Result"
+            android:theme="@style/Theme.MyApplication" />
+
+        <!-- Cross-app scanning settings screen -->
+        <activity
+            android:name=".manualcapture.CrossAppSettingsActivity"
+            android:exported="false"
+            android:label="Cross-app scanning"
             android:theme="@style/Theme.MyApplication" />
 
         <!-- FileProvider for sharing PDF reports -->

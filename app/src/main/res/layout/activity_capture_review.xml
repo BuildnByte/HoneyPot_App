@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@android:id/content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="?attr/colorSurface">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="?attr/actionBarSize"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        app:title="Review captured message"
+        app:navigationIcon="?attr/homeAsUpIndicator"
+        app:subtitle="Tap blocks to change classification" />
+
+    <!-- Screenshot overlay view (fills available space) -->
+    <com.example.myapplication.manualcapture.BlockOverlayView
+        android:id="@+id/blockOverlayView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#000000"
+        android:contentDescription="Screenshot preview with text block overlays. Tap a block to change its classification." />
+
+    <!-- Bottom controls panel -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="300dp">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- OCR status hint -->
+            <TextView
+                android:id="@+id/tvOcrStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Running OCR…"
+                android:textAppearance="?attr/textAppearanceLabelMedium"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Source-app chips -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Source app:"
+                android:textAppearance="?attr/textAppearanceLabelSmall"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/sourceChipGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="8dp"
+                app:singleSelection="true"
+                app:selectionRequired="true">
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipWhatsApp"
+                    style="@style/Widget.Material3.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="WhatsApp"
+                    android:checked="true" />
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipTelegram"
+                    style="@style/Widget.Material3.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Telegram" />
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipInstagram"
+                    style="@style/Widget.Material3.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Instagram" />
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipOther"
+                    style="@style/Widget.Material3.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Other (unverified)" />
+            </com.google.android.material.chip.ChipGroup>
+
+            <!-- Layout preference -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="My messages appear on:"
+                android:textAppearance="?attr/textAppearanceLabelSmall"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+            <RadioGroup
+                android:id="@+id/layoutRadioGroup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
+                <RadioButton
+                    android:id="@+id/radioRightIsMine"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Right"
+                    android:checked="true" />
+                <RadioButton
+                    android:id="@+id/radioLeftIsMine"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Left"
+                    android:layout_marginStart="16dp" />
+            </RadioGroup>
+
+            <!-- Selected text preview (editable) -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Selected incoming text (editable):"
+                android:textAppearance="?attr/textAppearanceLabelSmall"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+            <EditText
+                android:id="@+id/editSelectedText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="80dp"
+                android:gravity="top"
+                android:inputType="textMultiLine"
+                android:hint="No incoming text selected yet"
+                android:background="@android:color/transparent"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Action buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="2">
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnDiscard"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="4dp"
+                    android:text="Discard"
+                    android:contentDescription="Discard this capture and delete screenshot" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAnalyse"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:text="Analyse selected text"
+                    android:enabled="false"
+                    android:contentDescription="Analyse the selected incoming text for scam indicators" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</LinearLayout>

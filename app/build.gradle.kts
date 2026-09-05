@@ -90,6 +90,10 @@ dependencies {
     // Lifecycle
     implementation("androidx.lifecycle:lifecycle-service:2.8.4")
 
+    // ML Kit bundled Latin text recognizer — on-device OCR for manual capture feature.
+    // Bundled (not play-services) so scanning works immediately without a model download.
+    implementation("com.google.mlkit:text-recognition:16.0.1")
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

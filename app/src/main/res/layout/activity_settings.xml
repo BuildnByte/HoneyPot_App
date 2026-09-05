@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="?attr/actionBarSize"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            app:title="Settings"
+            app:subtitle="Preferences and developer tools" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="20dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="28dp">
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="Appearance" android:textAppearance="?attr/textAppearanceTitleMedium" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="4dp" android:text="Choose how Honeypot should look on this device."
+                android:textAppearance="?attr/textAppearanceBodyMedium" android:textColor="?attr/colorOnSurfaceVariant" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/systemThemeButton"
+                style="@style/Widget.Material3.Button.TonalButton" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="16dp" android:text="Use device theme" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/lightThemeButton"
+                style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="Light theme" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/darkThemeButton"
+                style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="Dark theme" />
+
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="32dp" android:text="Developer tools" android:textAppearance="?attr/textAppearanceTitleMedium" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="4dp" android:text="Tools for testing SMS delivery, processing, and Safe Browsing."
+                android:textAppearance="?attr/textAppearanceBodyMedium" android:textColor="?attr/colorOnSurfaceVariant" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/openDeveloperToolsButton"
+                style="@style/Widget.Material3.Button.TonalButton" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="16dp" android:text="Open developer tools" android:drawableStart="@android:drawable/ic_menu_manage" />
+
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="32dp" android:text="Cross-app scanning" android:textAppearance="?attr/textAppearanceTitleMedium" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="4dp" android:text="Manually analyse suspicious messages from WhatsApp, Telegram, and Instagram."
+                android:textAppearance="?attr/textAppearanceBodyMedium" android:textColor="?attr/colorOnSurfaceVariant" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/openCrossAppScanningButton"
+                style="@style/Widget.Material3.Button.TonalButton" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="12dp" android:text="Cross-app scanning settings" android:drawableStart="@drawable/ic_scan" />
+
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="32dp" android:text="About" android:textAppearance="?attr/textAppearanceTitleMedium" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="8dp" android:text="Honeypot\nSMS threat detection and analysis lab"
+                android:textAppearance="?attr/textAppearanceBodyMedium" android:textColor="?attr/colorOnSurfaceVariant" />
+        </LinearLayout>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

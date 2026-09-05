@@ -14,9 +14,11 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         com.example.myapplication.model.AiAnalysisLog::class,
         com.example.myapplication.model.ScamEvidence::class,
         com.example.myapplication.model.SimulationSession::class,
-        IndicatorEntry::class
+        IndicatorEntry::class,
+        com.example.myapplication.manualcapture.model.ManualCapture::class,
+        com.example.myapplication.manualcapture.model.ManualCaptureAnalysis::class
     ],
-    version = 12,
+    version = 13,
     exportSchema = false
 )
 abstract class KnowledgeBaseDatabase : RoomDatabase() {
@@ -27,24 +29,39 @@ abstract class KnowledgeBaseDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: KnowledgeBaseDatabase? = null
 
-        /** Adds the suggestedReply and scamType columns introduced in version 7. */
-        private val MIGRATION_6_7 = object : Migration(6, 7) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL(
-                    "ALTER TABLE ai_analysis_logs ADD COLUMN suggestedReply TEXT NOT NULL DEFAULT ''"
-                )
-                db.execSQL(
-                    "ALTER TABLE ai_analysis_logs ADD COLUMN scamType TEXT NOT NULL DEFAULT 'unknown'"
-                )
+        private fun addColumnIfNotExists(
+            db: SupportSQLiteDatabase,
+            table: String,
+            column: String,
+            columnDef: String
+        ) {
+            val cursor = db.query("PRAGMA table_info($table)")
+            var exists = false
+            val nameIndex = cursor.getColumnIndex("name")
+            while (cursor.moveToNext()) {
+                if (nameIndex != -1 && cursor.getString(nameIndex).equals(column, ignoreCase = true)) {
+                    exists = true
+                    break
+                }
+            }
+            cursor.close()
+            if (!exists) {
+                db.execSQL("ALTER TABLE $table ADD COLUMN $column $columnDef")
             }
         }
 
-        /** Adds the scamType column for devices that already ran the v7 migration. */
+        /** Adds the suggestedReply and scamType columns introduced in version 7. */
+        private val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                addColumnIfNotExists(db, "ai_analysis_logs", "suggestedReply", "TEXT NOT NULL DEFAULT ''")
+                addColumnIfNotExists(db, "ai_analysis_logs", "scamType", "TEXT NOT NULL DEFAULT 'unknown'")
+            }
+        }
+
+        /** Adds the scamType column for devices that already ran the v7 migration without it. */
         private val MIGRATION_7_8 = object : Migration(7, 8) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL(
-                    "ALTER TABLE ai_analysis_logs ADD COLUMN scamType TEXT NOT NULL DEFAULT 'unknown'"
-                )
+                addColumnIfNotExists(db, "ai_analysis_logs", "scamType", "TEXT NOT NULL DEFAULT 'unknown'")
             }
         }
 
@@ -90,9 +107,7 @@ abstract class KnowledgeBaseDatabase : RoomDatabase() {
         /** Adds suggestedReplySource column to track local vs cloud reply generation. */
         private val MIGRATION_9_10 = object : Migration(9, 10) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL(
-                    "ALTER TABLE ai_analysis_logs ADD COLUMN suggestedReplySource TEXT NOT NULL DEFAULT 'local'"
-                )
+                addColumnIfNotExists(db, "ai_analysis_logs", "suggestedReplySource", "TEXT NOT NULL DEFAULT 'local'")
             }
         }
 
@@ -118,9 +133,18 @@ abstract class KnowledgeBaseDatabase : RoomDatabase() {
         /** Adds reportedAt column to simulation_sessions. */
         private val MIGRATION_11_12 = object : Migration(11, 12) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL(
-                    "ALTER TABLE simulation_sessions ADD COLUMN reportedAt INTEGER DEFAULT NULL"
-                )
+                addColumnIfNotExists(db, "simulation_sessions", "reportedAt", "INTEGER DEFAULT NULL")
+            }
+        }
+
+        /** Creates the manual_captures and manual_capture_analyses tables. */
+        private val MIGRATION_12_13 = object : Migration(12, 13) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DROP TABLE IF EXISTS `manual_captures`")
+                db.execSQL("DROP TABLE IF EXISTS `manual_capture_analyses`")
+                db.execSQL("DROP INDEX IF EXISTS `index_manual_captures_capturedAt`")
+                db.execSQL("CREATE TABLE IF NOT EXISTS `manual_captures` (`id` TEXT NOT NULL, `sourceApp` TEXT NOT NULL, `imagePath` TEXT NOT NULL, `imageSha256` TEXT NOT NULL, `capturedAt` INTEGER NOT NULL, `width` INTEGER NOT NULL, `height` INTEGER NOT NULL, `status` TEXT NOT NULL, `selectedText` TEXT NOT NULL, `senderLayout` TEXT NOT NULL, `analysisSessionId` TEXT, `errorMessage` TEXT, `viewedAt` INTEGER, PRIMARY KEY(`id`))")
+                db.execSQL("CREATE TABLE IF NOT EXISTS `manual_capture_analyses` (`captureId` TEXT NOT NULL, `isScam` INTEGER NOT NULL, `confidence` REAL NOT NULL, `scamType` TEXT NOT NULL, `reasoning` TEXT NOT NULL, `firedTriggers` TEXT NOT NULL, `completedAt` INTEGER NOT NULL, PRIMARY KEY(`captureId`))")
             }
         }
 
@@ -131,7 +155,7 @@ abstract class KnowledgeBaseDatabase : RoomDatabase() {
                     KnowledgeBaseDatabase::class.java,
                     "knowledge_base.db"
                 )
-                    .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12)
+                    .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13)
                     .fallbackToDestructiveMigration()
                     .build()
                     .also { INSTANCE = it }

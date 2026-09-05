@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@android:id/content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="?attr/colorSurface">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="?attr/actionBarSize"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        app:title="Capture a screenshot"
+        app:subtitle="One screenshot for scam analysis" />
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="24dp"
+            android:paddingTop="32dp"
+            android:paddingBottom="32dp">
+
+            <!-- Shield icon -->
+            <ImageView
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:src="@drawable/ic_scan"
+                android:contentDescription="@null"
+                android:tint="?attr/colorPrimary"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="20dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="One screenshot, one analysis"
+                android:textAppearance="?attr/textAppearanceHeadlineSmall"
+                android:gravity="center"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Source app label (filled by Activity) -->
+            <TextView
+                android:id="@+id/sourceAppLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Source: Unknown"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:gravity="center"
+                android:textColor="?attr/colorPrimary"
+                android:layout_marginBottom="24dp" />
+
+            <!-- App Selection Card -->
+            <com.google.android.material.card.MaterialCardView
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutlineVariant"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Which apps can Honeypot scan?"
+                        android:textAppearance="?attr/textAppearanceTitleSmall"
+                        android:layout_marginBottom="8dp" />
+                    <RadioGroup
+                        android:id="@+id/rgConsentAppSelection"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+                        <RadioButton
+                            android:id="@+id/radioConsentAllApps"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="All apps (scan any screen)" />
+                        <RadioButton
+                            android:id="@+id/radioConsentSelectedApps"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Selected apps only" />
+                    </RadioGroup>
+                    <LinearLayout
+                        android:id="@+id/layoutConsentSelectedApps"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingStart="28dp"
+                        android:paddingEnd="0dp"
+                        android:visibility="gone">
+                        <CheckBox
+                            android:id="@+id/cbConsentWhatsApp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="WhatsApp" />
+                        <CheckBox
+                            android:id="@+id/cbConsentTelegram"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Telegram" />
+                        <CheckBox
+                            android:id="@+id/cbConsentInstagram"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Instagram" />
+                    </LinearLayout>
+                    <CheckBox
+                        android:id="@+id/cbConsentRemember"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Remember my choice (change anytime in Settings)"
+                        android:checked="true" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutlineVariant"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="28dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="What happens next"
+                        android:textAppearance="?attr/textAppearanceTitleSmall"
+                        android:layout_marginBottom="12dp" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="1. Android will ask for screenshot permission for this session"
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:layout_marginBottom="4dp" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="2. Tapping the scan button captures instantly without prompting again"
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:layout_marginBottom="4dp" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="3. You review and select which text to analyse"
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:layout_marginBottom="4dp" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="4. The screenshot is stored as evidence on this device only"
+                        android:textAppearance="?attr/textAppearanceBodyMedium" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnProceed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Grant permission &amp; proceed"
+                app:icon="@drawable/ic_scan" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCancel"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Cancel" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</LinearLayout>

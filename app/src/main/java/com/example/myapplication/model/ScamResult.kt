@@ -6,16 +6,18 @@ import kotlinx.serialization.Serializable
 @OptIn(InternalSerializationApi::class)
 @Serializable
 data class EvidenceFlag(
-    val indicator: String,
-    val verdict: String,          // "MALICIOUS", "SAFE", "UNVERIFIED", "PATTERN_MATCH"
-    val confidenceLevel: String   // "HIGH", "MEDIUM", "LOW"
+    val indicator: String = "",
+    val verdict: String = "UNVERIFIED",          // "MALICIOUS", "SAFE", "UNVERIFIED", "PATTERN_MATCH"
+    val confidenceLevel: String = "LOW",         // "HIGH", "MEDIUM", "LOW"
+    val type: String = "",
+    val confidence: String = ""
 )
 
 @OptIn(InternalSerializationApi::class)
 @Serializable
 data class ExtractedEntity(
-    val type: String, // e.g. "NAME", "ROLE", "COMPANY", "ACCOUNT_NUMBER"
-    val value: String
+    val type: String = "", // e.g. "NAME", "ROLE", "COMPANY", "ACCOUNT_NUMBER"
+    val value: String = ""
 )
 
 @OptIn(InternalSerializationApi::class)

@@ -2,6 +2,8 @@ package com.example.myapplication.engine
 
 import android.content.Context
 import android.util.Log
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /**
  * Singleton manager to ensure only one instance of the heavy ScamDetectionEngine
@@ -9,40 +11,21 @@ import android.util.Log
  */
 object ScamDetectionEngineManager {
 
+    private val mutex = Mutex()
     private var engine: ScamDetectionEngine? = null
-    private var isInitializing = false
 
-    suspend fun getEngine(context: Context): ScamDetectionEngine {
-        synchronized(this) {
-            engine?.let { return it }
-            
-            if (isInitializing) {
-                // Wait for existing initialization to finish (simplified for now)
-                // In a real app, use a Mutex or a Flow/Deferred
-                Log.w("EngineManager", "Engine is already initializing...")
-            }
-            
-            isInitializing = true
-        }
+    suspend fun getEngine(context: Context): ScamDetectionEngine = mutex.withLock {
+        engine?.let { return@withLock it }
 
-        return try {
-            val newEngine = ScamDetectionEngine(context.applicationContext)
-            newEngine.initialize()
-            synchronized(this) {
-                engine = newEngine
-                isInitializing = false
-            }
-            newEngine
-        } catch (e: Exception) {
-            synchronized(this) { isInitializing = false }
-            throw e
-        }
+        Log.d("EngineManager", "Initializing ScamDetectionEngine singleton...")
+        val newEngine = ScamDetectionEngine(context.applicationContext)
+        newEngine.initialize()
+        engine = newEngine
+        newEngine
     }
 
     fun closeEngine() {
-        synchronized(this) {
-            engine?.close()
-            engine = null
-        }
+        engine?.close()
+        engine = null
     }
 }
