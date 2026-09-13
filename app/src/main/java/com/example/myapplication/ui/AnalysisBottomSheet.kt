@@ -43,15 +43,21 @@ class AnalysisBottomSheet : BottomSheetDialogFragment() {
 
         val scamChip = view.findViewById<Chip>(R.id.scamChip)
         if (currentLog.isScam) {
-            scamChip.text = "Scam Detected"
-            scamChip.setChipBackgroundColorResource(android.R.color.holo_red_light)
+            scamChip.text = "⚠️  Scam Detected"
+            scamChip.chipBackgroundColor = android.content.res.ColorStateList.valueOf(
+                requireContext().getColor(R.color.attacker_bubble_scam_bg))
+            scamChip.setTextColor(requireContext().getColor(R.color.attacker_bubble_scam_stroke))
         } else {
-            scamChip.text = "Likely Safe"
-            scamChip.setChipBackgroundColorResource(android.R.color.holo_green_light)
+            scamChip.text = "✅  Likely Safe"
+            scamChip.chipBackgroundColor = android.content.res.ColorStateList.valueOf(
+                requireContext().getColor(R.color.attacker_bubble_safe_bg))
+            scamChip.setTextColor(requireContext().getColor(R.color.attacker_bubble_safe_stroke))
         }
 
         val progress = view.findViewById<LinearProgressIndicator>(R.id.confidenceProgress)
-        progress.progress = (currentLog.confidence * 100).toInt()
+        val pct = (currentLog.confidence * 100).toInt()
+        progress.progress = pct
+        view.findViewById<android.widget.TextView?>(R.id.confidenceLabel)?.text = "$pct%"
 
         val triggerGroup = view.findViewById<ChipGroup>(R.id.triggerGroup)
         currentLog.firedTriggers.split(",").filter { it.isNotEmpty() }.forEach {
@@ -76,14 +82,23 @@ class AnalysisBottomSheet : BottomSheetDialogFragment() {
                     val chip = Chip(context)
                     val label = if (flag.indicator.isNotBlank()) flag.indicator else flag.type.ifBlank { "Evidence" }
                     chip.text = "$label: ${flag.verdict}"
-                    
-                    val colorRes = when (flag.confidenceLevel.uppercase()) {
-                        "HIGH" -> android.R.color.holo_red_light
-                        "MEDIUM" -> android.R.color.holo_orange_light
-                        else -> android.R.color.darker_gray
+                    chip.isClickable = false
+                    val (bgColor, textColor) = when (flag.confidenceLevel.uppercase()) {
+                        "HIGH" -> Pair(
+                            requireContext().getColor(R.color.attacker_bubble_scam_bg),
+                            requireContext().getColor(R.color.attacker_bubble_scam_stroke)
+                        )
+                        "MEDIUM" -> Pair(
+                            requireContext().getColor(R.color.attacker_bubble_warn_bg),
+                            requireContext().getColor(R.color.attacker_bubble_warn_stroke)
+                        )
+                        else -> Pair(
+                            requireContext().getColor(android.R.color.darker_gray),
+                            requireContext().getColor(android.R.color.white)
+                        )
                     }
-                    chip.setChipBackgroundColorResource(colorRes)
-                    chip.setTextColor(android.graphics.Color.WHITE)
+                    chip.chipBackgroundColor = android.content.res.ColorStateList.valueOf(bgColor)
+                    chip.setTextColor(textColor)
                     evidenceGroup.addView(chip)
                 }
             }

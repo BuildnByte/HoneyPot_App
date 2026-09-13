@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Your (victim/user) outgoing message bubble -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:gravity="end"
-    android:padding="4dp">
+    android:paddingStart="72dp"
+    android:paddingEnd="8dp"
+    android:paddingTop="3dp"
+    android:paddingBottom="3dp">
 
     <com.google.android.material.card.MaterialCardView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="64dp"
-        app:cardBackgroundColor="?attr/colorPrimaryContainer"
-        app:cardCornerRadius="16dp"
+        app:cardBackgroundColor="@color/victim_bubble_bg"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.ChatBubble.Victim"
         app:cardElevation="0dp"
         app:strokeWidth="0dp">
 
@@ -20,31 +23,41 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="12dp">
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="8dp">
 
+            <!-- Sender label -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Victim (V)"
-                android:textAppearance="?attr/textAppearanceLabelSmall"
-                android:textColor="?attr/colorOnPrimaryContainer"
+                android:text="You"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="@color/victim_bubble_label"
+                android:letterSpacing="0.05"
                 android:layout_marginBottom="4dp"/>
 
+            <!-- Message body -->
             <TextView
                 android:id="@+id/messageText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?attr/textAppearanceBodyLarge"
-                android:textColor="?attr/colorOnPrimaryContainer" />
+                android:textSize="15sp"
+                android:textColor="@color/victim_bubble_text"
+                android:lineSpacingMultiplier="1.3"/>
 
+            <!-- Timestamp aligned right -->
             <TextView
                 android:id="@+id/timeText"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:textAppearance="?attr/textAppearanceLabelSmall"
-                android:textColor="?attr/colorOnPrimaryContainer"
-                android:layout_marginTop="4dp" />
+                android:gravity="end"
+                android:layout_marginTop="5dp"
+                android:textSize="11sp"
+                android:textColor="@color/victim_bubble_time"
+                android:alpha="0.8"/>
 
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>

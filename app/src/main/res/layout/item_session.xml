@@ -1,61 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- WhatsApp-style session list item -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="8dp"
-    android:layout_marginVertical="4dp"
-    app:cardElevation="2dp"
-    app:cardCornerRadius="12dp">
+    android:orientation="vertical"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="14dp"
+        android:paddingBottom="14dp"
+        android:gravity="center_vertical">
 
+        <!-- Avatar circle with scam icon -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            app:cardCornerRadius="26dp"
+            app:cardBackgroundColor="?attr/colorErrorContainer"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp">
+            <ImageView
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_message"
+                app:tint="?attr/colorOnErrorContainer"
+                android:contentDescription="Scam session"/>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Content area -->
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="14dp">
 
-            <TextView
-                android:id="@+id/sessionName"
-                android:layout_width="0dp"
+            <!-- Session name + date row -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textAppearance="?attr/textAppearanceTitleMedium"
-                tools:text="KBC Lottery Scam" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
+                <TextView
+                    android:id="@+id/sessionName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="?attr/colorOnSurface"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    tools:text="KBC Lottery Scam"/>
+
+                <TextView
+                    android:id="@+id/sessionDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:textSize="12sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    tools:text="Just now"/>
+            </LinearLayout>
+
+            <!-- Attacker phone -->
             <TextView
-                android:id="@+id/sessionDate"
-                android:layout_width="wrap_content"
+                android:id="@+id/sessionAttacker"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textAppearance="?attr/textAppearanceLabelSmall"
+                android:layout_marginTop="3dp"
+                android:textSize="13sp"
                 android:textColor="?attr/colorOnSurfaceVariant"
-                tools:text="Aug 14" />
+                android:maxLines="1"
+                android:ellipsize="end"
+                tools:text="Sender: +91-9876543210"/>
+
+            <!-- Notes preview -->
+            <TextView
+                android:id="@+id/sessionNotes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textSize="12sp"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:alpha="0.75"
+                android:visibility="gone"
+                tools:visibility="visible"
+                tools:text="Testing the prize extraction with GPT-4o-mini"/>
         </LinearLayout>
-
-        <TextView
-            android:id="@+id/sessionAttacker"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textAppearance="?attr/textAppearanceBodyMedium"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            tools:text="Sender: +91-9876543210" />
-
-        <TextView
-            android:id="@+id/sessionNotes"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:textAppearance="?attr/textAppearanceBodySmall"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            android:maxLines="2"
-            android:ellipsize="end"
-            tools:text="Testing the prize extraction with GPT-4o-mini" />
-
     </LinearLayout>
-</com.google.android.material.card.MaterialCardView>
+
+    <!-- Thin divider aligned with text content -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:layout_marginStart="82dp"
+        android:background="?attr/colorOutlineVariant"/>
+
+</LinearLayout>

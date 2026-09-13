@@ -69,7 +69,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Share Crime Report"
-            app:icon="@android:drawable/ic_menu_share" />
+            app:icon="@drawable/ic_copy" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnReportCybercrime"
@@ -78,7 +78,7 @@
             style="@style/Widget.Material3.Button.TonalButton"
             android:text="Report to cybercrime.gov.in"
             android:layout_marginTop="8dp"
-            app:icon="@android:drawable/ic_dialog_info" />
+            app:icon="@drawable/ic_history" />
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -22,31 +22,50 @@ object SmsPreFilter {
 
     private val safeSenderCache = mutableSetOf<String>()
 
-    fun shouldIgnore(sender: String, body: String): FilterResult {
+    /**
+     * Evaluates whether an SMS should be ignored or processed further.
+     *
+     * @param sender  The raw sender ID from the SMS (e.g. "+919876543210", "AD-HDFCBK")
+     * @param body    The SMS body text
+     * @param prefs   Optional filter preference manager. If null, all filters are enabled (default).
+     */
+    fun shouldIgnore(sender: String, body: String, prefs: FilterPreferenceManager? = null): FilterResult {
         Log.d("SmsPreFilter", "Evaluating sender: $sender")
 
+        // ── Filter 1: DLT 6-char institutional header (e.g. "AD-HDFCBK") ──────
         if (DLT_HEADER_REGEX.matches(sender)) {
-            val result = if (hasScamSignals(body))
-                FilterResult.SUSPICIOUS_INSTITUTIONAL
-            else
-                FilterResult.IGNORE
-            Log.d("SmsPreFilter", "DLT Header detected. Result: $result")
-            return result
+            if (prefs == null || prefs.filterDltInstitutional) {
+                val result = if (hasScamSignals(body))
+                    FilterResult.SUSPICIOUS_INSTITUTIONAL
+                else
+                    FilterResult.IGNORE
+                Log.d("SmsPreFilter", "DLT Header detected. Result: $result")
+                return result
+            }
+            // Filter disabled — fall through to full processing
+            Log.d("SmsPreFilter", "DLT filter disabled by user — processing institutional sender")
         }
 
-        if (sender in safeSenderCache) {
+        // ── Filter 2: Safe sender cache ────────────────────────────────────────
+        if ((prefs == null || prefs.filterSafeCache) && sender in safeSenderCache) {
             Log.d("SmsPreFilter", "Sender is in safe cache.")
             return FilterResult.IGNORE
         }
 
-        if (OTP_PATTERNS.any { it.containsMatchIn(body) } &&
-            !DLT_HEADER_REGEX.matches(sender)) {
+        // ── Filter 3: OTP / verification code patterns ─────────────────────────
+        if ((prefs == null || prefs.filterOtp) &&
+            OTP_PATTERNS.any { it.containsMatchIn(body) } &&
+            !DLT_HEADER_REGEX.matches(sender)
+        ) {
             Log.d("SmsPreFilter", "Suspicious OTP spoof detected.")
             return FilterResult.SUSPICIOUS_OTP_SPOOF
         }
 
-        if (BANK_TRANSACTION_PATTERNS.any { it.containsMatchIn(body) } &&
-            DLT_HEADER_REGEX.matches(sender)) {
+        // ── Filter 4: Legitimate bank transaction from DLT sender ──────────────
+        if ((prefs == null || prefs.filterBankTransaction) &&
+            BANK_TRANSACTION_PATTERNS.any { it.containsMatchIn(body) } &&
+            DLT_HEADER_REGEX.matches(sender)
+        ) {
             Log.d("SmsPreFilter", "Legitimate bank transaction.")
             return FilterResult.IGNORE
         }

@@ -16,10 +16,26 @@
         <item name="colorOnPrimaryContainer">@color/app_on_primary_container</item>
         <item name="colorTertiaryContainer">@color/app_tertiary_container</item>
         <item name="colorOnTertiaryContainer">@color/app_on_tertiary_container</item>
-        <item name="android:fontFamily">sans</item>
+
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:navigationBarColor">?attr/colorSurface</item>
 
         <item name="android:statusBarColor">?attr/colorSurface</item>
+    </style>
+
+    <style name="ShapeAppearance.ChatBubble.Attacker" parent="ShapeAppearance.Material3.Corner.Medium">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopRight">16dp</item>
+        <item name="cornerSizeBottomRight">16dp</item>
+        <item name="cornerSizeBottomLeft">16dp</item>
+        <item name="cornerSizeTopLeft">2dp</item>
+    </style>
+
+    <style name="ShapeAppearance.ChatBubble.Victim" parent="ShapeAppearance.Material3.Corner.Medium">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">16dp</item>
+        <item name="cornerSizeBottomLeft">16dp</item>
+        <item name="cornerSizeBottomRight">16dp</item>
+        <item name="cornerSizeTopRight">2dp</item>
     </style>
 </resources>

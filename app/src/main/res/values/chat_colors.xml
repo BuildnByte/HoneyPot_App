@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Attacker bubble - light mode -->
+    <color name="attacker_bubble_bg">#F3E5F5</color>
+    <color name="attacker_bubble_text">#1A0030</color>
+    <color name="attacker_bubble_label">#7B1FA2</color>
+    <color name="attacker_bubble_time">#6A1B9A</color>
+
+    <!-- Attacker bubble states - light mode (set by adapter) -->
+    <color name="attacker_bubble_scam_bg">#FFEBEE</color>
+    <color name="attacker_bubble_scam_stroke">#D32F2F</color>
+    <color name="attacker_bubble_safe_bg">#E8F5E9</color>
+    <color name="attacker_bubble_safe_stroke">#388E3C</color>
+    <color name="attacker_bubble_warn_bg">#FFF3E0</color>
+    <color name="attacker_bubble_warn_stroke">#F57C00</color>
+
+    <!-- Victim bubble - light mode -->
+    <color name="victim_bubble_bg">#E3EEFF</color>
+    <color name="victim_bubble_text">#001848</color>
+    <color name="victim_bubble_label">#3F5F90</color>
+    <color name="victim_bubble_time">#1A3A70</color>
+
+    <!-- Chat screen background - light mode -->
+    <color name="chat_background">#E5DDD5</color>
+</resources>

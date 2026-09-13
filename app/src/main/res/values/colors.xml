@@ -5,6 +5,7 @@
     <color name="brand_secondary">#596477</color>
     <color name="brand_secondary_dark">#BEC7DC</color>
     <color name="brand_tertiary">#765A88</color>
+    <color name="brand_tertiary_dark">#CE9EEB</color>
     <color name="success">#386A43</color>
     <color name="warning">#8A5F00</color>
     <color name="danger">#BA1A1A</color>
@@ -21,4 +22,17 @@
     <color name="app_on_tertiary_container">#2D073D</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Dark Mode Specific Surface Colors -->
+    <color name="app_surface_dark">#111318</color>
+    <color name="app_surface_container_dark">#1D2024</color>
+    <color name="app_surface_container_high_dark">#272A2F</color>
+    <color name="app_surface_variant_dark">#44474F</color>
+    <color name="app_on_surface_dark">#E2E2E9</color>
+    <color name="app_on_surface_variant_dark">#C4C6D0</color>
+    <color name="app_outline_variant_dark">#44474F</color>
+    <color name="app_primary_container_dark">#254777</color>
+    <color name="app_on_primary_container_dark">#D9E2FF</color>
+    <color name="app_tertiary_container_dark">#2E1A40</color>
+    <color name="app_on_tertiary_container_dark">#EED8FF</color>
 </resources>

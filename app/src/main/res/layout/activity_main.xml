@@ -10,7 +10,7 @@
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/toolbar" android:layout_width="match_parent"
                 android:layout_height="wrap_content" android:minHeight="?attr/actionBarSize"
-                android:paddingEnd="56dp"
+                app:contentInsetEnd="56dp"
                 app:title="Honeypot" app:subtitle="SMS threat analysis" />
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/settingsButton"
@@ -58,13 +58,13 @@
                 android:clickable="true" android:focusable="true" app:cardCornerRadius="20dp" app:cardElevation="0dp"
                 app:strokeColor="?attr/colorOutlineVariant" app:strokeWidth="1dp">
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:padding="18dp">
-                    <ImageView android:layout_width="28dp" android:layout_height="28dp" android:contentDescription="Flagged messages"
-                        android:src="@android:drawable/ic_dialog_alert" app:tint="?attr/colorError" />
+                    <ImageView android:layout_width="24dp" android:layout_height="24dp" android:contentDescription="Flagged messages"
+                        android:src="@drawable/ic_message" app:tint="?attr/colorError" />
                     <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:layout_weight="1" android:orientation="vertical">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Flagged messages" android:textAppearance="?attr/textAppearanceTitleMedium" />
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:text="Review live honeypot conversations" android:textAppearance="?attr/textAppearanceBodySmall" android:textColor="?attr/colorOnSurfaceVariant" />
                     </LinearLayout>
-                    <ImageView android:layout_width="24dp" android:layout_height="24dp" android:contentDescription="Open" android:src="@android:drawable/ic_media_play" app:tint="?attr/colorOnSurfaceVariant" />
+                    <ImageView android:layout_width="24dp" android:layout_height="24dp" android:contentDescription="Open" android:src="@drawable/ic_chevron_right" app:tint="?attr/colorOnSurfaceVariant" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:orientation="horizontal">
@@ -120,12 +120,13 @@
         android:paddingBottom="96dp" android:visibility="gone"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:orientation="vertical" android:padding="20dp">
+            android:orientation="vertical">
             <androidx.recyclerview.widget.RecyclerView android:id="@+id/messagesRecyclerView"
-                android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20dp"
-                android:nestedScrollingEnabled="false" android:clipToPadding="false" />
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false" android:clipToPadding="false"
+                android:paddingTop="4dp"/>
             <TextView android:id="@+id/messagesEmptyText" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="28dp" android:gravity="center" android:text="No flagged messages yet"
+                android:layout_marginTop="48dp" android:gravity="center" android:text="No flagged messages yet"
                 android:textAppearance="?attr/textAppearanceTitleMedium" android:textColor="?attr/colorOnSurfaceVariant" />
             <com.google.android.material.button.MaterialButton android:id="@+id/openMessagesButton" style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_horizontal" android:layout_marginTop="16dp" android:text="Refresh messages" />
@@ -136,12 +137,13 @@
         android:layout_width="match_parent" android:layout_height="match_parent"
         android:paddingBottom="96dp" android:visibility="gone"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
             <androidx.recyclerview.widget.RecyclerView android:id="@+id/historyRecyclerView"
-                android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20dp"
-                android:nestedScrollingEnabled="false" android:clipToPadding="false" />
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false" android:clipToPadding="false"
+                android:paddingTop="4dp"/>
             <TextView android:id="@+id/historyEmptyText" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="28dp" android:gravity="center" android:text="No history to show yet"
+                android:layout_marginTop="48dp" android:gravity="center" android:text="No history to show yet"
                 android:textAppearance="?attr/textAppearanceTitleMedium" android:textColor="?attr/colorOnSurfaceVariant" />
             <com.google.android.material.button.MaterialButton android:id="@+id/openHistoryButton" style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_horizontal" android:layout_marginTop="16dp" android:text="Refresh history" app:icon="@drawable/ic_history" />
@@ -152,12 +154,13 @@
         android:layout_width="match_parent" android:layout_height="match_parent"
         android:paddingBottom="96dp" android:visibility="gone"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
             <androidx.recyclerview.widget.RecyclerView android:id="@+id/sandboxRecyclerView"
-                android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20dp"
-                android:nestedScrollingEnabled="false" android:clipToPadding="false" />
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false" android:clipToPadding="false"
+                android:paddingTop="4dp"/>
             <TextView android:id="@+id/sandboxEmptyText" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="28dp" android:gravity="center" android:text="No testing sessions yet"
+                android:layout_marginTop="48dp" android:gravity="center" android:text="No testing sessions yet"
                 android:textAppearance="?attr/textAppearanceTitleMedium" android:textColor="?attr/colorOnSurfaceVariant" />
             <com.google.android.material.button.MaterialButton android:id="@+id/openSandboxButton" style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_horizontal" android:layout_marginTop="16dp" android:text="New testing session" app:icon="@drawable/ic_sandbox" />
@@ -166,16 +169,10 @@
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:background="?attr/colorSurfaceContainer"
         android:elevation="8dp"
-        android:gravity="center"
-        app:itemIconTint="?attr/colorPrimary"
-        app:itemIconSize="22dp"
-        app:itemPaddingTop="0dp"
-        app:itemPaddingBottom="0dp"
-        app:itemTextColor="?attr/colorOnSurface"
         app:labelVisibilityMode="labeled"
         app:menu="@menu/main_bottom_nav" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

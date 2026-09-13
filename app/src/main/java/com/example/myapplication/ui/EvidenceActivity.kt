@@ -184,19 +184,19 @@ class EvidenceSessionAdapter(
                 riskBadge.visibility = View.VISIBLE
                 when {
                     summary.maxConfidence > 0.8f -> {
-                        riskBadge.text = "HIGH RISK"
-                        riskBadge.setBackgroundColor(android.graphics.Color.parseColor("#F9DEDC")) // Error container light
-                        riskBadge.setTextColor(android.graphics.Color.parseColor("#B3261E")) // Error red
+                        riskBadge.text = "⚠️ HIGH RISK"
+                        riskBadge.setBackgroundColor(riskBadge.context.getColor(R.color.attacker_bubble_scam_bg))
+                        riskBadge.setTextColor(riskBadge.context.getColor(R.color.attacker_bubble_scam_stroke))
                     }
                     summary.maxConfidence > 0.5f -> {
-                        riskBadge.text = "MEDIUM RISK"
-                        riskBadge.setBackgroundColor(android.graphics.Color.parseColor("#FFCC80")) // Orange light
-                        riskBadge.setTextColor(android.graphics.Color.parseColor("#E65100")) // Orange dark
+                        riskBadge.text = "⚡ MEDIUM RISK"
+                        riskBadge.setBackgroundColor(riskBadge.context.getColor(R.color.attacker_bubble_warn_bg))
+                        riskBadge.setTextColor(riskBadge.context.getColor(R.color.attacker_bubble_warn_stroke))
                     }
                     else -> {
-                        riskBadge.text = "LOW RISK"
-                        riskBadge.setBackgroundColor(android.graphics.Color.parseColor("#E0E0E0")) // Gray
-                        riskBadge.setTextColor(android.graphics.Color.parseColor("#424242")) // Dark gray
+                        riskBadge.text = "✅ LOW RISK"
+                        riskBadge.setBackgroundColor(riskBadge.context.getColor(R.color.attacker_bubble_safe_bg))
+                        riskBadge.setTextColor(riskBadge.context.getColor(R.color.attacker_bubble_safe_stroke))
                     }
                 }
             } else {
