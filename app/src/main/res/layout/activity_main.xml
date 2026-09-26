@@ -166,6 +166,23 @@
                 android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_horizontal" android:layout_marginTop="16dp" android:text="New testing session" app:icon="@drawable/ic_sandbox" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scansContent"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:paddingBottom="96dp" android:visibility="gone"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+            <androidx.recyclerview.widget.RecyclerView android:id="@+id/scansRecyclerView"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false" android:clipToPadding="false"
+                android:paddingTop="4dp"/>
+            <TextView android:id="@+id/scansEmptyText" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="48dp" android:gravity="center" android:text="No screen scans yet"
+                android:textAppearance="?attr/textAppearanceTitleMedium" android:textColor="?attr/colorOnSurfaceVariant" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/openScansButton" style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_horizontal" android:layout_marginTop="16dp" android:text="Refresh scans" app:icon="@drawable/ic_scan" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"

@@ -4,12 +4,31 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
+import android.util.Log
+import com.example.myapplication.engine.ScamDetectionEngineManager
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class HoneypotApp : Application() {
 
+    @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate() {
         super.onCreate()
         createNotificationChannels()
+
+        // Pre-warm the scam detection engine as soon as the process starts.
+        // The ONNX session (~227 MB) and vocab (~197k tokens) take several seconds
+        // to load on first use. By loading here, the engine is ready before any
+        // SMS arrives, so notifications fire immediately instead of after a 15-20s wait.
+        GlobalScope.launch {
+            try {
+                ScamDetectionEngineManager.getEngine(this@HoneypotApp)
+                Log.d("HoneypotApp", "Engine pre-warm complete")
+            } catch (e: Exception) {
+                Log.e("HoneypotApp", "Engine pre-warm failed (will retry on first SMS)", e)
+            }
+        }
     }
 
     private fun createNotificationChannels() {

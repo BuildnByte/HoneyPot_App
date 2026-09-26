@@ -26,6 +26,7 @@ import com.example.myapplication.ui.EvidenceActivity
 import com.example.myapplication.ui.SessionListActivity
 import com.example.myapplication.ui.SettingsActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.example.myapplication.ui.SystemBars
 import com.example.myapplication.knowledge.KnowledgeBaseDatabase
 import com.example.myapplication.verification.FactCheckService
@@ -44,6 +45,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var liveAdapter: com.example.myapplication.ui.SessionAdapter
     private lateinit var sandboxAdapter: com.example.myapplication.ui.SessionAdapter
     private lateinit var historyAdapter: com.example.myapplication.ui.EvidenceSessionAdapter
+    private lateinit var scansAdapter: com.example.myapplication.ui.SessionAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,6 +78,9 @@ class MainActivity : AppCompatActivity() {
                     }
                     R.id.nav_sandbox -> {
                         showPage(R.id.sandboxContent, "Testing Sandbox", "Controlled pipeline sessions"); true
+                    }
+                    R.id.nav_scans -> {
+                        showPage(R.id.scansContent, "Screen Scans", "Manual overlay captures"); true
                     }
                     else -> false
                 }
@@ -114,6 +119,9 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.openSandboxButton).setOnClickListener {
             showCreateSessionSheet()
         }
+        findViewById<View>(R.id.openScansButton)?.setOnClickListener {
+            loadInlineSections()
+        }
 
         // ── Debug buttons ───────────────────────────────────────────────────
 
@@ -140,8 +148,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showPage(pageId: Int, title: String, subtitle: String) {
-        listOf(R.id.homeContent, R.id.messagesContent, R.id.historyContent, R.id.sandboxContent).forEach { id ->
-            findViewById<View>(id).visibility = if (id == pageId) View.VISIBLE else View.GONE
+        listOf(R.id.homeContent, R.id.messagesContent, R.id.historyContent, R.id.sandboxContent, R.id.scansContent).forEach { id ->
+            findViewById<View>(id)?.visibility = if (id == pageId) View.VISIBLE else View.GONE
         }
         findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbar).apply {
             this.title = title
@@ -152,21 +160,29 @@ class MainActivity : AppCompatActivity() {
     private fun setupInlineSections() {
         liveAdapter = com.example.myapplication.ui.SessionAdapter(
             onClick = { session -> startActivity(Intent(this, com.example.myapplication.ui.HoneypotConversationActivity::class.java).apply { putExtra("EXTRA_SESSION_ID", session.id) }) },
-            onLongClick = { }
+            onLongClick = { session -> showInlineSessionOptions(session.id, session.name) }
         )
         sandboxAdapter = com.example.myapplication.ui.SessionAdapter(
             onClick = { session -> startActivity(Intent(this, com.example.myapplication.ui.SimulationActivity::class.java).apply { putExtra("EXTRA_SESSION_ID", session.id) }) },
-            onLongClick = { }
+            onLongClick = { session -> showInlineSessionOptions(session.id, session.name) }
         )
-        historyAdapter = com.example.myapplication.ui.EvidenceSessionAdapter { summary ->
-            startActivity(Intent(this, com.example.myapplication.ui.EvidenceDetailActivity::class.java).apply {
-                putExtra("EXTRA_SESSION_ID", summary.sessionId)
-                putExtra("EXTRA_SOURCE_SENDER", summary.sourceSender)
-            })
-        }
+        historyAdapter = com.example.myapplication.ui.EvidenceSessionAdapter(
+            onClick = { summary ->
+                startActivity(Intent(this, com.example.myapplication.ui.EvidenceDetailActivity::class.java).apply {
+                    putExtra("EXTRA_SESSION_ID", summary.sessionId)
+                    putExtra("EXTRA_SOURCE_SENDER", summary.sourceSender)
+                })
+            },
+            onLongClick = { summary -> confirmInlineDeleteEvidence(summary) }
+        )
+        scansAdapter = com.example.myapplication.ui.SessionAdapter(
+            onClick = { session -> startActivity(Intent(this, com.example.myapplication.ui.SimulationActivity::class.java).apply { putExtra("EXTRA_SESSION_ID", session.id) }) },
+            onLongClick = { session -> showInlineSessionOptions(session.id, session.name) }
+        )
         findViewById<RecyclerView>(R.id.messagesRecyclerView).apply { layoutManager = LinearLayoutManager(this@MainActivity); adapter = liveAdapter }
         findViewById<RecyclerView>(R.id.sandboxRecyclerView).apply { layoutManager = LinearLayoutManager(this@MainActivity); adapter = sandboxAdapter }
         findViewById<RecyclerView>(R.id.historyRecyclerView).apply { layoutManager = LinearLayoutManager(this@MainActivity); adapter = historyAdapter }
+        findViewById<RecyclerView>(R.id.scansRecyclerView)?.apply { layoutManager = LinearLayoutManager(this@MainActivity); adapter = scansAdapter }
         loadInlineSections()
     }
 
@@ -175,14 +191,17 @@ class MainActivity : AppCompatActivity() {
             val dao = KnowledgeBaseDatabase.getInstance(this@MainActivity).knowledgeBaseDao()
             val live = dao.getLiveSessions()
             val sandbox = dao.getSimulatedSessions()
+            val scans = dao.getOverlayCaptureSessions()
             val history = dao.getEvidenceSessionSummaries()
             withContext(Dispatchers.Main) {
                 liveAdapter.submitList(live)
                 sandboxAdapter.submitList(sandbox)
+                scansAdapter.submitList(scans)
                 historyAdapter.setItems(history)
                 findViewById<View>(R.id.messagesEmptyText).visibility = if (live.isEmpty()) View.VISIBLE else View.GONE
                 findViewById<View>(R.id.historyEmptyText).visibility = if (history.isEmpty()) View.VISIBLE else View.GONE
                 findViewById<View>(R.id.sandboxEmptyText).visibility = if (sandbox.isEmpty()) View.VISIBLE else View.GONE
+                findViewById<View>(R.id.scansEmptyText)?.visibility = if (scans.isEmpty()) View.VISIBLE else View.GONE
             }
         }
     }
@@ -195,6 +214,62 @@ class MainActivity : AppCompatActivity() {
             }
         }
         sheet.show(supportFragmentManager, "CreateSessionBottomSheet")
+    }
+
+    /** Long-press on an inline session row → archive or permanently delete. */
+    private fun showInlineSessionOptions(sessionId: String, sessionName: String) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(sessionName)
+            .setItems(arrayOf("Archive", "Delete Permanently")) { _, which ->
+                when (which) {
+                    0 -> lifecycleScope.launch(Dispatchers.IO) {
+                        KnowledgeBaseDatabase.getInstance(this@MainActivity).knowledgeBaseDao().archiveSession(sessionId)
+                        withContext(Dispatchers.Main) { loadInlineSections() }
+                    }
+                    1 -> confirmInlineDelete(sessionId, sessionName)
+                }
+            }
+            .show()
+    }
+
+    private fun confirmInlineDelete(sessionId: String, sessionName: String) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("🗑️ Delete Session")
+            .setMessage("Permanently delete ‘$sessionName’ and all its messages? This cannot be undone.")
+            .setPositiveButton("Delete") { _, _ ->
+                lifecycleScope.launch(Dispatchers.IO) {
+                    val dao = KnowledgeBaseDatabase.getInstance(this@MainActivity).knowledgeBaseDao()
+                    dao.deleteAnalysisLogsForSession(sessionId)
+                    dao.deleteEvidenceForSession(sessionId)
+                    dao.deleteSimulation(sessionId)
+                    dao.deleteSession(sessionId)
+                    withContext(Dispatchers.Main) { loadInlineSections() }
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun confirmInlineDeleteEvidence(summary: com.example.myapplication.knowledge.EvidenceSessionSummary) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("🗑️ Delete Evidence")
+            .setMessage(
+                "Permanently delete all captured evidence for ‘${summary.sourceSender}’?\n\n" +
+                "This will also remove the associated session, messages and analysis logs. " +
+                "This action cannot be undone."
+            )
+            .setPositiveButton("Delete") { _, _ ->
+                lifecycleScope.launch(Dispatchers.IO) {
+                    val dao = KnowledgeBaseDatabase.getInstance(this@MainActivity).knowledgeBaseDao()
+                    dao.deleteAnalysisLogsForSession(summary.sessionId)
+                    dao.deleteEvidenceForSession(summary.sessionId)
+                    dao.deleteSimulation(summary.sessionId)
+                    dao.deleteSession(summary.sessionId)
+                    withContext(Dispatchers.Main) { loadInlineSections() }
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     override fun onResume() {

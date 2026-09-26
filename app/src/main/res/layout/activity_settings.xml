@@ -58,7 +58,48 @@
                 android:layout_marginTop="12dp" android:text="Cross-app scanning settings" android:drawableStart="@drawable/ic_scan" />
 
 
+            <!-- ─── AI Analysis ──────────────────────────────────────────────── -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="AI Analysis"
+                android:textAppearance="?attr/textAppearanceTitleMedium" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Control how the AI engine analyses scam messages."
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+
+            <!-- Cloud reasoning toggle -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="16dp" app:cardElevation="0dp"
+                app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
+                app:strokeWidth="0dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:gravity="center_vertical"
+                    android:padding="16dp">
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Cloud reasoning for new scams"
+                            android:textAppearance="?attr/textAppearanceTitleSmall" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="Sends the first message of each new scam session to Gemini for a detailed reasoning explanation and richer entity extraction. Only one API call per session."
+                            android:textAppearance="?attr/textAppearanceBodySmall"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+                    </LinearLayout>
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/switchCloudReasoning"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:checked="true" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- ─── SMS Pre-Filters ───────────────────────────────────────── -->
+
             <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:text="SMS Pre-Filters"

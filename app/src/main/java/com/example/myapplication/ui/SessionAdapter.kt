@@ -38,7 +38,26 @@ class SessionAdapter(
         private val notesView: TextView = itemView.findViewById(R.id.sessionNotes)
 
         fun bind(session: SimulationSession) {
-            nameView.text = session.name
+            val cleanName = when {
+                session.name.startsWith("[LIVE] ") -> session.name.removePrefix("[LIVE] ")
+                session.name.startsWith("[CAPTURE] ") -> {
+                    val rawLabel = session.name.removePrefix("[CAPTURE] ")
+                    val sourceApp = rawLabel.substringBefore(" 202")
+                    val appName = when {
+                        sourceApp.contains("whatsapp", ignoreCase = true) -> "WhatsApp Scan"
+                        sourceApp.contains("facebook", ignoreCase = true) -> "Facebook Scan"
+                        sourceApp.contains("instagram", ignoreCase = true) -> "Instagram Scan"
+                        sourceApp.contains("chrome", ignoreCase = true) -> "Browser Scan"
+                        sourceApp.contains("telegram", ignoreCase = true) -> "Telegram Scan"
+                        sourceApp.contains("messaging", ignoreCase = true) -> "SMS Scan"
+                        sourceApp.contains("mms", ignoreCase = true) -> "SMS Scan"
+                        else -> "Screen Scan"
+                    }
+                    "📷 $appName"
+                }
+                else -> session.name
+            }
+            nameView.text = cleanName
             
             val sender = if (session.attackerSenderId.isNotBlank()) {
                 "${session.attackerSenderId} (${session.attackerPhone})"

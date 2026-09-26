@@ -39,7 +39,7 @@ android {
     }
 
     androidResources {
-        noCompress += listOf("tflite", "task", "litertlm", "bin")
+        noCompress += listOf("tflite", "task", "litertlm", "bin", "onnx")
     }
 
     compileOptions {
@@ -76,10 +76,13 @@ dependencies {
     implementation("androidx.room:room-ktx:$roomVersion")
     ksp("androidx.room:room-compiler:$roomVersion")
 
+    // ONNX Runtime — runs the fine-tuned MuRIL BERT scam classifier
+    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.19.2")
+
     // MediaPipe Text Embedder
     implementation("com.google.mediapipe:tasks-text:1.0.0")
 
-    // LiteRT-LM
+    // LiteRT-LM (kept for now — remove after verifying ONNX works)
     implementation("com.google.mediapipe:tasks-genai:0.10.35")
 
     // Coroutines

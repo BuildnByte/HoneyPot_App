@@ -32,8 +32,11 @@ interface KnowledgeBaseDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSession(session: SimulationSession)
 
-    @Query("SELECT * FROM simulation_sessions WHERE isArchived = 0 AND name NOT LIKE '[LIVE] %' ORDER BY createdAt DESC")
+    @Query("SELECT * FROM simulation_sessions WHERE isArchived = 0 AND name NOT LIKE '[LIVE] %' AND name NOT LIKE '[CAPTURE] %' ORDER BY createdAt DESC")
     suspend fun getSimulatedSessions(): List<SimulationSession>
+
+    @Query("SELECT * FROM simulation_sessions WHERE isArchived = 0 AND name LIKE '[CAPTURE] %' ORDER BY createdAt DESC")
+    suspend fun getOverlayCaptureSessions(): List<SimulationSession>
 
     @Query("SELECT * FROM simulation_sessions WHERE isArchived = 0 AND name LIKE '[LIVE] %' ORDER BY createdAt DESC")
     suspend fun getLiveSessions(): List<SimulationSession>

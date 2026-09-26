@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -22,6 +23,11 @@ class SessionListActivity : AppCompatActivity() {
     private lateinit var sessionAdapter: SessionAdapter
     private lateinit var emptyText: TextView
     private var isLiveMode = false
+
+    /** Refreshes the session list whenever we return from a session (e.g. after it was deleted). */
+    private val sessionLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { loadSessions() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,15 +53,17 @@ class SessionListActivity : AppCompatActivity() {
         sessionAdapter = SessionAdapter(
             onClick = { session ->
                 if (isLiveMode) {
-                    val intent = Intent(this, HoneypotConversationActivity::class.java).apply {
-                        putExtra("EXTRA_SESSION_ID", session.id)
-                    }
-                    startActivity(intent)
+                    sessionLauncher.launch(
+                        Intent(this, HoneypotConversationActivity::class.java).apply {
+                            putExtra("EXTRA_SESSION_ID", session.id)
+                        }
+                    )
                 } else {
-                    val intent = Intent(this, SimulationActivity::class.java).apply {
-                        putExtra("EXTRA_SESSION_ID", session.id)
-                    }
-                    startActivity(intent)
+                    sessionLauncher.launch(
+                        Intent(this, SimulationActivity::class.java).apply {
+                            putExtra("EXTRA_SESSION_ID", session.id)
+                        }
+                    )
                 }
             },
             onLongClick = { session ->

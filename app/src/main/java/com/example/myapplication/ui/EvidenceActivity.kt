@@ -16,6 +16,7 @@ import com.example.myapplication.knowledge.EvidenceSessionSummary
 import com.example.myapplication.knowledge.KnowledgeBaseDatabase
 import com.example.myapplication.model.ScamEvidence
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -60,13 +61,18 @@ class EvidenceActivity : AppCompatActivity() {
         filterTabs.addTab(filterTabs.newTab().setText("Amounts"))
 
         recyclerView = findViewById(R.id.evidenceRecyclerView)
-        sessionAdapter = EvidenceSessionAdapter { summary ->
-            val intent = Intent(this, EvidenceDetailActivity::class.java).apply {
-                putExtra("EXTRA_SESSION_ID", summary.sessionId)
-                putExtra("EXTRA_SOURCE_SENDER", summary.sourceSender)
+        sessionAdapter = EvidenceSessionAdapter(
+            onClick = { summary ->
+                val intent = Intent(this, EvidenceDetailActivity::class.java).apply {
+                    putExtra("EXTRA_SESSION_ID", summary.sessionId)
+                    putExtra("EXTRA_SOURCE_SENDER", summary.sourceSender)
+                }
+                startActivity(intent)
+            },
+            onLongClick = { summary ->
+                confirmDeleteSessionEvidence(summary)
             }
-            startActivity(intent)
-        }
+        )
         entityAdapter = EvidenceEntityAdapter()
         
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -123,10 +129,39 @@ class EvidenceActivity : AppCompatActivity() {
             }
         }
     }
+
+    // ── Delete helpers ───────────────────────────────────────────────────────────────
+
+    private fun confirmDeleteSessionEvidence(summary: EvidenceSessionSummary) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("🗑️ Delete Evidence")
+            .setMessage(
+                "Permanently delete all captured evidence for ‘${summary.sourceSender}’?\n\n" +
+                "This will also remove the associated session, messages and analysis logs. " +
+                "This action cannot be undone."
+            )
+            .setPositiveButton("Delete") { _, _ ->
+                deleteSessionEvidence(summary.sessionId)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun deleteSessionEvidence(sessionId: String) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            // Full cascade — same order as SessionListActivity permanent delete
+            db.knowledgeBaseDao().deleteAnalysisLogsForSession(sessionId)
+            db.knowledgeBaseDao().deleteEvidenceForSession(sessionId)
+            db.knowledgeBaseDao().deleteSimulation(sessionId)
+            db.knowledgeBaseDao().deleteSession(sessionId)
+            withContext(Dispatchers.Main) { loadSessions() }
+        }
+    }
 }
 
 class EvidenceSessionAdapter(
-    private val onClick: (EvidenceSessionSummary) -> Unit
+    private val onClick: (EvidenceSessionSummary) -> Unit,
+    private val onLongClick: (EvidenceSessionSummary) -> Unit = {}
 ) : RecyclerView.Adapter<EvidenceSessionAdapter.ViewHolder>() {
 
     private var items = listOf<EvidenceSessionSummary>()
@@ -139,7 +174,7 @@ class EvidenceSessionAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_evidence_session, parent, false)
-        return ViewHolder(view, onClick)
+        return ViewHolder(view, onClick, onLongClick)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -150,7 +185,8 @@ class EvidenceSessionAdapter(
 
     class ViewHolder(
         view: View,
-        val onClick: (EvidenceSessionSummary) -> Unit
+        val onClick: (EvidenceSessionSummary) -> Unit,
+        val onLongClick: (EvidenceSessionSummary) -> Unit
     ) : RecyclerView.ViewHolder(view) {
         private val senderText = view.findViewById<TextView>(R.id.sessionSender)
         private val dateText = view.findViewById<TextView>(R.id.sessionDate)
@@ -204,6 +240,10 @@ class EvidenceSessionAdapter(
             }
 
             itemView.setOnClickListener { onClick(summary) }
+            itemView.setOnLongClickListener {
+                onLongClick(summary)
+                true
+            }
         }
     }
 }

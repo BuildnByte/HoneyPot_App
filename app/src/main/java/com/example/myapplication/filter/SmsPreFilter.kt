@@ -4,7 +4,17 @@ import android.util.Log
 
 object SmsPreFilter {
 
-    private val DLT_HEADER_REGEX = Regex("^[A-Z]{2}-[A-Z0-9]{6}(-[A-Z]+)?$")
+    /**
+     * Matches the TRAI-mandated DLT sender header used by all institutional SMS in India.
+     * Format: <2-letter telco prefix>-<1-7 alphanumeric brand chars>-<1+ alphanumeric suffix>
+     * Examples: JD-SBLIFE-S  JM-JioPay-S  JX-BATAIn-P  JX-620020-P  AD-ADHAAR-S
+     *
+     * Case-insensitive: carriers occasionally deliver IDs with mixed case.
+     */
+    private val DLT_HEADER_REGEX = Regex(
+        """^[A-Z]{2}-[A-Z0-9]{1,7}-[A-Z0-9]+$""",
+        RegexOption.IGNORE_CASE
+    )
 
     private val OTP_PATTERNS = listOf(
         Regex("\\b(OTP|one.?time.?password|verification.?code|auth.?code)\\b", RegexOption.IGNORE_CASE),
@@ -32,18 +42,18 @@ object SmsPreFilter {
     fun shouldIgnore(sender: String, body: String, prefs: FilterPreferenceManager? = null): FilterResult {
         Log.d("SmsPreFilter", "Evaluating sender: $sender")
 
-        // ── Filter 1: DLT 6-char institutional header (e.g. "AD-HDFCBK") ──────
-        if (DLT_HEADER_REGEX.matches(sender)) {
+        // ── Filter 1: DLT institutional sender header ────────────────────────
+        // When the filter is enabled (or prefs not supplied), return IGNORE for ANY
+        // DLT-format sender — including those whose body contains URLs / scam keywords
+        // (e.g. SBI Life sends legitimate policy links that trigger hasScamSignals).
+        // Users who enable "Ignore institutional senders" want ALL DLT traffic dropped.
+        if (DLT_HEADER_REGEX.matches(sender.trim())) {
             if (prefs == null || prefs.filterDltInstitutional) {
-                val result = if (hasScamSignals(body))
-                    FilterResult.SUSPICIOUS_INSTITUTIONAL
-                else
-                    FilterResult.IGNORE
-                Log.d("SmsPreFilter", "DLT Header detected. Result: $result")
-                return result
+                Log.d("SmsPreFilter", "DLT institutional sender ignored: $sender")
+                return FilterResult.IGNORE
             }
-            // Filter disabled — fall through to full processing
-            Log.d("SmsPreFilter", "DLT filter disabled by user — processing institutional sender")
+            // Filter disabled by user — fall through to full processing
+            Log.d("SmsPreFilter", "DLT filter disabled — processing institutional sender: $sender")
         }
 
         // ── Filter 2: Safe sender cache ────────────────────────────────────────

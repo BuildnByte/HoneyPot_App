@@ -48,21 +48,24 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         // ── SMS Pre-Filter switches ────────────────────────────────────────
-        val switchDlt       = findViewById<MaterialSwitch>(R.id.switchFilterDlt)
-        val switchOtp       = findViewById<MaterialSwitch>(R.id.switchFilterOtp)
-        val switchBank      = findViewById<MaterialSwitch>(R.id.switchFilterBank)
-        val switchSafeCache = findViewById<MaterialSwitch>(R.id.switchFilterSafeCache)
+        val switchDlt          = findViewById<MaterialSwitch>(R.id.switchFilterDlt)
+        val switchOtp          = findViewById<MaterialSwitch>(R.id.switchFilterOtp)
+        val switchBank         = findViewById<MaterialSwitch>(R.id.switchFilterBank)
+        val switchSafeCache    = findViewById<MaterialSwitch>(R.id.switchFilterSafeCache)
+        val switchCloudReason  = findViewById<MaterialSwitch>(R.id.switchCloudReasoning)
 
         // Restore saved state
-        switchDlt.isChecked       = filterPrefs.filterDltInstitutional
-        switchOtp.isChecked       = filterPrefs.filterOtp
-        switchBank.isChecked      = filterPrefs.filterBankTransaction
-        switchSafeCache.isChecked = filterPrefs.filterSafeCache
+        switchDlt.isChecked         = filterPrefs.filterDltInstitutional
+        switchOtp.isChecked         = filterPrefs.filterOtp
+        switchBank.isChecked        = filterPrefs.filterBankTransaction
+        switchSafeCache.isChecked   = filterPrefs.filterSafeCache
+        switchCloudReason.isChecked = filterPrefs.useCloudReasoning
 
         // Persist on change
-        switchDlt.setOnCheckedChangeListener       { _, v -> filterPrefs.filterDltInstitutional = v }
-        switchOtp.setOnCheckedChangeListener       { _, v -> filterPrefs.filterOtp = v }
-        switchBank.setOnCheckedChangeListener      { _, v -> filterPrefs.filterBankTransaction = v }
-        switchSafeCache.setOnCheckedChangeListener { _, v -> filterPrefs.filterSafeCache = v }
+        switchDlt.setOnCheckedChangeListener        { _, v -> filterPrefs.filterDltInstitutional = v }
+        switchOtp.setOnCheckedChangeListener        { _, v -> filterPrefs.filterOtp = v }
+        switchBank.setOnCheckedChangeListener       { _, v -> filterPrefs.filterBankTransaction = v }
+        switchSafeCache.setOnCheckedChangeListener  { _, v -> filterPrefs.filterSafeCache = v }
+        switchCloudReason.setOnCheckedChangeListener { _, v -> filterPrefs.useCloudReasoning = v }
     }
 }

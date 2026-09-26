@@ -91,13 +91,31 @@ class ChatAdapter(private val onBrainClick: (Int) -> Unit) :
                     }
                 }
                 else -> {
-                    holder.brainIndicator.visibility = View.VISIBLE
-                    holder.brainIndicator.text = "🧠 Tap for AI analysis"
-                    holder.brainIndicator.setTextColor(holder.itemView.context.getColor(R.color.attacker_bubble_label))
-                    holder.messageCard.setStrokeColor(android.content.res.ColorStateList.valueOf(
-                        holder.itemView.context.getColor(R.color.attacker_bubble_label)))
-                    holder.messageCard.setCardBackgroundColor(android.content.res.ColorStateList.valueOf(
-                        holder.itemView.context.getColor(R.color.attacker_bubble_bg)))
+                    val isSessionScam = analysisMap.values.any { it.isScam }
+                    val firstAttackerMessageId = messages.firstOrNull { m -> m.senderType == "A" }?.id
+
+                    if (isSessionScam) {
+                        holder.brainIndicator.visibility = View.VISIBLE
+                        holder.brainIndicator.text = "⚠️ SCAM DETECTED"
+                        holder.brainIndicator.setTextColor(holder.itemView.context.getColor(R.color.attacker_bubble_scam_stroke))
+                        holder.messageCard.setStrokeColor(android.content.res.ColorStateList.valueOf(
+                            holder.itemView.context.getColor(R.color.attacker_bubble_scam_stroke)))
+                        holder.messageCard.setCardBackgroundColor(android.content.res.ColorStateList.valueOf(
+                            holder.itemView.context.getColor(R.color.attacker_bubble_scam_bg)))
+                    } else if (message.id == firstAttackerMessageId) {
+                        holder.brainIndicator.visibility = View.VISIBLE
+                        holder.brainIndicator.text = "🧠 Tap for AI analysis"
+                        holder.brainIndicator.setTextColor(holder.itemView.context.getColor(R.color.attacker_bubble_label))
+                        holder.messageCard.setStrokeColor(android.content.res.ColorStateList.valueOf(
+                            holder.itemView.context.getColor(R.color.attacker_bubble_label)))
+                        holder.messageCard.setCardBackgroundColor(android.content.res.ColorStateList.valueOf(
+                            holder.itemView.context.getColor(R.color.attacker_bubble_bg)))
+                    } else {
+                        holder.brainIndicator.visibility = View.GONE
+                        holder.messageCard.setStrokeColor(android.content.res.ColorStateList.valueOf(android.graphics.Color.GRAY))
+                        holder.messageCard.setCardBackgroundColor(android.content.res.ColorStateList.valueOf(
+                            holder.itemView.context.getColor(R.color.attacker_bubble_bg)))
+                    }
                 }
             }
             

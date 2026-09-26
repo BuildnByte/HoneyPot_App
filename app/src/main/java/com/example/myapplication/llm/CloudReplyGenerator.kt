@@ -25,7 +25,7 @@ object CloudReplyGenerator {
 
     private const val TAG = "CloudReplyGenerator"
     private const val ENDPOINT =
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent"
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent"
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
@@ -103,10 +103,7 @@ object CloudReplyGenerator {
             put("contents", contents)
             put("generationConfig", JSONObject().apply {
                 put("temperature", 0.8)
-                put("maxOutputTokens", 512)   // give headroom since thinking can't be fully off
-                put("thinkingConfig", JSONObject().apply {
-                    put("thinkingLevel", "low")   // options: "minimal", "low", "medium", "high"
-                })
+                put("maxOutputTokens", 512)
             })
         }
 

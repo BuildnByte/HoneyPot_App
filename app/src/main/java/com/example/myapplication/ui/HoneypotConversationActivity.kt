@@ -3,6 +3,8 @@ package com.example.myapplication.ui
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.telephony.SmsManager
 import android.util.Log
 import android.view.View
@@ -311,8 +313,9 @@ class HoneypotConversationActivity : AppCompatActivity() {
                 }
 
                 withContext(Dispatchers.IO) { db.knowledgeBaseDao().insertAiAnalysisLog(log) }
-                // Note: adapter.addAnalysisResult() not needed — the Flow observer will pick up
-                // the new log on the next collect() cycle, keeping the UI in sync automatically.
+                
+                // Immediately push the analysis result to the adapter so the UI changes instantly
+                adapter.addAnalysisResult(log)
 
                 AnalysisBottomSheet.newInstance(log).show(supportFragmentManager, "analysis")
 
@@ -412,6 +415,61 @@ class HoneypotConversationActivity : AppCompatActivity() {
             }
         } catch (e: Exception) {
             Toast.makeText(this, "Failed to send SMS: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    // ── Toolbar overflow menu ────────────────────────────────────────────────
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_session_actions, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_archive -> {
+                lifecycleScope.launch(Dispatchers.IO) {
+                    db.knowledgeBaseDao().archiveSession(sessionId)
+                    withContext(Dispatchers.Main) { finish() }
+                }
+                true
+            }
+            R.id.action_delete_session -> {
+                confirmDeleteSession()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun confirmDeleteSession() {
+        // Load session name for a personalised message
+        lifecycleScope.launch(Dispatchers.IO) {
+            val session = db.knowledgeBaseDao().getSession(sessionId)
+            val name = session?.name?.removePrefix("[LIVE] ") ?: attackerPhone.ifBlank { "this session" }
+            withContext(Dispatchers.Main) {
+                MaterialAlertDialogBuilder(this@HoneypotConversationActivity)
+                    .setTitle("🗑️ Delete Session")
+                    .setMessage(
+                        "Permanently delete conversation with ‘$name’?\n\n" +
+                        "This will erase all messages, AI analysis logs and captured evidence for this session. " +
+                        "This action cannot be undone."
+                    )
+                    .setPositiveButton("Delete") { _, _ ->
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            db.knowledgeBaseDao().deleteAnalysisLogsForSession(sessionId)
+                            db.knowledgeBaseDao().deleteEvidenceForSession(sessionId)
+                            db.knowledgeBaseDao().deleteSimulation(sessionId)
+                            db.knowledgeBaseDao().deleteSession(sessionId)
+                            withContext(Dispatchers.Main) {
+                                setResult(RESULT_OK)
+                                finish()
+                            }
+                        }
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
+            }
         }
     }
 }

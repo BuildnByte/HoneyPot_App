@@ -29,15 +29,25 @@ class FilterPreferenceManager(context: Context) {
         get() = prefs.getBoolean(KEY_BANK, true)
         set(v) = prefs.edit().putBoolean(KEY_BANK, v).apply()
 
-    /** Ignore messages from senders the user has marked as safe */
+    /** Skip senders the user has previously marked as safe. */
     var filterSafeCache: Boolean
         get() = prefs.getBoolean(KEY_SAFE_CACHE, true)
         set(v) = prefs.edit().putBoolean(KEY_SAFE_CACHE, v).apply()
 
+    /**
+     * Allow a single Gemini cloud call per session for the first scam message.
+     * Returns reasoning text + any named entities missed by on-device NER.
+     * Defaults to true — users can disable for fully offline operation.
+     */
+    var useCloudReasoning: Boolean
+        get() = prefs.getBoolean(KEY_CLOUD_REASONING, true)
+        set(v) = prefs.edit().putBoolean(KEY_CLOUD_REASONING, v).apply()
+
     companion object {
-        private const val KEY_DLT         = "filter_dlt_institutional"
-        private const val KEY_OTP         = "filter_otp"
-        private const val KEY_BANK        = "filter_bank_transaction"
-        private const val KEY_SAFE_CACHE  = "filter_safe_cache"
+        private const val KEY_DLT            = "filter_dlt_institutional"
+        private const val KEY_OTP            = "filter_otp"
+        private const val KEY_BANK           = "filter_bank_transaction"
+        private const val KEY_SAFE_CACHE     = "filter_safe_cache"
+        private const val KEY_CLOUD_REASONING = "use_cloud_reasoning"
     }
 }

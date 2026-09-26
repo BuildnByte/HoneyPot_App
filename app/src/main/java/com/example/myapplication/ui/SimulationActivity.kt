@@ -1,6 +1,8 @@
 package com.example.myapplication.ui
 
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -18,6 +20,8 @@ import com.example.myapplication.model.IncomingSms
 import com.example.myapplication.model.SimulatedMessage
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -325,8 +329,55 @@ class SimulationActivity : AppCompatActivity() {
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_session_actions, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_archive -> {
+                lifecycleScope.launch(Dispatchers.IO) {
+                    db.knowledgeBaseDao().archiveSession(sessionId)
+                    withContext(Dispatchers.Main) { finish() }
+                }
+                true
+            }
+            R.id.action_delete_session -> {
+                confirmDeleteSession()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun confirmDeleteSession() {
+        val name = currentSession?.name ?: "this session"
+        MaterialAlertDialogBuilder(this)
+            .setTitle("🗑️ Delete Session")
+            .setMessage(
+                "Permanently delete ‘$name’?\n\n" +
+                "This will erase all messages, AI analysis logs and captured evidence for this session. " +
+                "This action cannot be undone."
+            )
+            .setPositiveButton("Delete") { _, _ ->
+                lifecycleScope.launch(Dispatchers.IO) {
+                    // Delete in dependency order to avoid FK / orphan issues
+                    db.knowledgeBaseDao().deleteAnalysisLogsForSession(sessionId)
+                    db.knowledgeBaseDao().deleteEvidenceForSession(sessionId)
+                    db.knowledgeBaseDao().deleteSimulation(sessionId)
+                    db.knowledgeBaseDao().deleteSession(sessionId)
+                    withContext(Dispatchers.Main) {
+                        setResult(RESULT_OK)
+                        finish()
+                    }
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
     override fun onDestroy() {
         super.onDestroy()
     }
 }
-

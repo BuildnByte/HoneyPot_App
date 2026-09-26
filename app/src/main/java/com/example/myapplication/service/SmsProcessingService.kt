@@ -9,6 +9,7 @@ import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.example.myapplication.R
+import com.example.myapplication.filter.FilterPreferenceManager
 import com.example.myapplication.filter.FilterResult
 import com.example.myapplication.filter.SmsPreFilter
 import com.example.myapplication.llm.CloudReplyGenerator
@@ -78,10 +79,13 @@ class SmsProcessingService : LifecycleService() {
     }
 
     private suspend fun processSms(sms: IncomingSms) {
-        // STAGE 1: Lightweight pre-filter
-        val filterResult = SmsPreFilter.shouldIgnore(sms.sender, sms.body)
-        Log.d(TAG, "Filter result: $filterResult")
-        if (filterResult == FilterResult.IGNORE) return
+        // STAGE 1: Lightweight pre-filter (pass user prefs so the Settings toggles are respected)
+        val filterPrefs = FilterPreferenceManager(this@SmsProcessingService)
+        val filterResult = SmsPreFilter.shouldIgnore(sms.sender, sms.body, filterPrefs)
+        Log.d(TAG, "Filter result for [${sms.sender}]: $filterResult")
+        // Drop both clean institutional messages AND suspicious-but-institutional ones.
+        // The user enabling "Ignore institutional senders" means ALL DLT traffic is unwanted.
+        if (filterResult == FilterResult.IGNORE || filterResult == FilterResult.SUSPICIOUS_INSTITUTIONAL) return
 
         // STAGE 2: Preprocess
         val preprocessed = withContext(Dispatchers.Default) {
@@ -131,7 +135,12 @@ class SmsProcessingService : LifecycleService() {
             }
             val messageId = savedMsgId.toInt()
 
-            // 2. Run the engine using the prior scam context (fast path)
+            // 2. Show an immediate "message received" notification so the user
+            //    knows instantly — BEFORE the engine does its heavy lifting.
+            //    The AI-reply notification will replace this once analysis finishes.
+            showLiveHoneypotNotification(liveSession.id, sms.sender, suggestedReply = null)
+
+            // 3. Run the engine using the prior scam context (fast path)
             try {
                 val engine = ScamDetectionEngineManager.getEngine(this@SmsProcessingService)
                 val historyFromDb = withContext(Dispatchers.IO) {
@@ -159,7 +168,7 @@ class SmsProcessingService : LifecycleService() {
                     }
                 }
 
-                // 3. Generate suggested reply using existing consent (no dialog needed)
+                // 4. Generate suggested reply using existing consent (no dialog needed)
                 val consentManager = ConsentPreferenceManager(this@SmsProcessingService)
                 val cloudGranted = consentManager.getConsent(sms.sender) == true
                 val scamType = result.scamResult?.scamType ?: priorScamLog?.scamType ?: "unknown"
@@ -168,12 +177,11 @@ class SmsProcessingService : LifecycleService() {
                     val cloudHistory = engineHistory + "[A]: ${sms.body}"
                     CloudReplyGenerator.generateReply(cloudHistory, scamType)
                 } else {
-                    // Use what the engine already generated; it's non-empty for scam messages
                     result.suggestedReply.takeIf { it.isNotBlank() }
                         ?: "Could you share more details before I proceed?"
                 }
 
-                // 4. Save analysis log with reply
+                // 5. Save analysis log with reply
                 val scamResult = result.scamResult
                 if (scamResult != null) {
                     val log = AiAnalysisLog(
@@ -192,13 +200,12 @@ class SmsProcessingService : LifecycleService() {
                     withContext(Dispatchers.IO) { db.knowledgeBaseDao().insertAiAnalysisLog(log) }
                 }
 
-                // 5. Show notification with the suggested reply snippet
+                // 6. Update notification with the AI-generated reply snippet
                 showLiveHoneypotNotification(liveSession.id, sms.sender, suggestedReply)
 
             } catch (e: Exception) {
                 Log.e(TAG, "Auto-analysis failed for follow-up", e)
-                // Still notify the user even if analysis failed
-                showLiveHoneypotNotification(liveSession.id, sms.sender, null)
+                // Preliminary notification already shown — no further action needed
             }
             return
         }
