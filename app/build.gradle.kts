@@ -97,6 +97,9 @@ dependencies {
     // Lifecycle
     implementation("androidx.lifecycle:lifecycle-service:2.8.4")
 
+    // Pull-to-refresh support for Threats and History tabs
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+
     // ML Kit bundled Latin text recognizer — on-device OCR for manual capture feature.
     // Bundled (not play-services) so scanning works immediately without a model download.
     implementation("com.google.mlkit:text-recognition:16.0.1")
