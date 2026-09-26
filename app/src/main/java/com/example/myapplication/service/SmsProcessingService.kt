@@ -1,119 +1,351 @@
-// service/SmsProcessingService.kt
+package com.example.myapplication.service
+
+import android.app.Notification
+import android.app.NotificationManager
+import android.content.Intent
+import android.os.Build
+import android.util.Log
+import androidx.core.app.NotificationCompat
+import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.lifecycleScope
+import com.example.myapplication.R
+import com.example.myapplication.filter.FilterResult
+import com.example.myapplication.filter.SmsPreFilter
+import com.example.myapplication.llm.CloudReplyGenerator
+import com.example.myapplication.llm.ConsentPreferenceManager
+import com.example.myapplication.model.AiAnalysisLog
+import com.example.myapplication.model.IncomingSms
+import com.example.myapplication.model.SimulatedMessage
+import com.example.myapplication.model.SimulationSession
+import com.example.myapplication.knowledge.KnowledgeBaseDatabase
+import com.example.myapplication.preprocessor.SmsPreprocessor
+import com.example.myapplication.trigger.TriggerEngine
+import com.example.myapplication.engine.ScamDetectionEngineManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
+
 class SmsProcessingService : LifecycleService() {
 
-    private lateinit var db: KnowledgeBaseDatabase
-    private lateinit var embedder: ScamTextEmbedder
-    private lateinit var vectorSearch: VectorSearchEngine
-    private lateinit var llmClassifier: ScamLlmClassifier
-
-    // In-memory conversation store: senderNumber → list of messages
-    private val conversationStore = mutableMapOf<String, MutableList<String>>()
+    /**
+     * Serialises SMS processing so only ONE message runs through the heavy
+     * LLM/embedding pipeline at a time. This prevents RAM exhaustion when the
+     * phone receives a burst of messages (e.g. 5 spam SMSes in quick succession)
+     * which would otherwise start 5 simultaneous Gemma inference jobs.
+     */
+    private val processingMutex = Mutex()
 
     override fun onCreate() {
         super.onCreate()
-        db = KnowledgeBaseDatabase.getInstance(this)
-        embedder = ScamTextEmbedder(this)
-        vectorSearch = VectorSearchEngine(db, embedder)
-        llmClassifier = ScamLlmClassifier(this)
-
-        // Pre-compute KB embeddings on first launch (runs once, ~2-5s)
-        lifecycleScope.launch(Dispatchers.IO) {
-            if (db.knowledgeBaseDao().count() > 0 &&
-                db.knowledgeBaseDao().getAll().first().embeddingBlob.isEmpty()) {
-                vectorSearch.precomputeEmbeddings()
-            }
-        }
+        Log.d(TAG, "onCreate - starting foreground")
+        startForegroundWithNotification()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
+        Log.d(TAG, "onStartCommand - intent action: ${intent?.action}")
 
-        val incomingSms = intent?.getParcelableExtra<IncomingSms>("sms")
-            ?: return START_NOT_STICKY
+        // Safe parcelable extraction for both old and new Android APIs
+        val incomingSms: IncomingSms? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent?.getParcelableExtra("sms", IncomingSms::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            intent?.getParcelableExtra("sms")
+        }
+
+        if (incomingSms == null) {
+            Log.w(TAG, "Received start command with no SMS payload — ignoring.")
+            return START_NOT_STICKY
+        }
+
+        Log.d(TAG, "SMS received from: [${incomingSms.sender}] body: ${incomingSms.body.take(50)}")
 
         lifecycleScope.launch {
-            processSms(incomingSms)
+            try {
+                // Serialise: wait for any currently-running SMS processing to finish
+                // before starting the next one. This prevents concurrent LLM inference.
+                processingMutex.withLock {
+                    processSms(incomingSms)
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error processing SMS", e)
+            }
         }
 
         return START_NOT_STICKY
     }
 
     private suspend fun processSms(sms: IncomingSms) {
-
-        // --- STAGE 1: Pre-filter (sync, ~1ms) ---
+        // STAGE 1: Lightweight pre-filter
         val filterResult = SmsPreFilter.shouldIgnore(sms.sender, sms.body)
+        Log.d(TAG, "Filter result: $filterResult")
         if (filterResult == FilterResult.IGNORE) return
 
-        // --- STAGE 2: Preprocess (sync, ~5ms) ---
+        // STAGE 2: Preprocess
         val preprocessed = withContext(Dispatchers.Default) {
             SmsPreprocessor.process(sms)
         }
+        Log.d(TAG, "Preprocessed. Sender type: ${preprocessed.senderType}")
 
-        // --- STAGE 3: Track conversation ---
-        val history = conversationStore.getOrPut(sms.sender) { mutableListOf() }
-        history.add("[${sms.sender}]: ${sms.body}")
-        // Keep last 10 messages to bound memory + context window
-        if (history.size > 10) history.removeAt(0)
+        // STAGE 3: Build conversation history from DB (survives service restarts)
+        // We look up any prior live session for this sender and load the last 10 messages.
+        // This replaces the old volatile in-memory conversationStore which was wiped on every
+        // service kill — a common occurrence on MIUI/OxygenOS devices.
+        val db = KnowledgeBaseDatabase.getInstance(this@SmsProcessingService)
+        val history: List<String> = withContext(Dispatchers.IO) {
+            val existingSession = db.knowledgeBaseDao().getLiveSessionByAttackerPhone(sms.sender)
+            if (existingSession != null) {
+                db.knowledgeBaseDao().getSimulationHistory(existingSession.id)
+                    .takeLast(10)
+                    .map { "[${it.senderType}]: ${it.content}" }
+            } else {
+                emptyList()
+            }
+        }
 
-        val conversationText = history.joinToString("\n")
-
-        // --- STAGE 4: Trigger check (sync, ~2ms) ---
+        // STAGE 4: Trigger engine - fast heuristic check
         val triggerResult = TriggerEngine.evaluate(preprocessed, history)
-        if (!triggerResult.shouldProcess) return
+        Log.d(TAG, "Trigger result: shouldProcess=${triggerResult.shouldProcess}, triggers=${triggerResult.firedTriggers}")
 
-        // --- STAGE 5: Embed + Vector Search (async, ~15ms total) ---
-        val kbResults = withContext(Dispatchers.Default) {
-            vectorSearch.search(
-                queryText = conversationText,
-                topK = 3,
-                minSimilarity = 0.45f
+        // Check DB for existing live session for this sender (db already initialised in Stage 3)
+        val liveSession = withContext(Dispatchers.IO) {
+            db.knowledgeBaseDao().getLiveSessionByAttackerPhone(sms.sender)
+        }
+
+        if (liveSession != null) {
+            // ── Ongoing live honeypot: auto-analyse and generate reply ────────
+            Log.d(TAG, "Ongoing live session found: ${liveSession.id} — auto-analysing")
+
+            // 1. Save the incoming message
+            val savedMsgId = withContext(Dispatchers.IO) {
+                db.knowledgeBaseDao().insertSimulatedMessage(
+                    SimulatedMessage(
+                        sessionId = liveSession.id,
+                        senderType = "A",
+                        content = sms.body,
+                        timestamp = sms.timestamp
+                    )
+                )
+            }
+            val messageId = savedMsgId.toInt()
+
+            // 2. Run the engine using the prior scam context (fast path)
+            try {
+                val engine = ScamDetectionEngineManager.getEngine(this@SmsProcessingService)
+                val historyFromDb = withContext(Dispatchers.IO) {
+                    db.knowledgeBaseDao().getSimulationHistory(liveSession.id)
+                }
+                val engineHistory = historyFromDb
+                    .filter { it.id != messageId }
+                    .map { "[${it.senderType}]: ${it.content}" }
+
+                val priorScamLog = withContext(Dispatchers.IO) {
+                    db.knowledgeBaseDao().getFirstScamLogForSession(liveSession.id)
+                }
+
+                val result = withContext(Dispatchers.Default) {
+                    if (priorScamLog != null) {
+                        engine.processConfirmedScamFollowUp(
+                            sms = sms,
+                            history = engineHistory,
+                            originalScamType = priorScamLog.scamType,
+                            originalConfidence = priorScamLog.confidence,
+                            explicitSessionId = liveSession.id
+                        )
+                    } else {
+                        engine.processMessage(sms, engineHistory, explicitSessionId = liveSession.id)
+                    }
+                }
+
+                // 3. Generate suggested reply using existing consent (no dialog needed)
+                val consentManager = ConsentPreferenceManager(this@SmsProcessingService)
+                val cloudGranted = consentManager.getConsent(sms.sender) == true
+                val scamType = result.scamResult?.scamType ?: priorScamLog?.scamType ?: "unknown"
+
+                val suggestedReply = if (cloudGranted) {
+                    val cloudHistory = engineHistory + "[A]: ${sms.body}"
+                    CloudReplyGenerator.generateReply(cloudHistory, scamType)
+                } else {
+                    // Use what the engine already generated; it's non-empty for scam messages
+                    result.suggestedReply.takeIf { it.isNotBlank() }
+                        ?: "Could you share more details before I proceed?"
+                }
+
+                // 4. Save analysis log with reply
+                val scamResult = result.scamResult
+                if (scamResult != null) {
+                    val log = AiAnalysisLog(
+                        messageId = messageId,
+                        confidence = scamResult.confidence,
+                        isScam = scamResult.isScam,
+                        scamType = scamResult.scamType,
+                        reason = scamResult.reasoning.takeIf { it.isNotBlank() } ?: "Follow-up message in confirmed scam session.",
+                        firedTriggers = result.triggerResult?.firedTriggers?.joinToString(",") ?: "",
+                        kbMatches = "",
+                        evidenceFlagsJson = "[]",
+                        suggestedReply = suggestedReply,
+                        suggestedReplySource = if (cloudGranted) "cloud" else "local",
+                        timestamp = System.currentTimeMillis()
+                    )
+                    withContext(Dispatchers.IO) { db.knowledgeBaseDao().insertAiAnalysisLog(log) }
+                }
+
+                // 5. Show notification with the suggested reply snippet
+                showLiveHoneypotNotification(liveSession.id, sms.sender, suggestedReply)
+
+            } catch (e: Exception) {
+                Log.e(TAG, "Auto-analysis failed for follow-up", e)
+                // Still notify the user even if analysis failed
+                showLiveHoneypotNotification(liveSession.id, sms.sender, null)
+            }
+            return
+        }
+
+        if (!triggerResult.shouldProcess) {
+            Log.d(TAG, "Trigger engine decided not to process.")
+            return
+        }
+
+        // STAGE 5: Triggers fired — create session immediately, then run LLM
+        if (triggerResult.firedTriggers.isNotEmpty()) {
+            Log.d(TAG, "Suspicious triggers fired: ${triggerResult.firedTriggers}. Creating session and running engine...")
+
+            // Create a live honeypot session immediately — don't wait for LLM
+            // This ensures the session always appears in "View Live Honeypots"
+            val newSession = SimulationSession(
+                name = "[LIVE] Honeypot - ${sms.sender}",
+                attackerPhone = sms.sender
             )
-        }
-
-        // If no KB entries match at all, this is likely not a known scam pattern
-        // Use a lower-confidence fallback based on trigger count alone
-        if (kbResults.isEmpty() && triggerResult.priority == TriggerEngine.Priority.LOW) return
-
-        // --- STAGE 6: LLM Classification (async, ~500ms–2s on-device) ---
-        val result = withContext(Dispatchers.Default) {
-            llmClassifier.classify(
-                conversationText = conversationText,
-                retrievedKbEntries = kbResults,
-                firedTriggers = triggerResult.firedTriggers
-            )
-        }
-
-        // --- STAGE 7: Act on result ---
-        when {
-            result.isScam && result.confidence >= 0.85f -> {
-                showScamAlert(sms, result)
+            val savedMsgId = withContext(Dispatchers.IO) {
+                db.knowledgeBaseDao().insertSession(newSession)
+                Log.d(TAG, "Live session created: ${newSession.id} for ${sms.sender}")
+                db.knowledgeBaseDao().insertSimulatedMessage(
+                    SimulatedMessage(
+                        sessionId = newSession.id,
+                        senderType = "A",
+                        content = sms.body,
+                        timestamp = sms.timestamp
+                    )
+                )
             }
-            result.isScam && result.confidence >= 0.60f -> {
-                showWarningNotification(sms, result)
-            }
-            else -> {
-                logForMonitoring(sms, result, triggerResult)
+
+            // Show the actionable "Let AI Handle It" notification right away
+            showScamAlert(sms, "Suspicious message detected. Triggers: ${triggerResult.firedTriggers.joinToString()}", newSession.id)
+
+            // Now run the heavy LLM engine in the background for deeper analysis
+            // If it refutes the scam classification, we can archive the session
+            try {
+                val activeEngine = ScamDetectionEngineManager.getEngine(this@SmsProcessingService)
+                val engineHistory = history.toList()
+                val result = withContext(Dispatchers.Default) {
+                    activeEngine.processMessage(sms, engineHistory, explicitSessionId = newSession.id)
+                }
+
+                val scamResult = result.scamResult
+                Log.d(TAG, "Engine result: isScam=${scamResult?.isScam}, confidence=${scamResult?.confidence}")
+
+                if (scamResult != null && !scamResult.isScam) {
+                    // LLM says not a scam — archive the session so it doesn't clutter the live list
+                    Log.d(TAG, "LLM disagrees: not a scam. Archiving session ${newSession.id}.")
+                    withContext(Dispatchers.IO) {
+                        db.knowledgeBaseDao().archiveSession(newSession.id)
+                    }
+                }
+            } catch (e: Exception) {
+                // Engine failed — keep the session, better safe than sorry
+                Log.e(TAG, "Engine error (session kept): ${e.message}", e)
             }
         }
     }
 
-    private fun showScamAlert(sms: IncomingSms, result: ScamResult) {
-        // Fire high-priority notification
-        // Store to Room for report generation later
-        // Offer user the option to hand off to AI agent
+
+    // ─── Notification helpers ─────────────────────────────────────────────────
+
+    private fun startForegroundWithNotification() {
+        val channelId = com.example.myapplication.HoneypotApp.CHANNEL_SERVICE
+        val notif = NotificationCompat.Builder(this, channelId)
+            .setContentTitle("SMS Honeypot Active")
+            .setContentText("Monitoring incoming messages for scams...")
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setOngoing(true)
+            .build()
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(NOTIFICATION_ID, notif,
+                android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+        } else {
+            startForeground(NOTIFICATION_ID, notif)
+        }
+        Log.d(TAG, "startForeground called with channel: $channelId")
     }
 
-    private fun showWarningNotification(sms: IncomingSms, result: ScamResult) {
-        // Fire warning notification with "This looks suspicious"
+    private fun showScamAlert(sms: IncomingSms, reasoning: String, sessionId: String) {
+        val manager = getSystemService(NotificationManager::class.java)
+        val channelId = com.example.myapplication.HoneypotApp.CHANNEL_SCAM_ALERT
+
+        val pendingIntent = android.app.PendingIntent.getActivity(
+            this, sessionId.hashCode(),
+            Intent(this, com.example.myapplication.ui.HoneypotConversationActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                putExtra("EXTRA_SESSION_ID", sessionId)
+            },
+            android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notif = NotificationCompat.Builder(this, channelId)
+            .setContentTitle("🚨 Scam Detected: ${sms.sender}")
+            .setContentText(reasoning)
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setDefaults(Notification.DEFAULT_ALL)
+            .setAutoCancel(true)
+            .addAction(0, "Let AI Handle It", pendingIntent)
+            .setContentIntent(pendingIntent)
+            .build()
+        manager.notify(sms.sender.hashCode(), notif)
+        Log.d(TAG, "Scam alert notification shown on channel: $channelId")
     }
 
-    private fun logForMonitoring(sms: IncomingSms, result: ScamResult,
-                                 trigger: TriggerEngine.TriggerResult) {
-        // Write to a monitoring log table in Room — useful for debugging
+    private fun showLiveHoneypotNotification(sessionId: String, sender: String, suggestedReply: String? = null) {
+        val manager = getSystemService(NotificationManager::class.java)
+        val channelId = com.example.myapplication.HoneypotApp.CHANNEL_SCAM_ALERT
+
+        val pendingIntent = android.app.PendingIntent.getActivity(
+            this, sessionId.hashCode(),
+            Intent(this, com.example.myapplication.ui.HoneypotConversationActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                putExtra("EXTRA_SESSION_ID", sessionId)
+            },
+            android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val bodyText = if (!suggestedReply.isNullOrBlank())
+            "AI Reply ready: \"${suggestedReply.take(80)}…\""
+        else
+            "Tap to view conversation and respond."
+
+        val notif = NotificationCompat.Builder(this, channelId)
+            .setContentTitle("📩 Scammer replied: $sender")
+            .setStyle(NotificationCompat.BigTextStyle().bigText(bodyText))
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .build()
+        manager.notify(sender.hashCode(), notif)
+        Log.d(TAG, "Live honeypot notification shown. Reply ready: ${!suggestedReply.isNullOrBlank()}")
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        llmClassifier.close()
+        Log.d(TAG, "onDestroy")
+    }
+
+    companion object {
+        private const val TAG = "SmsProcessingService"
+        private const val NOTIFICATION_ID = 1001
     }
 }

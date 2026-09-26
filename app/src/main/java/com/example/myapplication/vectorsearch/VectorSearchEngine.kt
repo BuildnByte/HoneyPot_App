@@ -25,16 +25,33 @@ class VectorSearchEngine(
 
         val queryVector = embedder.embed(queryText)
 
+        // Fetch candidates. Note: Loading all into memory at once is fine for small KB (~1000 entries).
+        // For larger KBs, consider using a DB-native vector search or batched processing.
         val candidates: List<KnowledgeBaseEntry> = if (filterByTypes != null) {
             filterByTypes.flatMap { db.knowledgeBaseDao().getByType(it) }
         } else {
             db.knowledgeBaseDao().getAll()
         }
 
+        if (candidates.size > 1000) {
+            android.util.Log.w("VectorSearch", "Large KB detected (${candidates.size} entries). Linear scan may be slow.")
+        }
+
+        // Reuse a ByteBuffer to minimize allocations
+        val byteBuffer = java.nio.ByteBuffer.allocate(1024 * 4) // Assuming 256-dim float vector
+
         candidates
             .filter { entry -> entry.embeddingBlob.isNotEmpty() }
             .map { entry ->
-                val storedVector = byteArrayToFloatArray(entry.embeddingBlob)
+                val storedVector = if (entry.embeddingBlob.size <= byteBuffer.capacity()) {
+                    byteBuffer.clear()
+                    byteBuffer.put(entry.embeddingBlob)
+                    byteBuffer.flip()
+                    FloatArray(entry.embeddingBlob.size / 4) { byteBuffer.float }
+                } else {
+                    byteArrayToFloatArray(entry.embeddingBlob)
+                }
+                
                 val similarity = embedder.cosineSimilarity(queryVector, storedVector)
                 SearchResult(entry, similarity)
             }

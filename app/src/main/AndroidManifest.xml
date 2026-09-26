@@ -2,12 +2,19 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Network access — required for Safe Browsing API and Gemini Cloud reply generation -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <!-- SMS Permissions -->
     <uses-permission android:name="android.permission.RECEIVE_SMS"/>
     <uses-permission android:name="android.permission.READ_SMS"/>
+    <uses-permission android:name="android.permission.SEND_SMS"/>
 
     <!-- Phone state -->
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+
+    <!-- Boot receiver -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <!-- Foreground service -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
@@ -18,14 +25,36 @@
     <!-- Notification (Android 13+) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
+    <!-- Manual Capture: overlay window for scan button -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"
+        tools:ignore="ForegroundServicePermission"/>
+    <!-- Manual Capture: required foreground-service type for MediaProjection on API 29+ -->
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION"
+        tools:ignore="ForegroundServicePermission"/>
+
     <!-- Required when declaring SMS/Call permissions -->
     <uses-feature
         android:name="android.hardware.telephony"
         android:required="false"/>
 
+    <!-- Package queries for settings intents (Android 11+) -->
+    <queries>
+        <intent>
+            <action android:name="android.settings.ACCESSIBILITY_SETTINGS" />
+        </intent>
+        <intent>
+            <action android:name="android.settings.action.MANAGE_OVERLAY_PERMISSION" />
+        </intent>
+    </queries>
+
     <application
         android:name=".HoneypotApp"
         android:allowBackup="true"
+        android:largeHeap="true"
+        android:enableOnBackInvokedCallback="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
@@ -35,12 +64,30 @@
         android:theme="@style/Theme.MyApplication"
         tools:targetApi="31">
 
+        <!-- Main Activity -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.SettingsActivity"
+            android:exported="false"
+            android:label="Settings"
+            android:theme="@style/Theme.MyApplication" />
+
         <!-- SMS BroadcastReceiver -->
+        <!-- NOTE: Do NOT add android:permission here. That attribute restricts who can SEND
+             the broadcast TO this receiver. Since the OS itself sends SMS_RECEIVED, adding
+             BROADCAST_SMS silently blocks all delivery on modern Android. -->
         <receiver
             android:name=".receiver.SmsReceiver"
-            android:exported="true"
-            android:permission="android.permission.BROADCAST_SMS">
-            <intent-filter android:priority="1000">
+            android:exported="true">
+            <intent-filter android:priority="999">
                 <action android:name="android.provider.Telephony.SMS_RECEIVED"/>
             </intent-filter>
         </receiver>
@@ -50,6 +97,121 @@
             android:name=".service.SmsProcessingService"
             android:foregroundServiceType="dataSync"
             android:exported="false"/>
+
+        <activity
+            android:name=".ui.SessionListActivity"
+            android:exported="false"
+            android:label="Testing Sandbox"
+            android:theme="@style/Theme.MyApplication" />
+
+        <activity
+            android:name=".ui.SimulationActivity"
+            android:exported="false"
+            android:label="Testing Session"
+            android:theme="@style/Theme.MyApplication" />
+
+        <activity
+            android:name=".ui.EvidenceActivity"
+            android:exported="false"
+            android:label="History"
+            android:theme="@style/Theme.MyApplication" />
+
+        <activity
+            android:name=".ui.EvidenceDetailActivity"
+            android:exported="false"
+            android:label="Session Evidence"
+            android:theme="@style/Theme.MyApplication" />
+
+        <activity
+            android:name=".ui.HoneypotConversationActivity"
+            android:exported="false"
+            android:label="Flagged Conversation"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.MyApplication" />
+
+        <!-- ── Manual Capture Feature ───────────────────────────────────────── -->
+
+        <!-- Quick Settings tile — lets user toggle the scan overlay -->
+        <service
+            android:name=".manualcapture.ScanQuickSettingsTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_scan"
+            android:label="Scan message"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.service.quicksettings.TOGGLEABLE_TILE"
+                android:value="true" />
+        </service>
+
+        <!-- Floating overlay service — draws the scan button over other apps and captures screenshots -->
+        <service
+            android:name=".manualcapture.ScanOverlayService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse|mediaProjection">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Floating scan button overlay for scam analysis" />
+        </service>
+
+        <!-- Silent Google Lens-style accessibility screenshot service -->
+        <service
+            android:name=".manualcapture.HoneypotAccessibilityService"
+            android:exported="false"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
+        <!-- One-shot screen-capture service — uses MediaProjection foreground type -->
+        <service
+            android:name=".manualcapture.OneShotCaptureService"
+            android:exported="false"
+            android:foregroundServiceType="mediaProjection" />
+
+        <!-- In-app MediaProjection consent explainer -->
+        <activity
+            android:name=".manualcapture.CaptureConsentActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MyApplication" />
+
+        <!-- OCR review + text selection UI -->
+        <activity
+            android:name=".manualcapture.CaptureReviewActivity"
+            android:exported="false"
+            android:label="Review captured message"
+            android:theme="@style/Theme.MyApplication" />
+
+        <!-- Analysis result view -->
+        <activity
+            android:name=".manualcapture.ManualAnalysisActivity"
+            android:exported="false"
+            android:label="Scan Result"
+            android:theme="@style/Theme.MyApplication" />
+
+        <!-- Cross-app scanning settings screen -->
+        <activity
+            android:name=".manualcapture.CrossAppSettingsActivity"
+            android:exported="false"
+            android:label="Cross-app scanning"
+            android:theme="@style/Theme.MyApplication" />
+
+        <!-- FileProvider for sharing PDF reports -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
     </application>
 

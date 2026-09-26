@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <!-- Compact shield button (always visible) -->
+    <LinearLayout
+        android:id="@+id/btnShield"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="@drawable/bg_overlay_shield"
+        android:elevation="6dp"
+        android:contentDescription="Honeypot scan overlay — tap to expand, drag to move">
+        <!-- Drawable wrapping required: tint is attr-based -->
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:src="@drawable/ic_scan"
+            app:tint="@android:color/white"
+            android:contentDescription="@null" />
+    </LinearLayout>
+
+    <!-- Expanded card (hidden by default) -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardExpanded"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="8dp"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="56dp"
+        android:layout_marginTop="0dp"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <!-- App branding header -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_scan"
+                    app:tint="@color/brand_primary"
+                    android:contentDescription="@null"
+                    android:layout_marginEnd="6dp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Honeypot"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:textColor="@color/brand_primary" />
+                <View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1"/>
+                <!-- Close button -->
+                <TextView
+                    android:id="@+id/btnClose"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:gravity="center"
+                    android:text="✕"
+                    android:textSize="14sp"
+                    android:contentDescription="Close and disable scan overlay"
+                    android:padding="4dp" />
+            </LinearLayout>
+
+            <!-- Capture button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCapture"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Capture &amp; analyse"
+                android:textSize="13sp"
+                app:icon="@drawable/ic_scan"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:contentDescription="Take a screenshot for scam analysis" />
+
+            <!-- View result button (badge shown when result is ready) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnViewResult"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="View response"
+                android:textSize="13sp"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:contentDescription="View the latest scan response" />
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</FrameLayout>

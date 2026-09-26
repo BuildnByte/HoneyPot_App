@@ -1,0 +1,113 @@
+package com.example.myapplication.ui
+
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
+import com.example.myapplication.R
+import com.example.myapplication.model.ScamEvidence
+import com.example.myapplication.model.SimulatedMessage
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+sealed class TimelineItem {
+    abstract val timestamp: Long
+
+    data class Message(val msg: SimulatedMessage) : TimelineItem() {
+        override val timestamp: Long = msg.timestamp
+    }
+    
+    data class Evidence(val ev: ScamEvidence, val crossSessionSenders: List<String>) : TimelineItem() {
+        override val timestamp: Long = ev.timestamp
+    }
+}
+
+class TimelineAdapter(
+    private val items: List<TimelineItem>
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+    companion object {
+        private const val TYPE_MESSAGE_A = 0
+        private const val TYPE_MESSAGE_V = 1
+        private const val TYPE_EVIDENCE = 2
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        return when (val item = items[position]) {
+            is TimelineItem.Message -> if (item.msg.senderType == "A") TYPE_MESSAGE_A else TYPE_MESSAGE_V
+            is TimelineItem.Evidence -> TYPE_EVIDENCE
+        }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        val inflater = LayoutInflater.from(parent.context)
+        return when (viewType) {
+            TYPE_MESSAGE_A -> {
+                val view = inflater.inflate(R.layout.item_message_a, parent, false)
+                MessageViewHolder(view)
+            }
+            TYPE_MESSAGE_V -> {
+                val view = inflater.inflate(R.layout.item_message_v, parent, false)
+                MessageViewHolder(view)
+            }
+            else -> {
+                // Reuse the same layout we use for grouped evidence
+                val view = inflater.inflate(R.layout.item_evidence_detail, parent, false)
+                EvidenceViewHolder(view)
+            }
+        }
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        when (val item = items[position]) {
+            is TimelineItem.Message -> (holder as MessageViewHolder).bind(item.msg)
+            is TimelineItem.Evidence -> (holder as EvidenceViewHolder).bind(item.ev, item.crossSessionSenders)
+        }
+    }
+
+    override fun getItemCount() = items.size
+
+    class MessageViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        private val textMsg = view.findViewById<TextView>(R.id.messageText)
+        private val textTime = view.findViewById<TextView>(R.id.timeText)
+        // Ensure brain indicator is hidden since this is just a view log
+        private val brainIndicator = view.findViewById<TextView>(R.id.brainIndicator)
+
+        fun bind(msg: SimulatedMessage) {
+            textMsg.text = msg.content
+            textTime.text = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(msg.timestamp))
+            brainIndicator?.visibility = View.GONE
+            
+            // disable clicking so it doesn't try to analyze
+            itemView.findViewById<View>(R.id.messageCard)?.isClickable = false
+        }
+    }
+
+    class EvidenceViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        private val headerText = view.findViewById<TextView>(R.id.evidenceTypeHeader)
+        private val cardContainer = view.findViewById<View>(R.id.evidenceValue).parent as View
+        private val valueText = view.findViewById<TextView>(R.id.evidenceValue)
+        private val sourceText = view.findViewById<TextView>(R.id.evidenceSource)
+        private val badgeText = view.findViewById<TextView>(R.id.evidenceSeenElsewhere)
+
+        fun bind(evidence: ScamEvidence, crossSessionSenders: List<String>) {
+            headerText.visibility = View.VISIBLE
+            headerText.text = "EXTRACTED ${evidence.entityType}"
+            headerText.setTextColor(android.graphics.Color.parseColor("#B71C1C")) // Make it stand out
+            
+            cardContainer.visibility = View.VISIBLE
+            
+            valueText.text = evidence.entityValue
+            sourceText.visibility = View.GONE // We already see the source in the timeline
+            
+            if (crossSessionSenders.isNotEmpty()) {
+                badgeText.visibility = View.VISIBLE
+                badgeText.text = "🔗 Also seen in: ${crossSessionSenders.joinToString(", ")}"
+            } else {
+                badgeText.visibility = View.GONE
+            }
+        }
+    }
+}
