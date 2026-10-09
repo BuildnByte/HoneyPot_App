@@ -47,6 +47,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var historyAdapter: com.example.myapplication.ui.EvidenceSessionAdapter
     private lateinit var scansAdapter: com.example.myapplication.ui.SessionAdapter
 
+    private var currentHistoryFilter = "ALL"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -107,21 +109,27 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<View>(R.id.liveHoneypotButton).setOnClickListener {
-            findViewById<BottomNavigationView>(R.id.bottomNavigation).selectedItemId = R.id.nav_messages
+            findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottomNavigation).selectedItemId = R.id.nav_messages
         }
 
-        findViewById<View>(R.id.openMessagesButton).setOnClickListener {
-            loadInlineSections()
+        // ── Quick Actions ───────────────────────────────────────────────────
+        findViewById<View>(R.id.chipScanMessage).setOnClickListener {
+            startActivity(android.content.Intent(this, com.example.myapplication.manualcapture.CrossAppSettingsActivity::class.java))
         }
-        findViewById<View>(R.id.openHistoryButton).setOnClickListener {
-            loadInlineSections()
+
+        findViewById<View>(R.id.chipViewThreats).setOnClickListener {
+            findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottomNavigation).selectedItemId = R.id.nav_messages
         }
-        findViewById<View>(R.id.openSandboxButton).setOnClickListener {
-            showCreateSessionSheet()
+
+        findViewById<View>(R.id.chipFileReport).setOnClickListener {
+            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://cybercrime.gov.in/"))
+            startActivity(intent)
         }
-        findViewById<View>(R.id.openScansButton)?.setOnClickListener {
-            loadInlineSections()
-        }
+
+        // openMessagesButton and openHistoryButton removed in redesigned layout
+        // Scans FAB and sandbox FAB are wired via the new ExtendedFAB IDs
+        try { findViewById<View>(R.id.openSandboxButton)?.setOnClickListener { showCreateSessionSheet() } } catch (_: Exception) {}
+        try { findViewById<View>(R.id.openScansButton)?.setOnClickListener { loadInlineSections() } } catch (_: Exception) {}
 
         // ── Debug buttons ───────────────────────────────────────────────────
 
@@ -179,11 +187,41 @@ class MainActivity : AppCompatActivity() {
             onClick = { session -> startActivity(Intent(this, com.example.myapplication.ui.SimulationActivity::class.java).apply { putExtra("EXTRA_SESSION_ID", session.id) }) },
             onLongClick = { session -> showInlineSessionOptions(session.id, session.name) }
         )
+        // Threats tab (full list) — this is the only messagesRecyclerView now
         findViewById<RecyclerView>(R.id.messagesRecyclerView).apply { layoutManager = LinearLayoutManager(this@MainActivity); adapter = liveAdapter }
+        // Home tab recent-activity preview — separate ID, shares same adapter
+        findViewById<RecyclerView?>(R.id.recentActivityRecyclerView)?.apply { layoutManager = LinearLayoutManager(this@MainActivity); adapter = liveAdapter }
         findViewById<RecyclerView>(R.id.sandboxRecyclerView).apply { layoutManager = LinearLayoutManager(this@MainActivity); adapter = sandboxAdapter }
         findViewById<RecyclerView>(R.id.historyRecyclerView).apply { layoutManager = LinearLayoutManager(this@MainActivity); adapter = historyAdapter }
-        findViewById<RecyclerView>(R.id.scansRecyclerView)?.apply { layoutManager = LinearLayoutManager(this@MainActivity); adapter = scansAdapter }
+        findViewById<RecyclerView?>(R.id.scansRecyclerView)?.apply { layoutManager = LinearLayoutManager(this@MainActivity); adapter = scansAdapter }
+
+        // Setup Swipe Refresh
+        findViewById<androidx.swiperefreshlayout.widget.SwipeRefreshLayout>(R.id.messagesContent).setOnRefreshListener { loadInlineSections() }
+        findViewById<androidx.swiperefreshlayout.widget.SwipeRefreshLayout>(R.id.historySwipeRefresh).setOnRefreshListener { loadInlineSections() }
+
+        setupHistoryFilters()
         loadInlineSections()
+    }
+
+    private fun setupHistoryFilters() {
+        val all = findViewById<TextView>(R.id.filterAll)
+        val high = findViewById<TextView>(R.id.filterHighRisk)
+        val low = findViewById<TextView>(R.id.filterLowRisk)
+        val reported = findViewById<TextView>(R.id.filterReported)
+        val chips = listOf(all, high, low, reported)
+
+        fun updateChips(active: TextView) {
+            chips.forEach { chip ->
+                chip.setBackgroundResource(if (chip == active) R.drawable.bg_chip_active else R.drawable.bg_chip_neutral)
+                chip.setTextColor(getColor(if (chip == active) R.color.text_primary else R.color.text_secondary))
+                if (chip == active) chip.setTypeface(null, android.graphics.Typeface.BOLD) else chip.setTypeface(null, android.graphics.Typeface.NORMAL)
+            }
+        }
+
+        all.setOnClickListener { currentHistoryFilter = "ALL"; updateChips(all); loadInlineSections() }
+        high.setOnClickListener { currentHistoryFilter = "HIGH_RISK"; updateChips(high); loadInlineSections() }
+        low.setOnClickListener { currentHistoryFilter = "LOW_RISK"; updateChips(low); loadInlineSections() }
+        reported.setOnClickListener { currentHistoryFilter = "REPORTED"; updateChips(reported); loadInlineSections() }
     }
 
     private fun loadInlineSections() {
@@ -193,15 +231,25 @@ class MainActivity : AppCompatActivity() {
             val sandbox = dao.getSimulatedSessions()
             val scans = dao.getOverlayCaptureSessions()
             val history = dao.getEvidenceSessionSummaries()
+            val filteredHistory = when (currentHistoryFilter) {
+                "HIGH_RISK" -> history.filter { it.maxConfidence != null && it.maxConfidence >= 0.8f }
+                "LOW_RISK" -> history.filter { it.maxConfidence == null || it.maxConfidence < 0.8f }
+                "REPORTED" -> history.filter { it.reportedAt != null }
+                else -> history
+            }
             withContext(Dispatchers.Main) {
                 liveAdapter.submitList(live)
                 sandboxAdapter.submitList(sandbox)
                 scansAdapter.submitList(scans)
-                historyAdapter.setItems(history)
-                findViewById<View>(R.id.messagesEmptyText).visibility = if (live.isEmpty()) View.VISIBLE else View.GONE
-                findViewById<View>(R.id.historyEmptyText).visibility = if (history.isEmpty()) View.VISIBLE else View.GONE
+                historyAdapter.setItems(filteredHistory)
+                findViewById<View?>(R.id.recentActivityEmptyText)?.visibility = if (live.isEmpty()) View.VISIBLE else View.GONE
+                findViewById<View>(R.id.historyEmptyText).visibility = if (filteredHistory.isEmpty()) View.VISIBLE else View.GONE
                 findViewById<View>(R.id.sandboxEmptyText).visibility = if (sandbox.isEmpty()) View.VISIBLE else View.GONE
-                findViewById<View>(R.id.scansEmptyText)?.visibility = if (scans.isEmpty()) View.VISIBLE else View.GONE
+                findViewById<View?>(R.id.scansEmptyText)?.visibility = if (scans.isEmpty()) View.VISIBLE else View.GONE
+                
+                // Stop swipe refresh spinners if active
+                findViewById<androidx.swiperefreshlayout.widget.SwipeRefreshLayout>(R.id.messagesContent).isRefreshing = false
+                findViewById<androidx.swiperefreshlayout.widget.SwipeRefreshLayout>(R.id.historySwipeRefresh).isRefreshing = false
             }
         }
     }

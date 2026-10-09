@@ -50,6 +50,7 @@ class HoneypotConversationActivity : AppCompatActivity() {
     private lateinit var suggestionContainer: View
     private lateinit var suggestionText: TextView
     private lateinit var useSuggestionButton: MaterialButton
+    private var scamAlertBanner: View? = null
 
     private lateinit var sessionId: String
     private var attackerPhone: String = ""
@@ -85,26 +86,24 @@ class HoneypotConversationActivity : AppCompatActivity() {
 
         recyclerView = findViewById(R.id.chatRecyclerView)
         adapter = ChatAdapter { messageId -> handleBrainClick(messageId) }
-        recyclerView.layoutManager = LinearLayoutManager(this).apply { stackFromEnd = true }
+        // Messages flow from top — stackFromEnd=false
+        recyclerView.layoutManager = LinearLayoutManager(this).apply { stackFromEnd = false }
         recyclerView.adapter = adapter
 
         messageInput = findViewById(R.id.messageInput)
         sendButton = findViewById(R.id.sendButton)
-        suggestionContainer = findViewById(R.id.suggestionContainer)
-        suggestionText = findViewById(R.id.suggestionText)
-        useSuggestionButton = findViewById(R.id.useSuggestionButton)
 
+        // Send button: send whatever is typed in the field
         sendButton.setOnClickListener {
             val text = messageInput.text.toString().trim()
-            if (text.isNotEmpty()) attemptSendSms(text)
+            if (text.isNotEmpty()) {
+                attemptSendSms(text)
+                messageInput.setText("")
+            }
         }
 
-        useSuggestionButton.setOnClickListener {
-            val text = suggestionText.text.toString()
-            messageInput.setText(text)
-            suggestionContainer.visibility = View.GONE
-            if (text.isNotBlank()) attemptSendSms(text)
-        }
+        // Scam alert banner + end session
+        scamAlertBanner = findViewById(R.id.scamAlertBanner)
     }
 
     // ── Real-time message observation ─────────────────────────────────────────
@@ -153,27 +152,25 @@ class HoneypotConversationActivity : AppCompatActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 db.knowledgeBaseDao().observeLatestSuggestedReply(sessionId).collect { log ->
-                    if (log == null) {
-                        suggestionContainer.visibility = View.GONE
-                        return@collect
-                    }
+                    if (log == null) return@collect
 
                     // Only surface if the last message is unanswered attacker turn
                     val lastMsg = withContext(Dispatchers.IO) {
                         db.knowledgeBaseDao().getSimulationHistory(sessionId).lastOrNull()
                     }
                     if (lastMsg != null && lastMsg.senderType == "A") {
-                        suggestionText.text = log.suggestedReply
-                        suggestionContainer.visibility = View.VISIBLE
-                    } else {
-                        suggestionContainer.visibility = View.GONE
+                        // Directly fill the text box
+                        if (messageInput.text.toString().isBlank()) {
+                            messageInput.setText(log.suggestedReply)
+                            messageInput.setSelection(log.suggestedReply.length)
+                        }
                     }
                 }
             }
         }
     }
 
-    /** Load one-time static data (session phone number, toolbar subtitle). */
+    /** Load one-time static data (session phone, toolbar title). */
     private fun loadStaticSessionMeta() {
         lifecycleScope.launch(Dispatchers.IO) {
             val session = db.knowledgeBaseDao().getSession(sessionId)
@@ -183,8 +180,26 @@ class HoneypotConversationActivity : AppCompatActivity() {
             }
             attackerPhone = session.attackerPhone
             withContext(Dispatchers.Main) {
-                supportActionBar?.title = "Flagged Conversation"
-                supportActionBar?.subtitle = session.attackerPhone
+                // Clean title: masked number for phone sessions, plain label for manual captures
+                val rawName = session.attackerPhone.ifBlank { session.name }
+                val isManualCapture = session.name.contains("MANUAL_CAPTURE", ignoreCase = true)
+                    || session.name.contains("CAPTURE", ignoreCase = true)
+                    || session.attackerPhone.isBlank()
+                val title = when {
+                    isManualCapture -> "Screenshot Analysis"
+                    rawName.matches(Regex(".*\\d{10,}.*")) -> {
+                        // Mask the phone: keep last 4, show +91 XXXXX XXXX
+                        val digits = rawName.filter { it.isDigit() }.takeLast(10)
+                        val last4 = digits.takeLast(4)
+                        val first2 = digits.take(2)
+                        "+91 XXXXX $last4"
+                    }
+                    else -> rawName.removePrefix("Honeypot - ").removePrefix("[CAPTURE] ")
+                        .replace("MANUAL_CAPTURE", "Manual Scan")
+                        .trim()
+                }
+                supportActionBar?.title = title
+                supportActionBar?.subtitle = "Honeypot Session"
             }
         }
     }

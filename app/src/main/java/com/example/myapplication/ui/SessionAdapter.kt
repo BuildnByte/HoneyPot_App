@@ -34,37 +34,55 @@ class SessionAdapter(
 
         private val nameView: TextView = itemView.findViewById(R.id.sessionName)
         private val dateView: TextView = itemView.findViewById(R.id.sessionDate)
-        private val attackerView: TextView = itemView.findViewById(R.id.sessionAttacker)
+        private val countView: TextView = itemView.findViewById(R.id.sessionAttacker)
+        private val scamTypeView: TextView = itemView.findViewById(R.id.sessionScamType)
         private val notesView: TextView = itemView.findViewById(R.id.sessionNotes)
+        private val iconCard: com.google.android.material.card.MaterialCardView = itemView.findViewById(R.id.sessionIconCard)
+        private val iconView: android.widget.ImageView = itemView.findViewById(R.id.sessionIconView)
 
         fun bind(session: SimulationSession) {
+            val rawName = session.attackerPhone.ifBlank { session.name }
+            val isManualCapture = session.name.contains("MANUAL_CAPTURE", ignoreCase = true)
+                    || session.name.contains("CAPTURE", ignoreCase = true)
+                    || session.attackerPhone.isBlank()
+            
             val cleanName = when {
-                session.name.startsWith("[LIVE] ") -> session.name.removePrefix("[LIVE] ")
-                session.name.startsWith("[CAPTURE] ") -> {
-                    val rawLabel = session.name.removePrefix("[CAPTURE] ")
-                    val sourceApp = rawLabel.substringBefore(" 202")
-                    val appName = when {
-                        sourceApp.contains("whatsapp", ignoreCase = true) -> "WhatsApp Scan"
-                        sourceApp.contains("facebook", ignoreCase = true) -> "Facebook Scan"
-                        sourceApp.contains("instagram", ignoreCase = true) -> "Instagram Scan"
-                        sourceApp.contains("chrome", ignoreCase = true) -> "Browser Scan"
-                        sourceApp.contains("telegram", ignoreCase = true) -> "Telegram Scan"
-                        sourceApp.contains("messaging", ignoreCase = true) -> "SMS Scan"
-                        sourceApp.contains("mms", ignoreCase = true) -> "SMS Scan"
-                        else -> "Screen Scan"
-                    }
-                    "📷 $appName"
+                isManualCapture -> "Screenshot Analysis"
+                rawName.matches(Regex(".*\\d{10,}.*")) -> {
+                    val digits = rawName.filter { it.isDigit() }.takeLast(10)
+                    val last4 = digits.takeLast(4)
+                    "+91 XXXXX $last4"
                 }
-                else -> session.name
+                else -> rawName.removePrefix("Honeypot - ").removePrefix("[CAPTURE] ").removePrefix("[LIVE] ")
+                    .replace("MANUAL_CAPTURE", "Manual Scan")
+                    .trim()
             }
             nameView.text = cleanName
-            
-            val sender = if (session.attackerSenderId.isNotBlank()) {
-                "${session.attackerSenderId} (${session.attackerPhone})"
-            } else {
-                session.attackerPhone
+
+            val statusStr = if (session.isArchived) "Archived" else "Active"
+            countView.text = statusStr
+
+            // Scam type fallback for simple Session
+            val typeStr = if (isManualCapture) "Manual Scan" else "Flagged Threat"
+            scamTypeView.text = typeStr
+
+            val context = itemView.context
+            when {
+                isManualCapture -> {
+                    iconView.setImageResource(R.drawable.ic_scan)
+                    iconCard.setCardBackgroundColor(context.getColor(R.color.bg_surface))
+                    iconView.imageTintList = android.content.res.ColorStateList.valueOf(context.getColor(R.color.text_secondary))
+                    scamTypeView.setBackgroundResource(R.drawable.bg_badge_blue)
+                    scamTypeView.setTextColor(context.getColor(R.color.accent_blue))
+                }
+                else -> { 
+                    iconView.setImageResource(R.drawable.ic_message)
+                    iconCard.setCardBackgroundColor(context.getColor(R.color.badge_red_bg))
+                    iconView.imageTintList = android.content.res.ColorStateList.valueOf(context.getColor(R.color.accent_red))
+                    scamTypeView.setBackgroundResource(R.drawable.bg_badge_red)
+                    scamTypeView.setTextColor(context.getColor(R.color.accent_red))
+                }
             }
-            attackerView.text = "Sender: $sender"
 
             dateView.text = DateUtils.getRelativeTimeSpanString(
                 session.createdAt,

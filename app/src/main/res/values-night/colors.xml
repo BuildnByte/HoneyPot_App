@@ -11,4 +11,37 @@
     <color name="app_on_primary_container">#D9E2FF</color>
     <color name="app_tertiary_container">#5A3F68</color>
     <color name="app_on_tertiary_container">#F5D9FF</color>
+
+    <!-- Backgrounds -->
+    <color name="bg_primary">#080F1E</color>
+    <color name="bg_card">#0F1B2D</color>
+    <color name="bg_elevated">#16243A</color>
+    <color name="bg_surface">#1C2E47</color>
+
+    <!-- Accents -->
+    <color name="accent_red">#FF4757</color>
+    <color name="accent_green">#26D467</color>
+    <color name="accent_blue">#3B82F6</color>
+    <color name="accent_amber">#F59E0B</color>
+
+    <!-- Text -->
+    <color name="text_primary">#F0F4FF</color>
+    <color name="text_secondary">#7B8FAF</color>
+    <color name="text_muted">#4A5C7A</color>
+    <color name="text_on_accent">#FFFFFF</color>
+
+    <!-- Badge backgrounds -->
+    <color name="badge_red_bg">#2D0A0C</color>
+    <color name="badge_green_bg">#082A14</color>
+    <color name="badge_amber_bg">#2A1A02</color>
+    <color name="badge_blue_bg">#0A1A3A</color>
+
+    <!-- Structure -->
+    <color name="divider_color">#1A2A3F</color>
+    <color name="card_stroke">#1E3050</color>
+
+    <!-- Chat bubbles -->
+    <color name="bubble_attacker_bg">#2D0A0C</color>
+    <color name="bubble_honeypot_bg">#0A1A3A</color>
+    <color name="bubble_user_bg">#1C2E47</color>
 </resources>

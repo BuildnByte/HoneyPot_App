@@ -1,84 +1,158 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface">
+    android:background="@color/bg_primary">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="@color/bg_card"
+        app:elevation="0dp">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
+            android:background="@color/bg_card"
             app:title="Session Evidence"
-            app:navigationIcon="?attr/homeAsUpIndicator"/>
+            app:titleTextColor="@color/text_primary"
+            app:navigationIconTint="@color/text_secondary"
+            app:navigationIcon="?attr/homeAsUpIndicator" />
 
-        <com.google.android.material.button.MaterialButtonToggleGroup
-            android:id="@+id/viewToggleGroup"
+        <!-- 1dp divider -->
+        <View
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="1dp"
+            android:background="@color/divider_color" />
+
+        <!-- Segmented Evidence / Timeline control -->
+        <LinearLayout
+            android:id="@+id/segmentRow"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:orientation="horizontal"
             android:layout_marginHorizontal="16dp"
-            android:layout_marginBottom="8dp"
-            app:checkedButton="@+id/btnEvidenceView"
-            app:singleSelection="true">
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_segment_container">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnEvidenceView"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
-                style="?attr/materialButtonOutlinedStyle"
-                android:text="Evidence" />
+                android:text="Evidence"
+                android:textSize="14sp"
+                android:textColor="@color/text_primary"
+                app:backgroundTint="@color/bg_surface"
+                app:cornerRadius="8dp"
+                android:insetTop="2dp"
+                android:insetBottom="2dp"
+                android:insetLeft="2dp"
+                android:insetRight="2dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnTimelineView"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
-                style="?attr/materialButtonOutlinedStyle"
-                android:text="Timeline" />
-
-        </com.google.android.material.button.MaterialButtonToggleGroup>
+                android:text="Timeline"
+                android:textSize="14sp"
+                android:textColor="@color/text_secondary"
+                app:backgroundTint="@android:color/transparent"
+                app:cornerRadius="8dp"
+                android:insetTop="2dp"
+                android:insetBottom="2dp"
+                android:insetLeft="2dp"
+                android:insetRight="2dp" />
+        </LinearLayout>
 
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- Evidence/Timeline RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/detailRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:clipToPadding="false"
-        android:paddingBottom="140dp" />
+        android:paddingBottom="140dp"
+        android:paddingTop="4dp" />
 
+    <!-- Bottom action buttons -->
     <LinearLayout
         android:id="@+id/bottomActions"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:orientation="vertical"
-        android:padding="16dp"
-        android:background="?attr/colorSurface"
-        android:elevation="8dp">
+        android:background="@color/bg_card"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="16dp">
 
+        <!-- 1dp top divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="10dp"
+            android:background="@color/divider_color" />
+
+        <!-- PRIMARY: Share Crime Report — filled blue -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnExportReport"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="52dp"
             android:text="Share Crime Report"
-            app:icon="@drawable/ic_copy" />
+            android:textColor="@color/text_on_accent"
+            android:textSize="15sp"
+            app:icon="@drawable/ic_copy"
+            app:iconTint="@color/text_on_accent"
+            app:backgroundTint="@color/accent_blue"
+            app:cornerRadius="14dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp" />
 
+        <!-- SECONDARY: Report to Authorities — outlined blue -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnReportCybercrime"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/Widget.Material3.Button.TonalButton"
-            android:text="Report to cybercrime.gov.in"
+            android:layout_height="52dp"
             android:layout_marginTop="8dp"
-            app:icon="@drawable/ic_history" />
+            android:text="Report to Authorities"
+            android:textColor="@color/accent_blue"
+            android:textSize="15sp"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            app:icon="@drawable/ic_chevron_right"
+            app:iconTint="@color/accent_blue"
+            app:iconGravity="end"
+            app:strokeColor="@color/accent_blue"
+            app:cornerRadius="14dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp" />
     </LinearLayout>
+
+    <!-- hidden legacy toggle group — keeps viewToggleGroup ID alive for code refs -->
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/viewToggleGroup"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:checkedButton="@+id/btnEvidenceViewLegacy"
+        app:singleSelection="true">
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnEvidenceViewLegacy"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="Evidence" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTimelineViewLegacy"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:text="Timeline" />
+    </com.google.android.material.button.MaterialButtonToggleGroup>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

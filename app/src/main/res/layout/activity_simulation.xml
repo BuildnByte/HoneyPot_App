@@ -5,55 +5,69 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="?attr/colorSurface">
+    android:background="@color/bg_primary">
 
+    <!-- ── App bar ──────────────────────────────────────────────────────── -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/colorSurface"
+        android:background="@color/bg_card"
         app:elevation="0dp">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
+            android:background="@color/bg_card"
+            app:titleTextColor="@color/text_primary"
+            app:subtitleTextColor="@color/text_secondary"
+            app:navigationIconTint="@color/text_secondary"
             app:title="Testing Session"
-            app:navigationIcon="?attr/homeAsUpIndicator"/>
+            app:navigationIcon="?attr/homeAsUpIndicator" />
 
+        <!-- 1dp divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/divider_color" />
     </com.google.android.material.appbar.AppBarLayout>
 
-    <com.google.android.material.divider.MaterialDivider
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:dividerColor="?attr/colorOutlineVariant"/>
+
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chatRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="@color/chat_background"
         android:clipToPadding="false"
         android:paddingTop="8dp"
         android:paddingBottom="8dp"/>
 
-    <!-- Sender toggle + Input Bar -->
+    <!-- Bottom input area ────────────────────────────────────────────── -->
     <LinearLayout
         android:id="@+id/inputContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
         android:orientation="vertical"
-        android:background="?attr/colorSurfaceContainer"
+        android:background="@color/bg_card"
         android:paddingHorizontal="12dp"
         android:paddingTop="10dp"
         android:paddingBottom="12dp">
+
+        <!-- Top 1dp divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="10dp"
+            android:background="@color/divider_color" />
 
         <!-- Sender Toggle -->
         <com.google.android.material.button.MaterialButtonToggleGroup
             android:id="@+id/senderToggleGroup"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="36dp"
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="10dp"
             app:singleSelection="true"
@@ -62,73 +76,63 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/selectV"
-                style="@style/Widget.Material3.Button.TonalButton"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:text="Victim (V)"
-                android:textColor="@color/selector_v_button"
-                app:strokeColor="@color/selector_v_button"
-                app:strokeWidth="2dp"/>
+                android:textSize="13sp"
+                app:strokeColor="@color/accent_blue"
+                android:textColor="@color/text_primary" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/selectA"
-                style="@style/Widget.Material3.Button.TonalButton"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:text="Attacker (A)"
-                android:textColor="@color/selector_a_button"
-                app:strokeColor="@color/selector_a_button"
-                app:strokeWidth="2dp"/>
+                android:textSize="13sp"
+                app:strokeColor="@color/accent_red"
+                android:textColor="@color/text_primary" />
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
-        <!-- Text Input Row -->
+        <!-- Row 1: text input + send button -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
-            <com.google.android.material.textfield.TextInputLayout
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/messageInput"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense"
-                app:boxBackgroundColor="?attr/colorSurface"
-                app:boxCornerRadiusBottomEnd="24dp"
-                app:boxCornerRadiusBottomStart="24dp"
-                app:boxCornerRadiusTopEnd="24dp"
-                app:boxCornerRadiusTopStart="24dp"
-                app:boxStrokeColor="?attr/colorOutlineVariant">
+                android:background="@color/bg_elevated"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="12dp"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_muted"
+                android:hint="Type message here..."
+                android:textSize="15sp"
+                android:inputType="textMultiLine|textCapSentences"
+                android:maxLines="4" />
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/messageInput"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Type message here…"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textColorHint="?attr/colorOnSurfaceVariant"
-                    android:maxLines="4"
-                    android:inputType="textMultiLine|textCapSentences"
-                    android:autofillHints="none"/>
-
-            </com.google.android.material.textfield.TextInputLayout>
-
+            <!-- Send button (circle, accent_blue) -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/sendButton"
-                style="@style/Widget.Material3.Button.Icon"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_marginStart="8dp"
-                android:padding="0dp"
-                app:iconGravity="textStart"
-                app:iconPadding="0dp"
-                app:cornerRadius="24dp"
-                app:backgroundTint="?attr/colorPrimary"
                 app:icon="@drawable/ic_send"
-                app:iconSize="22dp"
-                app:iconTint="?attr/colorOnPrimary"
-                android:contentDescription="Send"/>
-
+                app:iconSize="20dp"
+                app:iconGravity="textStart"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:insetLeft="0dp"
+                android:insetRight="0dp"
+                app:backgroundTint="@color/accent_blue"
+                app:cornerRadius="24dp"
+                android:contentDescription="Send" />
         </LinearLayout>
     </LinearLayout>
 

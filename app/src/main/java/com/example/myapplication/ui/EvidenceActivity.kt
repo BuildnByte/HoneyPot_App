@@ -188,14 +188,27 @@ class EvidenceSessionAdapter(
         val onClick: (EvidenceSessionSummary) -> Unit,
         val onLongClick: (EvidenceSessionSummary) -> Unit
     ) : RecyclerView.ViewHolder(view) {
-        private val senderText = view.findViewById<TextView>(R.id.sessionSender)
-        private val dateText = view.findViewById<TextView>(R.id.sessionDate)
-        private val countText = view.findViewById<TextView>(R.id.sessionEvidenceCount)
+        private val titleText = view.findViewById<TextView>(R.id.sessionTitleText)
+        private val subtitleText = view.findViewById<TextView>(R.id.sessionSubtitleText)
+        private val dateText = view.findViewById<TextView>(R.id.sessionDateText)
         private val riskBadge = view.findViewById<TextView>(R.id.riskBadge)
         private val reportedBadge = view.findViewById<TextView>(R.id.reportedBadge)
+        private val iconCard = view.findViewById<com.google.android.material.card.MaterialCardView>(R.id.sessionIconCard)
+        private val iconView = view.findViewById<android.widget.ImageView>(R.id.sessionIconView)
 
         fun bind(summary: EvidenceSessionSummary) {
-            senderText.text = summary.sourceSender
+            // Mask the phone number for the title
+            val rawName = summary.sourceSender
+            val title = if (rawName.matches(Regex(".*\\d{10,}.*"))) {
+                val digits = rawName.filter { it.isDigit() }.takeLast(10)
+                val last4 = digits.takeLast(4)
+                "+91 XXXXX $last4"
+            } else {
+                rawName.removePrefix("Honeypot - ").removePrefix("[CAPTURE] ").replace("MANUAL_CAPTURE", "Manual Scan").trim()
+            }
+            titleText.text = title
+            
+            subtitleText.text = "${summary.evidenceCount} items captured"
             
             dateText.text = DateUtils.getRelativeTimeSpanString(
                 summary.lastTimestamp,
@@ -204,35 +217,41 @@ class EvidenceSessionAdapter(
                 DateUtils.FORMAT_ABBREV_RELATIVE
             )
             
-            countText.text = "${summary.evidenceCount} Evidence Items Captured"
-            
             // Bind Reported Status
             if (summary.reportedAt != null) {
                 reportedBadge.visibility = View.VISIBLE
-                val dateStr = java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.getDefault()).format(java.util.Date(summary.reportedAt))
-                reportedBadge.text = "✓ REPORTED ON ${dateStr.uppercase()}"
             } else {
                 reportedBadge.visibility = View.GONE
             }
 
-            // Bind Danger Score
+            // Bind Danger Score / Risk Level
             if (summary.maxConfidence != null) {
                 riskBadge.visibility = View.VISIBLE
+                val context = riskBadge.context
                 when {
                     summary.maxConfidence > 0.8f -> {
-                        riskBadge.text = "⚠️ HIGH RISK"
-                        riskBadge.setBackgroundColor(riskBadge.context.getColor(R.color.attacker_bubble_scam_bg))
-                        riskBadge.setTextColor(riskBadge.context.getColor(R.color.attacker_bubble_scam_stroke))
+                        riskBadge.text = "HIGH RISK"
+                        riskBadge.setBackgroundResource(R.drawable.bg_badge_red)
+                        riskBadge.setTextColor(context.getColor(R.color.accent_red))
+                        iconCard.setCardBackgroundColor(context.getColor(R.color.badge_red_bg))
+                        iconView.imageTintList = android.content.res.ColorStateList.valueOf(context.getColor(R.color.accent_red))
+                        iconView.setImageResource(R.drawable.ic_message)
                     }
                     summary.maxConfidence > 0.5f -> {
-                        riskBadge.text = "⚡ MEDIUM RISK"
-                        riskBadge.setBackgroundColor(riskBadge.context.getColor(R.color.attacker_bubble_warn_bg))
-                        riskBadge.setTextColor(riskBadge.context.getColor(R.color.attacker_bubble_warn_stroke))
+                        riskBadge.text = "MEDIUM RISK"
+                        riskBadge.setBackgroundResource(R.drawable.bg_badge_amber)
+                        riskBadge.setTextColor(context.getColor(R.color.accent_amber))
+                        iconCard.setCardBackgroundColor(context.getColor(R.color.badge_amber_bg))
+                        iconView.imageTintList = android.content.res.ColorStateList.valueOf(context.getColor(R.color.accent_amber))
+                        iconView.setImageResource(R.drawable.ic_sandbox)
                     }
                     else -> {
-                        riskBadge.text = "✅ LOW RISK"
-                        riskBadge.setBackgroundColor(riskBadge.context.getColor(R.color.attacker_bubble_safe_bg))
-                        riskBadge.setTextColor(riskBadge.context.getColor(R.color.attacker_bubble_safe_stroke))
+                        riskBadge.text = "LOW RISK"
+                        riskBadge.setBackgroundResource(R.drawable.bg_badge_green)
+                        riskBadge.setTextColor(context.getColor(R.color.accent_green))
+                        iconCard.setCardBackgroundColor(context.getColor(R.color.badge_green_bg))
+                        iconView.imageTintList = android.content.res.ColorStateList.valueOf(context.getColor(R.color.accent_green))
+                        iconView.setImageResource(R.drawable.ic_scan)
                     }
                 }
             } else {

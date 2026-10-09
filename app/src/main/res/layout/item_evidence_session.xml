@@ -1,41 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- WhatsApp-style evidence session list item — flat, no card shadow -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- History screen card — evidence session summary -->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:background="?attr/selectableItemBackground"
+    android:layout_marginHorizontal="8dp"
+    android:layout_marginVertical="6dp"
     android:clickable="true"
-    android:longClickable="true"
-    android:focusable="true">
+    android:focusable="true"
+    app:cardBackgroundColor="@color/bg_card"
+    app:cardCornerRadius="14dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="@color/card_stroke">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingTop="14dp"
-        android:paddingBottom="14dp"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:padding="14dp">
 
-        <!-- Avatar circle with alert/scam icon -->
+        <!-- Category icon circle -->
         <com.google.android.material.card.MaterialCardView
-            android:layout_width="52dp"
-            android:layout_height="52dp"
-            app:cardCornerRadius="26dp"
-            app:cardBackgroundColor="?attr/colorErrorContainer"
+            android:id="@+id/sessionIconCard"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            app:cardCornerRadius="22dp"
+            app:cardBackgroundColor="@color/badge_red_bg"
             app:cardElevation="0dp"
             app:strokeWidth="0dp">
+
             <ImageView
-                android:layout_width="26dp"
-                android:layout_height="26dp"
+                android:id="@+id/sessionIconView"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_message"
-                app:tint="?attr/colorOnErrorContainer"
-                android:contentDescription="Evidence"/>
+                android:contentDescription="Scam type"
+                app:tint="@color/accent_red" />
         </com.google.android.material.card.MaterialCardView>
 
         <!-- Content -->
@@ -43,100 +48,91 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_marginStart="14dp">
+            android:layout_marginStart="12dp"
+            android:orientation="vertical">
 
-            <!-- Sender + Date -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <TextView
-                    android:id="@+id/sessionSender"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:textSize="15sp"
-                    android:textStyle="bold"
-                    android:textColor="?attr/colorOnSurface"
-                    android:maxLines="1"
-                    android:ellipsize="end"
-                    tools:text="+91-9321101353"/>
-
-                <TextView
-                    android:id="@+id/sessionDate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:textSize="12sp"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    tools:text="3 hrs ago"/>
-            </LinearLayout>
-
-            <!-- Evidence count -->
+            <!-- Masked number / session title -->
             <TextView
-                android:id="@+id/sessionEvidenceCount"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="3dp"
-                android:textSize="13sp"
-                android:textColor="?attr/colorOnSurfaceVariant"
-                tools:text="12 Evidence Items Captured"/>
-
-            <!-- Badge row -->
-            <LinearLayout
+                android:id="@+id/sessionTitleText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="6dp">
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                tools:text="+91 XXXXX 1353" />
 
+            <!-- Scam type -->
+            <TextView
+                android:id="@+id/sessionSubtitleText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                tools:text="Lottery Scam" />
+
+            <!-- Message count + date row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="8dp">
+
+                <!-- HIGH RISK badge -->
                 <TextView
                     android:id="@+id/riskBadge"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/accent_red"
+                    android:background="@drawable/bg_badge_red"
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="3dp"
-                    android:textAppearance="?attr/textAppearanceLabelSmall"
-                    android:textStyle="bold"
                     android:visibility="gone"
-                    tools:visibility="visible"
-                    tools:text="⚠️ HIGH RISK"/>
+                    tools:text="High Risk"
+                    tools:visibility="visible" />
 
+                <!-- Reported badge — small, blue, checkmark -->
                 <TextView
                     android:id="@+id/reportedBadge"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="6dp"
+                    android:textSize="11sp"
+                    android:textColor="@color/accent_blue"
+                    android:background="@drawable/bg_badge_blue"
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="3dp"
-                    android:background="?attr/colorTertiaryContainer"
-                    android:textColor="?attr/colorOnTertiaryContainer"
-                    android:textAppearance="?attr/textAppearanceLabelSmall"
-                    android:textStyle="bold"
+                    android:text="Reported"
                     android:visibility="gone"
-                    tools:visibility="visible"
-                    tools:text="✓ REPORTED"/>
+                    tools:visibility="visible" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <!-- Date top-right -->
+                <TextView
+                    android:id="@+id/sessionDateText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="11sp"
+                    android:textColor="@color/text_muted"
+                    tools:text="Sep 11" />
             </LinearLayout>
         </LinearLayout>
 
         <!-- Chevron -->
         <ImageView
-            android:layout_width="18dp"
-            android:layout_height="18dp"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
             android:layout_marginStart="8dp"
             android:src="@drawable/ic_chevron_right"
-            app:tint="?attr/colorOnSurfaceVariant"
-            android:contentDescription="Open"/>
-
+            android:contentDescription="Open"
+            app:tint="@color/text_muted" />
     </LinearLayout>
 
-    <!-- Divider aligned with text content -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0.5dp"
-        android:layout_marginStart="82dp"
-        android:background="?attr/colorOutlineVariant"/>
-
-</LinearLayout>
+</com.google.android.material.card.MaterialCardView>

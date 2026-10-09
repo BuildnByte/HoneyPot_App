@@ -95,14 +95,23 @@ class EvidenceDetailActivity : AppCompatActivity() {
 
                 recyclerView.adapter = evidenceAdapter
 
-                val toggleGroup = findViewById<MaterialButtonToggleGroup>(R.id.viewToggleGroup)
-                toggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
-                    if (isChecked) {
-                        when (checkedId) {
-                            R.id.btnEvidenceView -> recyclerView.adapter = evidenceAdapter
-                            R.id.btnTimelineView -> recyclerView.adapter = timelineAdapter
-                        }
-                    }
+                val btnEvidence = findViewById<com.google.android.material.button.MaterialButton>(R.id.btnEvidenceView)
+                val btnTimeline = findViewById<com.google.android.material.button.MaterialButton>(R.id.btnTimelineView)
+
+                btnEvidence.setOnClickListener {
+                    recyclerView.adapter = evidenceAdapter
+                    btnEvidence.setBackgroundColor(getColor(R.color.bg_surface))
+                    btnEvidence.setTextColor(getColor(R.color.text_primary))
+                    btnTimeline.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                    btnTimeline.setTextColor(getColor(R.color.text_secondary))
+                }
+
+                btnTimeline.setOnClickListener {
+                    recyclerView.adapter = timelineAdapter
+                    btnTimeline.setBackgroundColor(getColor(R.color.bg_surface))
+                    btnTimeline.setTextColor(getColor(R.color.text_primary))
+                    btnEvidence.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                    btnEvidence.setTextColor(getColor(R.color.text_secondary))
                 }
 
                 setupButtons(sessionId, sourceSender, evidenceWithCounts)
@@ -274,36 +283,53 @@ class EvidenceDetailAdapter(
     override fun getItemCount() = items.size
 
     class HeaderViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        private val headerRow = view.findViewById<View>(R.id.evidenceTypeHeaderRow)
+        private val headerIcon = view.findViewById<android.widget.ImageView>(R.id.evidenceTypeIcon)
         private val headerText = view.findViewById<TextView>(R.id.evidenceTypeHeader)
         private val cardContainer = view.findViewById<View>(R.id.evidenceValue).parent as View
         
         fun bind(type: String) {
-            headerText.visibility = View.VISIBLE
-            headerText.text = "${type.uppercase()}S"
+            headerRow.visibility = View.VISIBLE
             cardContainer.visibility = View.GONE
+            
+            // Map raw types to clean labels
+            val label = when (type) {
+                "AMOUNT" -> "Financial Amounts"
+                "PERSON" -> "People Mentioned"
+                "ORGANIZATION" -> "Organisations"
+                "PHONE" -> "Phone Numbers"
+                "UPI_ID" -> "UPI IDs"
+                "URL" -> "Links & URLs"
+                "ACCOUNT" -> "Bank Accounts"
+                "EMAIL" -> "Email Addresses"
+                else -> "${type.lowercase().replaceFirstChar { it.uppercase() }}s"
+            }
+            
+            headerText.text = label
+            headerIcon.setImageResource(R.drawable.ic_history)
         }
     }
 
     class ItemViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        private val headerText = view.findViewById<TextView>(R.id.evidenceTypeHeader)
+        private val headerRow = view.findViewById<View>(R.id.evidenceTypeHeaderRow)
         private val cardContainer = view.findViewById<View>(R.id.evidenceValue).parent as View
         private val valueText = view.findViewById<TextView>(R.id.evidenceValue)
         private val sourceText = view.findViewById<TextView>(R.id.evidenceSource)
-        private val badgeText = view.findViewById<TextView>(R.id.evidenceSeenElsewhere)
+        private val badgeContainer = view.findViewById<View>(R.id.evidenceSeenElsewhere)
+        private val badgeText = view.findViewById<TextView>(R.id.evidenceSeenElsewhereText)
 
         fun bind(evidence: ScamEvidence, crossSessionSenders: List<String>) {
-            headerText.visibility = View.GONE
-            // Always explicitly set visible to handle recycled views that may have been hidden as headers
+            headerRow.visibility = View.GONE
             cardContainer.visibility = View.VISIBLE
             
             valueText.text = evidence.entityValue
             sourceText.text = evidence.sourceMessageText
             
             if (crossSessionSenders.isNotEmpty()) {
-                badgeText.visibility = View.VISIBLE
-                badgeText.text = "🔗 Also seen in: ${crossSessionSenders.joinToString(", ")}"
+                badgeContainer.visibility = View.VISIBLE
+                badgeText.text = "Also seen in: ${crossSessionSenders.joinToString(", ")}"
             } else {
-                badgeText.visibility = View.GONE
+                badgeContainer.visibility = View.GONE
             }
         }
     }

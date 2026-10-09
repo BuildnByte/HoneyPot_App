@@ -1,236 +1,587 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface">
+    android:background="@color/bg_primary">
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
+
+        <!-- ── App Bar ───────────────────────────────────────────────────── -->
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="?attr/actionBarSize"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/bg_card"
             app:title="Settings"
-            app:subtitle="Preferences and developer tools" />
+            app:titleTextColor="@color/text_primary"
+            app:subtitle="Preferences and protection controls"
+            app:subtitleTextColor="@color/text_secondary"
+            app:navigationIcon="?attr/homeAsUpIndicator"
+            app:navigationIconTint="@color/text_secondary" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingHorizontal="20dp"
-            android:paddingTop="16dp"
-            android:paddingBottom="28dp">
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:text="Appearance" android:textAppearance="?attr/textAppearanceTitleMedium" />
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="4dp" android:text="Choose how Honeypot should look on this device."
-                android:textAppearance="?attr/textAppearanceBodyMedium" android:textColor="?attr/colorOnSurfaceVariant" />
-            <com.google.android.material.button.MaterialButton android:id="@+id/systemThemeButton"
-                style="@style/Widget.Material3.Button.TonalButton" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="16dp" android:text="Use device theme" />
-            <com.google.android.material.button.MaterialButton android:id="@+id/lightThemeButton"
-                style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="8dp" android:text="Light theme" />
-            <com.google.android.material.button.MaterialButton android:id="@+id/darkThemeButton"
-                style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="8dp" android:text="Dark theme" />
+            android:paddingHorizontal="16dp"
+            android:paddingTop="20dp"
+            android:paddingBottom="32dp">
 
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="32dp" android:text="Developer tools" android:textAppearance="?attr/textAppearanceTitleMedium" />
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="4dp" android:text="Tools for testing SMS delivery, processing, and Safe Browsing."
-                android:textAppearance="?attr/textAppearanceBodyMedium" android:textColor="?attr/colorOnSurfaceVariant" />
-            <com.google.android.material.button.MaterialButton android:id="@+id/openDeveloperToolsButton"
-                style="@style/Widget.Material3.Button.TonalButton" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="16dp" android:text="Open developer tools" android:drawableStart="@android:drawable/ic_menu_manage" />
+            <!-- ════════════════════════════════════════════════════════════ -->
+            <!-- CARD 1 — APPEARANCE                                         -->
+            <!-- ════════════════════════════════════════════════════════════ -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:text="APPEARANCE"
+                style="@style/TextAppearance.Honeypot.SectionLabel" />
 
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="32dp" android:text="Cross-app scanning" android:textAppearance="?attr/textAppearanceTitleMedium" />
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="4dp" android:text="Manually analyse suspicious messages from WhatsApp, Telegram, and Instagram."
-                android:textAppearance="?attr/textAppearanceBodyMedium" android:textColor="?attr/colorOnSurfaceVariant" />
-            <com.google.android.material.button.MaterialButton android:id="@+id/openCrossAppScanningButton"
-                style="@style/Widget.Material3.Button.TonalButton" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="12dp" android:text="Cross-app scanning settings" android:drawableStart="@drawable/ic_scan" />
-
-
-            <!-- ─── AI Analysis ──────────────────────────────────────────────── -->
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:text="AI Analysis"
-                android:textAppearance="?attr/textAppearanceTitleMedium" />
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Control how the AI engine analyses scam messages."
-                android:textAppearance="?attr/textAppearanceBodyMedium"
-                android:textColor="?attr/colorOnSurfaceVariant" />
-
-            <!-- Cloud reasoning toggle -->
             <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:cardCornerRadius="16dp" app:cardElevation="0dp"
-                app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/bg_card"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
                 app:strokeWidth="0dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:orientation="horizontal" android:gravity="center_vertical"
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
                     android:padding="16dp">
-                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
-                        android:layout_weight="1" android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Cloud reasoning for new scams"
-                            android:textAppearance="?attr/textAppearanceTitleSmall" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="Sends the first message of each new scam session to Gemini for a detailed reasoning explanation and richer entity extraction. Only one API call per session."
-                            android:textAppearance="?attr/textAppearanceBodySmall"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Theme"
+                        android:textColor="@color/text_primary"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:layout_marginBottom="14dp"
+                        android:text="Choose how Honeypot looks on this device"
+                        android:textColor="@color/text_muted"
+                        android:textSize="13sp" />
+
+                    <!-- Segmented control row -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:orientation="horizontal"
+                        android:background="@drawable/bg_segment_container"
+                        android:padding="4dp">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/systemThemeButton"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:text="Device"
+                            android:textSize="13sp"
+                            android:textColor="@color/text_primary"
+                            app:backgroundTint="@color/accent_blue"
+                            app:cornerRadius="8dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/lightThemeButton"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:text="Light"
+                            android:textSize="13sp"
+                            android:textColor="@color/text_secondary"
+                            app:backgroundTint="@android:color/transparent"
+                            app:cornerRadius="8dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/darkThemeButton"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:text="Dark"
+                            android:textSize="13sp"
+                            android:textColor="@color/text_secondary"
+                            app:backgroundTint="@android:color/transparent"
+                            app:cornerRadius="8dp" />
                     </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ════════════════════════════════════════════════════════════ -->
+            <!-- CARD 2 — DETECTION FILTERS                                  -->
+            <!-- ════════════════════════════════════════════════════════════ -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="10dp"
+                android:text="DETECTION"
+                style="@style/TextAppearance.Honeypot.SectionLabel" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/bg_card"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <!-- Toggle row 1 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="16dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Ignore institutional senders"
+                                android:textColor="@color/text_primary"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="Skip messages from bank/govt headers (e.g. AD-HDFCBK)"
+                                android:textColor="@color/text_muted"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switchFilterDlt"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:checked="true" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/divider_color" android:layout_marginHorizontal="16dp" />
+
+                    <!-- Toggle row 2 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="16dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Detect OTP spoofing"
+                                android:textColor="@color/text_primary"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="Flag messages with OTP-style codes from untrusted numbers"
+                                android:textColor="@color/text_muted"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switchFilterOtp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:checked="true" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/divider_color" android:layout_marginHorizontal="16dp" />
+
+                    <!-- Toggle row 3 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="16dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Ignore bank transaction alerts"
+                                android:textColor="@color/text_primary"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="Skip genuine debit/credit alert messages"
+                                android:textColor="@color/text_muted"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switchFilterBank"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:checked="true" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/divider_color" android:layout_marginHorizontal="16dp" />
+
+                    <!-- Toggle row 4 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="16dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Trust previously safe senders"
+                                android:textColor="@color/text_primary"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="Skip senders you have manually marked as safe"
+                                android:textColor="@color/text_muted"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switchFilterSafeCache"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:checked="true" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ════════════════════════════════════════════════════════════ -->
+            <!-- CARD 3 — AI ANALYSIS                                        -->
+            <!-- ════════════════════════════════════════════════════════════ -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="10dp"
+                android:text="AI ANALYSIS"
+                style="@style/TextAppearance.Honeypot.SectionLabel" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/bg_card"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Cloud reasoning for new scams"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="Sends the first message of each scam to Gemini AI for a detailed explanation. One call per session."
+                            android:textColor="@color/text_muted"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/switchCloudReasoning"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:layout_marginStart="12dp"
                         android:checked="true" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- ─── SMS Pre-Filters ───────────────────────────────────────── -->
+            <!-- ════════════════════════════════════════════════════════════ -->
+            <!-- CARD 4 — INTEGRATIONS                                       -->
+            <!-- ════════════════════════════════════════════════════════════ -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="10dp"
+                android:text="INTEGRATIONS"
+                style="@style/TextAppearance.Honeypot.SectionLabel" />
 
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:text="SMS Pre-Filters"
-                android:textAppearance="?attr/textAppearanceTitleMedium" />
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Control which messages are skipped before scam analysis. Disabling a filter lets the AI inspect those messages too."
-                android:textAppearance="?attr/textAppearanceBodyMedium"
-                android:textColor="?attr/colorOnSurfaceVariant" />
-
-            <!-- Filter 1: DLT institutional sender -->
             <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:cardCornerRadius="16dp" app:cardElevation="0dp"
-                app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:focusable="true"
+                app:cardBackgroundColor="@color/bg_card"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
                 app:strokeWidth="0dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:orientation="horizontal" android:gravity="center_vertical"
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
                     android:padding="16dp">
-                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
-                        android:layout_weight="1" android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Ignore institutional senders"
-                            android:textAppearance="?attr/textAppearanceTitleSmall" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        app:cardCornerRadius="20dp"
+                        app:cardBackgroundColor="@color/badge_blue_bg"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="0dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_scan"
+                            android:contentDescription="Cross-app scanning"
+                            app:tint="@color/accent_blue" />
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="14dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Cross-app scanning"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
-                            android:text="Skip messages from 6-char DLT headers (e.g. AD-HDFCBK). Disable to scan bank/govt SMS too."
-                            android:textAppearance="?attr/textAppearanceBodySmall"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
+                            android:text="Analyse messages from WhatsApp, Telegram, and more"
+                            android:textColor="@color/text_muted"
+                            android:textSize="12sp" />
                     </LinearLayout>
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switchFilterDlt"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
-                        android:checked="true" />
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_chevron_right"
+                        android:contentDescription="Open"
+                        app:tint="@color/text_muted" />
+
+                    <!-- keep legacy button ID so SettingsActivity.kt can setOnClickListener -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/openCrossAppScanningButton"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:visibility="gone" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Filter 2: OTP spoofing -->
+            <!-- ════════════════════════════════════════════════════════════ -->
+            <!-- CARD 5 — DEVELOPER (collapsed by default)                   -->
+            <!-- ════════════════════════════════════════════════════════════ -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="10dp"
+                android:text="DEVELOPER"
+                style="@style/TextAppearance.Honeypot.SectionLabel" />
+
             <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                app:cardCornerRadius="16dp" app:cardElevation="0dp"
-                app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:focusable="true"
+                app:cardBackgroundColor="@color/bg_card"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
                 app:strokeWidth="0dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:orientation="horizontal" android:gravity="center_vertical"
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
                     android:padding="16dp">
-                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
-                        android:layout_weight="1" android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Detect OTP spoofing"
-                            android:textAppearance="?attr/textAppearanceTitleSmall" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Developer tools"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
-                            android:text="Flag non-institutional senders that include OTP-style patterns (4-8 digit codes with 'do not share')."
-                            android:textAppearance="?attr/textAppearanceBodySmall"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
+                            android:text="Tools for testing SMS injection and pipeline"
+                            android:textColor="@color/text_muted"
+                            android:textSize="12sp" />
                     </LinearLayout>
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switchFilterOtp"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
-                        android:checked="true" />
+
+                    <!-- keep legacy button ID -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/openDeveloperToolsButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:text="Open"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_secondary"
+                        app:strokeColor="@color/divider_color"
+                        app:cornerRadius="8dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Filter 3: Bank transaction alerts -->
+            <!-- ════════════════════════════════════════════════════════════ -->
+            <!-- ABOUT CARD                                                   -->
+            <!-- ════════════════════════════════════════════════════════════ -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="10dp"
+                android:text="ABOUT"
+                style="@style/TextAppearance.Honeypot.SectionLabel" />
+
             <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                app:cardCornerRadius="16dp" app:cardElevation="0dp"
-                app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/bg_card"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
                 app:strokeWidth="0dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:orientation="horizontal" android:gravity="center_vertical"
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
                     android:padding="16dp">
-                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
-                        android:layout_weight="1" android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Ignore bank transactions"
-                            android:textAppearance="?attr/textAppearanceTitleSmall" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        app:cardCornerRadius="10dp"
+                        app:cardBackgroundColor="@color/badge_blue_bg"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="0dp">
+
+                        <ImageView
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_home"
+                            android:contentDescription="Honeypot app icon"
+                            app:tint="@color/accent_blue" />
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="14dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Honeypot"
+                            android:textColor="@color/text_primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
-                            android:text="Skip genuine debit/credit alerts from DLT senders. Disable to also check transaction messages."
-                            android:textAppearance="?attr/textAppearanceBodySmall"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
+                            android:text="AI-powered scam protection"
+                            android:textColor="@color/text_muted"
+                            android:textSize="12sp" />
                     </LinearLayout>
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switchFilterBank"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
-                        android:checked="true" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Filter 4: Safe sender cache -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                app:cardCornerRadius="16dp" app:cardElevation="0dp"
-                app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
-                app:strokeWidth="0dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:orientation="horizontal" android:gravity="center_vertical"
-                    android:padding="16dp">
-                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
-                        android:layout_weight="1" android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Trust saved senders"
-                            android:textAppearance="?attr/textAppearanceTitleSmall" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="Skip senders you have previously marked as safe. Disable to re-scan all senders regardless."
-                            android:textAppearance="?attr/textAppearanceBodySmall"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
-                    </LinearLayout>
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switchFilterSafeCache"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
-                        android:checked="true" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="32dp" android:text="About" android:textAppearance="?attr/textAppearanceTitleMedium" />
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="8dp" android:text="Honeypot\nSMS threat detection and analysis lab"
-                android:textAppearance="?attr/textAppearanceBodyMedium" android:textColor="?attr/colorOnSurfaceVariant" />
         </LinearLayout>
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

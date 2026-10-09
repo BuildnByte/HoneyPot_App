@@ -86,16 +86,34 @@ class TimelineAdapter(
     }
 
     class EvidenceViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        private val headerRow = view.findViewById<View>(R.id.evidenceTypeHeaderRow)
+        private val headerIcon = view.findViewById<android.widget.ImageView>(R.id.evidenceTypeIcon)
         private val headerText = view.findViewById<TextView>(R.id.evidenceTypeHeader)
         private val cardContainer = view.findViewById<View>(R.id.evidenceValue).parent as View
         private val valueText = view.findViewById<TextView>(R.id.evidenceValue)
         private val sourceText = view.findViewById<TextView>(R.id.evidenceSource)
-        private val badgeText = view.findViewById<TextView>(R.id.evidenceSeenElsewhere)
+        private val badgeContainer = view.findViewById<View>(R.id.evidenceSeenElsewhere)
+        private val badgeText = view.findViewById<TextView>(R.id.evidenceSeenElsewhereText)
 
         fun bind(evidence: ScamEvidence, crossSessionSenders: List<String>) {
-            headerText.visibility = View.VISIBLE
-            headerText.text = "EXTRACTED ${evidence.entityType}"
+            headerRow.visibility = View.VISIBLE
+            
+            // Map raw types to clean labels
+            val label = when (evidence.entityType) {
+                "AMOUNT" -> "Financial Amounts"
+                "PERSON" -> "People Mentioned"
+                "ORGANIZATION" -> "Organisations"
+                "PHONE" -> "Phone Numbers"
+                "UPI_ID" -> "UPI IDs"
+                "URL" -> "Links & URLs"
+                "ACCOUNT" -> "Bank Accounts"
+                "EMAIL" -> "Email Addresses"
+                else -> "${evidence.entityType.lowercase().replaceFirstChar { it.uppercase() }}s"
+            }
+            
+            headerText.text = "EXTRACTED $label"
             headerText.setTextColor(android.graphics.Color.parseColor("#B71C1C")) // Make it stand out
+            headerIcon.setImageResource(R.drawable.ic_history)
             
             cardContainer.visibility = View.VISIBLE
             
@@ -103,10 +121,10 @@ class TimelineAdapter(
             sourceText.visibility = View.GONE // We already see the source in the timeline
             
             if (crossSessionSenders.isNotEmpty()) {
-                badgeText.visibility = View.VISIBLE
-                badgeText.text = "🔗 Also seen in: ${crossSessionSenders.joinToString(", ")}"
+                badgeContainer.visibility = View.VISIBLE
+                badgeText.text = "Also seen in: ${crossSessionSenders.joinToString(", ")}"
             } else {
-                badgeText.visibility = View.GONE
+                badgeContainer.visibility = View.GONE
             }
         }
     }

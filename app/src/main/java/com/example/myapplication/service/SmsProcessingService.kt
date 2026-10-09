@@ -210,14 +210,19 @@ class SmsProcessingService : LifecycleService() {
             return
         }
 
-        if (!triggerResult.shouldProcess) {
-            Log.d(TAG, "Trigger engine decided not to process.")
+        val shouldProceed = triggerResult.shouldProcess || filterResult == FilterResult.SUSPICIOUS_OTP_SPOOF
+        if (!shouldProceed) {
+            Log.d(TAG, "Trigger engine decided not to process and no suspicious filter matched.")
             return
         }
 
         // STAGE 5: Triggers fired — create session immediately, then run LLM
-        if (triggerResult.firedTriggers.isNotEmpty()) {
-            Log.d(TAG, "Suspicious triggers fired: ${triggerResult.firedTriggers}. Creating session and running engine...")
+        if (triggerResult.firedTriggers.isNotEmpty() || filterResult == FilterResult.SUSPICIOUS_OTP_SPOOF) {
+            val triggersToReport = triggerResult.firedTriggers.toMutableList()
+            if (filterResult == FilterResult.SUSPICIOUS_OTP_SPOOF && "otp_spoof" !in triggersToReport) {
+                triggersToReport.add("otp_spoof")
+            }
+            Log.d(TAG, "Suspicious triggers fired: $triggersToReport. Creating session and running engine...")
 
             // Create a live honeypot session immediately — don't wait for LLM
             // This ensures the session always appears in "View Live Honeypots"
@@ -239,7 +244,7 @@ class SmsProcessingService : LifecycleService() {
             }
 
             // Show the actionable "Let AI Handle It" notification right away
-            showScamAlert(sms, "Suspicious message detected. Triggers: ${triggerResult.firedTriggers.joinToString()}", newSession.id)
+            showScamAlert(sms, "Suspicious message detected. Triggers: ${triggersToReport.joinToString()}", newSession.id)
 
             // Now run the heavy LLM engine in the background for deeper analysis
             // If it refutes the scam classification, we can archive the session
