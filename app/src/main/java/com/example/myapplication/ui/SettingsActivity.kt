@@ -27,15 +27,35 @@ class SettingsActivity : AppCompatActivity() {
         toolbar.setNavigationOnClickListener { finish() }
 
         // ── Theme ──────────────────────────────────────────────────────────
-        findViewById<MaterialButton>(R.id.systemThemeButton).setOnClickListener {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+        val themePrefs = getSharedPreferences("theme_prefs", android.content.Context.MODE_PRIVATE)
+        val currentMode = themePrefs.getInt("night_mode", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+
+        val sysBtn = findViewById<MaterialButton>(R.id.systemThemeButton)
+        val lightBtn = findViewById<MaterialButton>(R.id.lightThemeButton)
+        val darkBtn = findViewById<MaterialButton>(R.id.darkThemeButton)
+
+        fun updateThemeButtons(selectedMode: Int) {
+            val buttons = listOf(sysBtn to AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM, 
+                                 lightBtn to AppCompatDelegate.MODE_NIGHT_NO, 
+                                 darkBtn to AppCompatDelegate.MODE_NIGHT_YES)
+            buttons.forEach { (btn, mode) ->
+                val isActive = mode == selectedMode
+                btn.backgroundTintList = getColorStateList(if (isActive) R.color.accent_blue else android.R.color.transparent)
+                btn.setTextColor(getColor(if (isActive) R.color.text_on_accent else R.color.text_secondary))
+            }
         }
-        findViewById<MaterialButton>(R.id.lightThemeButton).setOnClickListener {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+
+        updateThemeButtons(currentMode)
+
+        fun setMode(mode: Int) {
+            themePrefs.edit().putInt("night_mode", mode).apply()
+            updateThemeButtons(mode)
+            AppCompatDelegate.setDefaultNightMode(mode)
         }
-        findViewById<MaterialButton>(R.id.darkThemeButton).setOnClickListener {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-        }
+
+        sysBtn.setOnClickListener { setMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM) }
+        lightBtn.setOnClickListener { setMode(AppCompatDelegate.MODE_NIGHT_NO) }
+        darkBtn.setOnClickListener { setMode(AppCompatDelegate.MODE_NIGHT_YES) }
 
         // ── Developer tools ────────────────────────────────────────────────
         findViewById<MaterialButton>(R.id.openDeveloperToolsButton).setOnClickListener {
@@ -43,7 +63,7 @@ class SettingsActivity : AppCompatActivity() {
                 putExtra("SHOW_ADVANCED_TOOLS", true)
             })
         }
-        findViewById<MaterialButton>(R.id.openCrossAppScanningButton).setOnClickListener {
+        findViewById<android.view.View>(R.id.openCrossAppScanningButton).setOnClickListener {
             startActivity(Intent(this, com.example.myapplication.manualcapture.CrossAppSettingsActivity::class.java))
         }
 

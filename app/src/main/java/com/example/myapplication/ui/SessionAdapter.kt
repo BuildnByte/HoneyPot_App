@@ -47,11 +47,17 @@ class SessionAdapter(
                     || session.attackerPhone.isBlank()
             
             val cleanName = when {
-                isManualCapture -> "Screenshot Analysis"
+                isManualCapture -> {
+                    val src = if (session.name.contains("whatsapp", true)) "WhatsApp"
+                              else if (session.name.contains("telegram", true)) "Telegram"
+                              else if (session.name.contains("instagram", true)) "Instagram"
+                              else if (session.name.contains("sms", true)) "SMS"
+                              else "Screenshot"
+                    "$src Analysis"
+                }
                 rawName.matches(Regex(".*\\d{10,}.*")) -> {
                     val digits = rawName.filter { it.isDigit() }.takeLast(10)
-                    val last4 = digits.takeLast(4)
-                    "+91 XXXXX $last4"
+                    "+91 ${digits.substring(0, 5)} ${digits.substring(5)}"
                 }
                 else -> rawName.removePrefix("Honeypot - ").removePrefix("[CAPTURE] ").removePrefix("[LIVE] ")
                     .replace("MANUAL_CAPTURE", "Manual Scan")

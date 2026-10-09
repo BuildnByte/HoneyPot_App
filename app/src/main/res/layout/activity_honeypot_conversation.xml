@@ -80,53 +80,46 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:orientation="vertical"
-        android:background="@color/bg_card"
+        android:background="@color/bg_primary"
         android:paddingHorizontal="12dp"
         android:paddingTop="10dp"
         android:paddingBottom="12dp">
-
-        <!-- Top 1dp divider -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginBottom="10dp"
-            android:background="@color/divider_color" />
 
         <!-- Row 1: text input + send button -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="bottom">
 
-            <com.google.android.material.textfield.TextInputEditText
+            <EditText
                 android:id="@+id/messageInput"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:background="@color/bg_elevated"
-                android:paddingHorizontal="14dp"
+                android:background="@drawable/bg_message_input"
+                android:paddingHorizontal="16dp"
                 android:paddingVertical="12dp"
                 android:textColor="@color/text_primary"
                 android:textColorHint="@color/text_muted"
                 android:hint="Type your reply..."
                 android:textSize="15sp"
                 android:inputType="textMultiLine|textCapSentences"
-                android:maxLines="4" />
+                android:minLines="1"
+                android:maxLines="6"
+                android:scrollbars="vertical" />
 
             <!-- Send button (circle, accent_blue) -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/sendButton"
+                style="@style/Widget.Material3.Button.IconButton.Filled"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_marginStart="8dp"
+                android:layout_gravity="bottom"
                 app:icon="@drawable/ic_send"
                 app:iconSize="20dp"
-                app:iconGravity="textStart"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:insetLeft="0dp"
-                android:insetRight="0dp"
+                app:iconTint="@color/text_on_accent"
                 app:backgroundTint="@color/accent_blue"
                 app:cornerRadius="24dp"
                 android:contentDescription="Send reply" />

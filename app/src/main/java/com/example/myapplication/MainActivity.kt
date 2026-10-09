@@ -51,9 +51,15 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val themePrefs = getSharedPreferences("theme_prefs", android.content.Context.MODE_PRIVATE)
+        androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(
+            themePrefs.getInt("night_mode", androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+        )
         setContentView(R.layout.activity_main)
         SystemBars.apply(this, findViewById(android.R.id.content))
-        setSupportActionBar(findViewById(R.id.toolbar))
+        val toolbar = findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
 
         val mainToolbar = findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbar)
         mainToolbar.inflateMenu(R.menu.main_menu)
@@ -159,10 +165,8 @@ class MainActivity : AppCompatActivity() {
         listOf(R.id.homeContent, R.id.messagesContent, R.id.historyContent, R.id.sandboxContent, R.id.scansContent).forEach { id ->
             findViewById<View>(id)?.visibility = if (id == pageId) View.VISIBLE else View.GONE
         }
-        findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbar).apply {
-            this.title = title
-            this.subtitle = subtitle
-        }
+        findViewById<TextView>(R.id.customTitleText)?.text = title
+        findViewById<TextView>(R.id.customSubtitleText)?.text = subtitle
     }
 
     private fun setupInlineSections() {

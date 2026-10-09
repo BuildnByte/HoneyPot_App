@@ -27,6 +27,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import android.view.View
 import java.util.*
 import kotlin.coroutines.resume
 
@@ -59,7 +60,24 @@ class SimulationActivity : AppCompatActivity() {
             currentSession = db.knowledgeBaseDao().getSession(sessionId)
             withContext(kotlinx.coroutines.Dispatchers.Main) {
                 currentSession?.let { session ->
-                    supportActionBar?.title = session.name
+                    val isManualCapture = session.name.contains("MANUAL_CAPTURE", ignoreCase = true) || session.name.contains("CAPTURE", ignoreCase = true)
+                    val title = if (isManualCapture) {
+                        val src = if (session.name.contains("whatsapp", true)) "WhatsApp"
+                                  else if (session.name.contains("telegram", true)) "Telegram"
+                                  else if (session.name.contains("instagram", true)) "Instagram"
+                                  else if (session.name.contains("sms", true)) "SMS"
+                                  else "Screenshot"
+                        "$src Analysis"
+                    } else {
+                        val rawName = session.attackerPhone.ifBlank { session.name }
+                        if (rawName.matches(Regex(".*\\d{10,}.*"))) {
+                            val digits = rawName.filter { it.isDigit() }.takeLast(10)
+                            "+91 ${digits.substring(0, 5)} ${digits.substring(5)}"
+                        } else {
+                            session.name
+                        }
+                    }
+                    supportActionBar?.title = title
                     supportActionBar?.subtitle = when {
                         session.attackerSenderId.isNotBlank() && session.attackerPhone.isNotBlank() ->
                             "${session.attackerSenderId} (${session.attackerPhone})"
@@ -108,6 +126,15 @@ class SimulationActivity : AppCompatActivity() {
 
         messageInput = findViewById(R.id.messageInput)
         senderToggle = findViewById(R.id.senderToggleGroup)
+        lifecycleScope.launch {
+            val session = db.knowledgeBaseDao().getSession(sessionId)
+            if (session != null) {
+                val isManualCapture = session.name.contains("MANUAL_CAPTURE", ignoreCase = true) || session.name.contains("CAPTURE", ignoreCase = true)
+                if (isManualCapture) {
+                    senderToggle.visibility = View.GONE
+                }
+            }
+        }
         sendButton = findViewById(R.id.sendButton)
 
         sendButton.setOnClickListener {

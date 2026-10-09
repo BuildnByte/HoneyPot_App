@@ -199,12 +199,21 @@ class EvidenceSessionAdapter(
         fun bind(summary: EvidenceSessionSummary) {
             // Mask the phone number for the title
             val rawName = summary.sourceSender
-            val title = if (rawName.matches(Regex(".*\\d{10,}.*"))) {
-                val digits = rawName.filter { it.isDigit() }.takeLast(10)
-                val last4 = digits.takeLast(4)
-                "+91 XXXXX $last4"
-            } else {
-                rawName.removePrefix("Honeypot - ").removePrefix("[CAPTURE] ").replace("MANUAL_CAPTURE", "Manual Scan").trim()
+            val isManualCapture = rawName.contains("MANUAL_CAPTURE", ignoreCase = true) || rawName.contains("CAPTURE", ignoreCase = true)
+            val title = when {
+                isManualCapture -> {
+                    val src = if (rawName.contains("whatsapp", true)) "WhatsApp"
+                              else if (rawName.contains("telegram", true)) "Telegram"
+                              else if (rawName.contains("instagram", true)) "Instagram"
+                              else if (rawName.contains("sms", true)) "SMS"
+                              else "Screenshot"
+                    "$src Analysis"
+                }
+                rawName.matches(Regex(".*\\d{10,}.*")) -> {
+                    val digits = rawName.filter { it.isDigit() }.takeLast(10)
+                    "+91 ${digits.substring(0, 5)} ${digits.substring(5)}"
+                }
+                else -> rawName.removePrefix("Honeypot - ").removePrefix("[CAPTURE] ").removePrefix("[LIVE] ").replace("MANUAL_CAPTURE", "Manual Scan").trim()
             }
             titleText.text = title
             

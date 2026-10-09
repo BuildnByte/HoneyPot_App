@@ -375,6 +375,7 @@
                 style="@style/TextAppearance.Honeypot.SectionLabel" />
 
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/openCrossAppScanningButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:clickable="true"
@@ -439,12 +440,6 @@
                         android:contentDescription="Open"
                         app:tint="@color/text_muted" />
 
-                    <!-- keep legacy button ID so SettingsActivity.kt can setOnClickListener -->
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/openCrossAppScanningButton"
-                        android:layout_width="0dp"
-                        android:layout_height="0dp"
-                        android:visibility="gone" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

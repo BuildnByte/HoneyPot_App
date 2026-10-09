@@ -33,6 +33,7 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:paddingTop="4dp"
         android:clipToPadding="false"
+        android:paddingHorizontal="12dp"
         android:paddingBottom="88dp"/>
 
     <TextView

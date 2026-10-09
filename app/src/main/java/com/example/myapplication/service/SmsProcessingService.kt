@@ -79,8 +79,17 @@ class SmsProcessingService : LifecycleService() {
     }
 
     private suspend fun processSms(sms: IncomingSms) {
-        // STAGE 1: Lightweight pre-filter (pass user prefs so the Settings toggles are respected)
         val filterPrefs = FilterPreferenceManager(this@SmsProcessingService)
+
+        // STAGE 0: Check Contacts (if "Trust safe senders" is on and permission granted)
+        if (filterPrefs.filterSafeCache && androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_CONTACTS) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            if (isPhoneNumberInContacts(sms.sender)) {
+                Log.d(TAG, "Sender ${sms.sender} is a saved contact. Skipping processing.")
+                return
+            }
+        }
+
+        // STAGE 1: Lightweight pre-filter (pass user prefs so the Settings toggles are respected)
         val filterResult = SmsPreFilter.shouldIgnore(sms.sender, sms.body, filterPrefs)
         Log.d(TAG, "Filter result for [${sms.sender}]: $filterResult")
         // Drop both clean institutional messages AND suspicious-but-institutional ones.
@@ -354,6 +363,19 @@ class SmsProcessingService : LifecycleService() {
     override fun onDestroy() {
         super.onDestroy()
         Log.d(TAG, "onDestroy")
+    }
+
+    private fun isPhoneNumberInContacts(phoneNumber: String): Boolean {
+        try {
+            val uri = android.net.Uri.withAppendedPath(android.provider.ContactsContract.PhoneLookup.CONTENT_FILTER_URI, android.net.Uri.encode(phoneNumber))
+            val projection = arrayOf(android.provider.ContactsContract.PhoneLookup._ID)
+            contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
+                if (cursor.moveToFirst()) return true
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking contacts", e)
+        }
+        return false
     }
 
     companion object {

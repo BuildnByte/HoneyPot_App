@@ -47,9 +47,6 @@ class HoneypotConversationActivity : AppCompatActivity() {
     private lateinit var adapter: ChatAdapter
     private lateinit var messageInput: EditText
     private lateinit var sendButton: View
-    private lateinit var suggestionContainer: View
-    private lateinit var suggestionText: TextView
-    private lateinit var useSuggestionButton: MaterialButton
     private var scamAlertBanner: View? = null
 
     private lateinit var sessionId: String
@@ -186,15 +183,19 @@ class HoneypotConversationActivity : AppCompatActivity() {
                     || session.name.contains("CAPTURE", ignoreCase = true)
                     || session.attackerPhone.isBlank()
                 val title = when {
-                    isManualCapture -> "Screenshot Analysis"
-                    rawName.matches(Regex(".*\\d{10,}.*")) -> {
-                        // Mask the phone: keep last 4, show +91 XXXXX XXXX
-                        val digits = rawName.filter { it.isDigit() }.takeLast(10)
-                        val last4 = digits.takeLast(4)
-                        val first2 = digits.take(2)
-                        "+91 XXXXX $last4"
+                    isManualCapture -> {
+                        val src = if (session.name.contains("whatsapp", true)) "WhatsApp"
+                                  else if (session.name.contains("telegram", true)) "Telegram"
+                                  else if (session.name.contains("instagram", true)) "Instagram"
+                                  else if (session.name.contains("sms", true)) "SMS"
+                                  else "Screenshot"
+                        "$src Analysis"
                     }
-                    else -> rawName.removePrefix("Honeypot - ").removePrefix("[CAPTURE] ")
+                    rawName.matches(Regex(".*\\d{10,}.*")) -> {
+                        val digits = rawName.filter { it.isDigit() }.takeLast(10)
+                        "+91 ${digits.substring(0, 5)} ${digits.substring(5)}"
+                    }
+                    else -> rawName.removePrefix("Honeypot - ").removePrefix("[CAPTURE] ").removePrefix("[LIVE] ")
                         .replace("MANUAL_CAPTURE", "Manual Scan")
                         .trim()
                 }
@@ -414,7 +415,6 @@ class HoneypotConversationActivity : AppCompatActivity() {
             }
 
             messageInput.text.clear()
-            suggestionContainer.visibility = View.GONE
 
             // Save with senderType "U" — ChatAdapter and ReplyProgressionEngine both
             // treat "U" as an outgoing/victim message now.

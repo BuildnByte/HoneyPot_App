@@ -17,7 +17,7 @@ object SystemBars {
             val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
             val bottomInset = maxOf(bars.bottom, ime.bottom)
             view.setPadding(view.paddingLeft, initialTop + bars.top, view.paddingRight, initialBottom + bottomInset)
-            insets
+            WindowInsetsCompat.CONSUMED
         }
         ViewCompat.requestApplyInsets(content)
     }
