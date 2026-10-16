@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Scan Session Detail Screen — read-only evidence viewer.
+  Replaces ManualAnalysisActivity. Shows scanned text + analysis + safe reply.
+  NO input bar, NO send button, NO chat conversation UI.
+-->
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_primary">
+
+    <!-- ── App bar ───────────────────────────────────────────────────────── -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/bg_card"
+        app:elevation="0dp">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/bg_card"
+            app:titleTextColor="@color/text_primary"
+            app:subtitleTextColor="@color/text_secondary"
+            app:navigationIconTint="@color/text_secondary"
+            app:navigationIcon="?attr/homeAsUpIndicator"
+            tools:title="B Raut"
+            tools:subtitle="WhatsApp" />
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/divider_color" />
+
+        <!-- Multi-scan banner — shown when session has > 1 scan -->
+        <LinearLayout
+            android:id="@+id/multiScanBanner"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp"
+            android:background="@color/badge_blue_bg"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <TextView
+                android:id="@+id/tvScanCount"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                tools:text="3 messages scanned from this contact" />
+
+            <TextView
+                android:id="@+id/tvViewAll"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="View all →"
+                android:textSize="13sp"
+                android:textColor="@color/accent_blue"
+                android:padding="8dp" />
+        </LinearLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- ── Loading state ─────────────────────────────────────────────────── -->
+    <LinearLayout
+        android:id="@+id/layoutProgress"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <ProgressBar
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_gravity="center_horizontal"
+            android:indeterminate="true" />
+
+        <TextView
+            android:id="@+id/tvProgressLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Analysing…"
+            android:textColor="@color/text_secondary"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+    <!-- ── Main scrollable content ────────────────────────────────────────── -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollContent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:paddingBottom="220dp"
+        android:clipToPadding="false"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="8dp">
+
+            <!-- ── SECTION: SCANNED MESSAGES ──────────────────────────────── -->
+            <TextView
+                android:id="@+id/sectionLabelMessages"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:text="Scanned Messages"
+                style="@style/TextAppearance.Honeypot.SectionLabel" />
+
+            <!-- Message cards container (dynamically populated) -->
+            <LinearLayout
+                android:id="@+id/messagesContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+            <!-- ── SECTION: ANALYSIS ─────────────────────────────────────── -->
+            <TextView
+                android:id="@+id/sectionLabelAnalysis"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="10dp"
+                android:text="Analysis"
+                android:visibility="gone"
+                style="@style/TextAppearance.Honeypot.SectionLabel" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/analysisCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:visibility="gone"
+                app:cardBackgroundColor="@color/bg_card"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/card_stroke">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <!-- Scam type + confidence row -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="12dp">
+
+                        <TextView
+                            android:id="@+id/tvScamTypeBadge"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_badge_amber"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="4dp"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/accent_amber"
+                            tools:text="Lottery Scam" />
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="1dp"
+                            android:layout_weight="1" />
+
+                        <TextView
+                            android:id="@+id/tvConfidence"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="13sp"
+                            android:textColor="@color/text_secondary"
+                            tools:text="99% confidence" />
+                    </LinearLayout>
+
+                    <!-- Confidence bar -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="4dp"
+                        android:background="@color/bg_elevated"
+                        android:layout_marginBottom="2dp" />
+
+                    <View
+                        android:id="@+id/confidenceBarFill"
+                        android:layout_width="0dp"
+                        android:layout_height="4dp"
+                        android:background="@drawable/bg_confidence_bar"
+                        android:layout_marginBottom="12dp" />
+
+                    <!-- Divider -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/divider_color"
+                        android:layout_marginBottom="12dp" />
+
+                    <!-- Reasoning — one sentence only -->
+                    <TextView
+                        android:id="@+id/tvReasoning"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="14sp"
+                        android:textColor="@color/text_secondary"
+                        android:lineSpacingMultiplier="1.4"
+                        android:layout_marginBottom="12dp"
+                        tools:text="Claims a prize from a draw you never entered, then redirects to an unverified contact." />
+
+                    <!-- Triggered signals (chip row) -->
+                    <HorizontalScrollView
+                        android:id="@+id/triggersScrollView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:scrollbars="none"
+                        android:layout_marginBottom="4dp">
+
+                        <LinearLayout
+                            android:id="@+id/triggersChipRow"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal" />
+                    </HorizontalScrollView>
+
+                    <!-- Multi-scan note (shown when multiple scans exist) -->
+                    <TextView
+                        android:id="@+id/tvMultiScanNote"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Based on highest confidence scan. Tap a message above to see its individual analysis."
+                        android:textSize="12sp"
+                        android:textColor="@color/text_muted"
+                        android:visibility="gone" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ── SECTION: SAFE REPLY ────────────────────────────────────── -->
+            <LinearLayout
+                android:id="@+id/sectionSafeReply"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="10dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Safe Reply to Copy"
+                    style="@style/TextAppearance.Honeypot.SectionLabel" />
+
+                <ImageView
+                    android:id="@+id/ivSafeReplyInfo"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_info"
+                    android:contentDescription="Safe reply info"
+                    app:tint="@color/text_muted" />
+            </LinearLayout>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/safeReplyCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                app:cardBackgroundColor="@color/badge_blue_bg"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/accent_blue">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/tvSafeReply"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="14sp"
+                        android:textColor="@color/text_primary"
+                        android:lineSpacingMultiplier="1.4"
+                        android:layout_marginBottom="8dp"
+                        tools:text="I am verifying this directly with the official company before proceeding. Do not contact me further." />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Generated by AI · for defensive use only"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_muted" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- ── Sticky bottom action bar ────────────────────────────────────────── -->
+    <LinearLayout
+        android:id="@+id/bottomActionBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="vertical"
+        android:background="@color/bg_card"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="16dp"
+        android:visibility="gone">
+
+        <!-- Top border -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="12dp"
+            android:background="@color/divider_color" />
+
+        <!-- Copy Safe Reply button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCopySafeReply"
+            style="@style/Widget.Honeypot.Button.Primary"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="Copy Safe Reply"
+            app:icon="@drawable/ic_copy"
+            app:iconGravity="textStart"
+            app:iconSize="18dp" />
+
+        <!-- Share Evidence button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnShareEvidence"
+            style="@style/Widget.Honeypot.Button.Secondary"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:text="Share Evidence Report"
+            app:icon="@drawable/ic_send"
+            app:iconGravity="textStart"
+            app:iconSize="18dp" />
+
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

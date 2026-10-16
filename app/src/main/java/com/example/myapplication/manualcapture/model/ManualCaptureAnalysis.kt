@@ -18,5 +18,6 @@ data class ManualCaptureAnalysis(
     val reasoning: String,
     /** Comma-separated list of trigger names that fired */
     val firedTriggers: String,
+    val safeReply: String = "",
     val completedAt: Long
 )

@@ -3,6 +3,7 @@ package com.example.myapplication.manualcapture
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.PixelFormat
 import android.os.Build
@@ -14,6 +15,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import com.example.myapplication.R
@@ -22,6 +24,7 @@ import com.example.myapplication.manualcapture.model.ManualCaptureAnalysis
 import com.example.myapplication.manualcapture.model.OcrTextBlock
 import com.example.myapplication.manualcapture.ocr.MessageSideClassifier
 import com.example.myapplication.manualcapture.ocr.ScreenTextRecognizer
+import com.example.myapplication.ui.UiUtil
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import kotlinx.coroutines.CoroutineScope
@@ -201,6 +204,12 @@ class InPlaceLensController(private val context: Context) {
             }
             startInPlaceAnalysis(view, captureId, text)
         }
+
+        // Show grouping indicator for new sessions (default state)
+        val groupingRow = view.findViewById<View?>(R.id.sessionGroupingRow)
+        groupingRow?.visibility = View.VISIBLE
+        val tvGroupingLabel = view.findViewById<TextView?>(R.id.tvGroupingLabel)
+        tvGroupingLabel?.text = "New session created"
     }
 
     private fun runOcr(bitmap: Bitmap) {
@@ -305,101 +314,185 @@ class InPlaceLensController(private val context: Context) {
         val tvConfidence = view.findViewById<TextView>(R.id.tvConfidence)
         val tvScamType = view.findViewById<TextView>(R.id.tvScamType)
         val tvReasoning = view.findViewById<TextView>(R.id.tvReasoning)
-        val tvTriggers = view.findViewById<TextView>(R.id.tvTriggers)
         val tvSafeReply = view.findViewById<TextView>(R.id.tvSafeReply)
         val btnCopyReply = view.findViewById<MaterialButton>(R.id.btnCopyReply)
         val btnCloseAnalysis = view.findViewById<ImageButton>(R.id.btnCloseAnalysis)
-        val btnDoneAnalysis = view.findViewById<MaterialButton>(R.id.btnDoneAnalysis)
 
         layoutProgress.visibility = View.GONE
         layoutContent.visibility = View.VISIBLE
 
         val pct = (analysis.confidence * 100).toInt()
-        tvConfidence.text = "$pct% Confidence"
+        tvConfidence.text = "$pct% confidence"
 
-        if (analysis.isScam) {
-            if (analysis.confidence >= 0.75f) {
-                tvRiskBadge.text = "⚠️ HIGH SCAM RISK"
-                tvRiskBadge.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFFEF4444.toInt()) // Red
-            } else {
-                tvRiskBadge.text = "⚡ SUSPICIOUS"
-                tvRiskBadge.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFFF59E0B.toInt()) // Amber
+        // Risk badge
+        when {
+            analysis.isScam && analysis.confidence >= 0.8f -> {
+                tvRiskBadge.text = "HIGH RISK"
+                tvRiskBadge.setBackgroundResource(R.drawable.bg_badge_red)
+                tvRiskBadge.setTextColor(context.getColor(R.color.badge_red_text))
             }
-            tvRiskBadge.setTextColor(0xFFFFFFFF.toInt())
-        } else {
-            tvRiskBadge.text = "✓ SAFE / LOW RISK"
-            tvRiskBadge.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF10B981.toInt()) // Emerald Green
-            tvRiskBadge.setTextColor(0xFFFFFFFF.toInt())
+            analysis.isScam && analysis.confidence >= 0.5f -> {
+                tvRiskBadge.text = "MEDIUM RISK"
+                tvRiskBadge.setBackgroundResource(R.drawable.bg_badge_amber)
+                tvRiskBadge.setTextColor(context.getColor(R.color.badge_amber_text))
+            }
+            analysis.isScam -> {
+                tvRiskBadge.text = "LOW RISK"
+                tvRiskBadge.setBackgroundResource(R.drawable.bg_badge_blue)
+                tvRiskBadge.setTextColor(context.getColor(R.color.badge_blue_text))
+            }
+            else -> {
+                tvRiskBadge.text = "SAFE"
+                tvRiskBadge.setBackgroundResource(R.drawable.bg_badge_green)
+                tvRiskBadge.setTextColor(context.getColor(R.color.badge_green_text))
+            }
         }
 
-        tvScamType.text = "Category: ${analysis.scamType.ifBlank { "General Communication" }}"
-        tvReasoning.text = analysis.reasoning
+        // Scam type — Title Case
+        val scamTypeFormatted = analysis.scamType
+            .split("_").joinToString(" ") { w -> w.replaceFirstChar { it.uppercase() } }
+            .ifBlank { "General Analysis" }
+        tvScamType.text = scamTypeFormatted
 
-        if (analysis.firedTriggers.isNotBlank()) {
-            tvTriggers.text = "Triggers: ${analysis.firedTriggers}"
-            tvTriggers.visibility = View.VISIBLE
-        } else {
-            tvTriggers.visibility = View.GONE
+        // One-sentence reasoning
+        val firstSentence = analysis.reasoning.split(Regex("[.!?]")).firstOrNull()?.trim() ?: analysis.reasoning
+        tvReasoning.text = if (firstSentence.endsWith('.')) firstSentence else "$firstSentence."
+
+        // Trigger chips (Title Case, max 3 visible)
+        val triggersLayout = view.findViewById<LinearLayout?>(R.id.triggersChipRow)
+        triggersLayout?.removeAllViews()
+        if (analysis.firedTriggers.isNotBlank() && triggersLayout != null) {
+            val triggers = analysis.firedTriggers.split(",").map { it.trim() }.filter { it.isNotBlank() }
+            triggers.take(3).forEach { raw ->
+                val badge = TextView(view.context).apply {
+                    text = UiUtil.formatTriggerName(raw)
+                    textSize = 11f
+                    setTextColor(0xFF7B8FAF.toInt())
+                    val hPad = (10 * resources.displayMetrics.density).toInt()
+                    val vPad = (4 * resources.displayMetrics.density).toInt()
+                    setPadding(hPad, vPad, hPad, vPad)
+                    background = android.graphics.drawable.GradientDrawable().apply {
+                        setColor(0xFF16243A.toInt())
+                        cornerRadius = 8 * resources.displayMetrics.density
+                        setStroke((1 * resources.displayMetrics.density).toInt(), 0xFF1E3050.toInt())
+                    }
+                    val lp = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    ).apply {
+                        marginEnd = (6 * resources.displayMetrics.density).toInt()
+                    }
+                    layoutParams = lp
+                }
+                triggersLayout.addView(badge)
+            }
         }
 
-        // Contextual Recommended Safe Reply
-        val safeReply = buildRecommendedReply(analysis)
+        // Source app label for safe reply & session grouping
+        val safeReplyForLabel = view.findViewById<TextView?>(R.id.tvSafeReplyForApp)
+        val sessionGroupingRow = view.findViewById<LinearLayout?>(R.id.sessionGroupingRow)
+        val tvGroupingLabel = view.findViewById<TextView?>(R.id.tvGroupingLabel)
+        val db = KnowledgeBaseDatabase.getInstance(context)
+        scope?.launch {
+            val capture = withContext(Dispatchers.IO) {
+                currentCaptureId?.let { id -> db.knowledgeBaseDao().getManualCapture(id) }
+            }
+            val appLabel = capture?.let { UiUtil.formatSourceApp(it.sourceApp) } ?: "WhatsApp"
+            safeReplyForLabel?.text = "For use in $appLabel"
+
+            if (sessionGroupingRow != null && tvGroupingLabel != null && capture != null) {
+                val sId = capture.analysisSessionId
+                val sessionCount = if (sId != null) {
+                    withContext(Dispatchers.IO) {
+                        db.knowledgeBaseDao().getAllManualCaptures().count { it.analysisSessionId == sId }
+                    }
+                } else 1
+                sessionGroupingRow.visibility = View.VISIBLE
+                tvGroupingLabel.text = if (sessionCount > 1) {
+                    "Added to ongoing session ($sessionCount scans)"
+                } else {
+                    "New session created"
+                }
+            }
+
+            // Update the View in App button
+            val tvViewInApp = view.findViewById<TextView?>(R.id.tvViewInApp)
+            tvViewInApp?.setOnClickListener {
+                val captureIdLocal = currentCaptureId
+                if (captureIdLocal != null) {
+                    val intent = ScanDetailActivity.buildIntent(context, captureIdLocal).apply {
+                        addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    context.startActivity(intent)
+                }
+                dismiss()
+            }
+        }
+
+        // Contextual safe reply
+        val safeReply = analysis.safeReply.ifBlank { buildRecommendedReply(analysis) }
         tvSafeReply.text = safeReply
 
-        // One-tap copy & dismiss
+        // Copy & Done button
         btnCopyReply.setOnClickListener {
             val clip = ClipData.newPlainText("Safe Reply", safeReply)
             clipboard.setPrimaryClip(clip)
-            Toast.makeText(context, "Safe reply copied to clipboard!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Reply copied", Toast.LENGTH_SHORT).show()
+            dismiss()
+        }
+
+        // Save to App button
+        val btnSaveToApp = view.findViewById<MaterialButton?>(R.id.btnSaveToApp)
+        btnSaveToApp?.setOnClickListener {
+            val captureIdLocal = currentCaptureId
+            if (captureIdLocal != null) {
+                val intent = ScanDetailActivity.buildIntent(context, captureIdLocal).apply {
+                    addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                context.startActivity(intent)
+            }
             dismiss()
         }
 
         btnCloseAnalysis.setOnClickListener { dismiss() }
-        btnDoneAnalysis.setOnClickListener { dismiss() }
+
+        // Dismiss as TextView
+        val btnDoneAnalysis = view.findViewById<TextView?>(R.id.btnDoneAnalysis)
+        btnDoneAnalysis?.setOnClickListener { dismiss() }
     }
 
     private fun showAnalysisError(view: View, errorMsg: String) {
-        val layoutProgress = view.findViewById<View>(R.id.layoutAnalysisProgress)
-        val layoutContent = view.findViewById<View>(R.id.layoutAnalysisContent)
-        val tvRiskBadge = view.findViewById<TextView>(R.id.tvRiskBadge)
-        val tvConfidence = view.findViewById<TextView>(R.id.tvConfidence)
-        val tvScamType = view.findViewById<TextView>(R.id.tvScamType)
-        val tvReasoning = view.findViewById<TextView>(R.id.tvReasoning)
-        val tvTriggers = view.findViewById<TextView>(R.id.tvTriggers)
-        val btnCloseAnalysis = view.findViewById<ImageButton>(R.id.btnCloseAnalysis)
-        val btnDoneAnalysis = view.findViewById<MaterialButton>(R.id.btnDoneAnalysis)
+        val layoutProgress = view.findViewById<View?>(R.id.layoutAnalysisProgress)
+        val layoutContent = view.findViewById<View?>(R.id.layoutAnalysisContent)
+        val tvRiskBadge = view.findViewById<TextView?>(R.id.tvRiskBadge)
+        val tvConfidence = view.findViewById<TextView?>(R.id.tvConfidence)
+        val tvScamType = view.findViewById<TextView?>(R.id.tvScamType)
+        val tvReasoning = view.findViewById<TextView?>(R.id.tvReasoning)
+        val triggersLayout = view.findViewById<View?>(R.id.triggersChipRow)
+        val btnCloseAnalysis = view.findViewById<ImageButton?>(R.id.btnCloseAnalysis)
+        val btnDoneAnalysis = view.findViewById<TextView?>(R.id.btnDoneAnalysis)
 
-        layoutProgress.visibility = View.GONE
-        layoutContent.visibility = View.VISIBLE
+        layoutProgress?.visibility = View.GONE
+        layoutContent?.visibility = View.VISIBLE
 
-        tvRiskBadge.text = "ANALYSIS INCOMPLETE"
-        tvRiskBadge.backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF64748B.toInt())
-        tvConfidence.visibility = View.GONE
-        tvScamType.text = "Could not verify scam status"
-        tvReasoning.text = errorMsg
-        tvTriggers.visibility = View.GONE
+        tvRiskBadge?.apply {
+            text = "ANALYSIS INCOMPLETE"
+            backgroundTintList = android.content.res.ColorStateList.valueOf(0xFF64748B.toInt())
+        }
+        tvConfidence?.visibility = View.GONE
+        tvScamType?.text = "Could not verify scam status"
+        tvReasoning?.text = errorMsg
+        triggersLayout?.visibility = View.GONE
 
-        btnCloseAnalysis.setOnClickListener { dismiss() }
-        btnDoneAnalysis.setOnClickListener { dismiss() }
+        btnCloseAnalysis?.setOnClickListener { dismiss() }
+        btnDoneAnalysis?.setOnClickListener { dismiss() }
     }
 
     private fun buildRecommendedReply(analysis: ManualCaptureAnalysis): String {
         if (!analysis.isScam) {
             return "No suspicious patterns detected. Safe to continue normal conversation."
         }
-        val lowerType = analysis.scamType.lowercase()
-        return when {
-            lowerType.contains("delivery") || lowerType.contains("courier") || lowerType.contains("package") ->
-                "I do not open tracking links sent over chat. I verify all shipments directly via the official merchant app."
-            lowerType.contains("bank") || lowerType.contains("financial") || lowerType.contains("payment") || lowerType.contains("upi") ->
-                "I am verifying this transaction directly with my bank before taking any action. Do not send further payment requests."
-            lowerType.contains("job") || lowerType.contains("task") || lowerType.contains("crypto") ->
-                "I am not interested in unsolicited task or investment offers. Please remove me from your contact list."
-            lowerType.contains("impersonat") || lowerType.contains("friend") || lowerType.contains("family") ->
-                "Please call me directly or send a voice note so I can verify who you are before proceeding."
-            else ->
-                "I do not click external links or share verification codes. Please contact me through verified official channels."
-        }
+        return com.example.myapplication.llm.CloudReplyGenerator.fallbackSafeReply(analysis.scamType)
     }
 
     fun dismiss() {

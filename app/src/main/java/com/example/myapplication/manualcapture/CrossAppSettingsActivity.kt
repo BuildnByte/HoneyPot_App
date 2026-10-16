@@ -103,12 +103,19 @@ class CrossAppSettingsActivity : AppCompatActivity() {
 
     private fun updateAccessibilityStatus() {
         val active = HoneypotAccessibilityService.isServiceRunning
+        val tvInstructionTitle = findViewById<TextView>(R.id.tvInstructionTitle)
+        val tvInstructionBody = findViewById<TextView>(R.id.tvInstructionBody)
+        
         if (active) {
             tvAccessibilityStatus.text = "Status: Active — Honeypot overlay service is enabled"
             btnOpenAccessibility.text = "Open Accessibility Settings (Active)"
+            tvInstructionTitle?.text = "How to turn off accessibility:"
+            tvInstructionBody?.text = "1. Tap 'Open Accessibility Settings' above.\n2. Tap 'Downloaded apps' (or 'Installed services').\n3. Select 'Honeypot'.\n4. Turn the switch to OFF."
         } else {
             tvAccessibilityStatus.text = "Status: Disabled — Accessibility permission required for overlay"
             btnOpenAccessibility.text = "Open Accessibility Settings"
+            tvInstructionTitle?.text = "How to turn ON accessibility:"
+            tvInstructionBody?.text = "1. Tap 'Open Accessibility Settings' above.\n2. Tap 'Downloaded apps' (or 'Installed services').\n3. Select 'Honeypot'.\n4. Turn the switch to ON."
         }
     }
 

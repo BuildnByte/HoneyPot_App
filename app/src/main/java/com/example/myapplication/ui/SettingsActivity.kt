@@ -87,5 +87,14 @@ class SettingsActivity : AppCompatActivity() {
         switchBank.setOnCheckedChangeListener       { _, v -> filterPrefs.filterBankTransaction = v }
         switchSafeCache.setOnCheckedChangeListener  { _, v -> filterPrefs.filterSafeCache = v }
         switchCloudReason.setOnCheckedChangeListener { _, v -> filterPrefs.useCloudReasoning = v }
+
+        // ── Onboarding replay ──────────────────────────────────────────────
+        findViewById<android.view.View>(R.id.btnReplayOnboarding).setOnClickListener {
+            startActivity(
+                Intent(this, com.example.myapplication.onboarding.OnboardingActivity::class.java).apply {
+                    putExtra("FORCE_SHOW", true)
+                }
+            )
+        }
     }
 }

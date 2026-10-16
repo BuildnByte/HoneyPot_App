@@ -13,17 +13,19 @@
 
     <!-- "AI Honeypot" label above bubble -->
     <TextView
+        android:id="@+id/senderLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="4dp"
         android:layout_marginBottom="3dp"
         android:text="AI Honeypot"
-        android:textSize="10sp"
+        android:textSize="11sp"
         android:textColor="@color/accent_blue"
         android:letterSpacing="0.04" />
 
     <!-- Bubble card with blue right border -->
     <com.google.android.material.card.MaterialCardView
+        android:id="@+id/messageCard"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:cardBackgroundColor="@color/bubble_honeypot_bg"
@@ -66,8 +68,9 @@
                     android:alpha="0.8" />
             </LinearLayout>
 
-            <!-- 3dp blue right accent border -->
+            <!-- 3dp right accent border -->
             <View
+                android:id="@+id/rightBorder"
                 android:layout_width="3dp"
                 android:layout_height="match_parent"
                 android:background="@color/accent_blue" />

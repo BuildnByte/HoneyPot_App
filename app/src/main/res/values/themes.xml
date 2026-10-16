@@ -19,6 +19,7 @@
 
         <item name="colorOnSurface">@color/text_primary</item>
         <item name="colorOnSurfaceVariant">@color/text_secondary</item>
+        <item name="colorOutline">@color/text_muted</item>
         <item name="colorOutlineVariant">@color/divider_color</item>
 
         <item name="colorPrimaryContainer">@color/badge_blue_bg</item>
@@ -29,7 +30,7 @@
         <item name="colorOnErrorContainer">@color/accent_red</item>
 
         <!-- Status / nav bars -->
-        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightStatusBar">true</item>
         <item name="android:statusBarColor">@color/bg_primary</item>
         <item name="android:navigationBarColor">@color/bg_elevated</item>
 
@@ -92,7 +93,7 @@
     <style name="TextAppearance.Honeypot.SectionLabel" parent="TextAppearance.Material3.LabelMedium">
         <item name="android:textSize">13sp</item>
         <item name="android:textStyle">normal</item>
-        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textColor">@color/text_muted</item>
         <item name="android:letterSpacing">0</item>
         <item name="android:textAllCaps">false</item>
     </style>

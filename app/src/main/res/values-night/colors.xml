@@ -44,4 +44,8 @@
     <color name="bubble_attacker_bg">#2D0A0C</color>
     <color name="bubble_honeypot_bg">#0A1A3A</color>
     <color name="bubble_user_bg">#1C2E47</color>
+    <color name="badge_red_stroke">@color/transparent</color>
+    <color name="badge_green_stroke">@color/transparent</color>
+    <color name="badge_amber_stroke">@color/transparent</color>
+    <color name="badge_blue_stroke">@color/transparent</color>
 </resources>

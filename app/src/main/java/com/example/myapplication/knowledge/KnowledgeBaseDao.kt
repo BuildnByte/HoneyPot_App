@@ -129,7 +129,11 @@ interface KnowledgeBaseDao {
             MAX(e.timestamp) as lastTimestamp, 
             COUNT(e.id) as evidenceCount,
             s.reportedAt,
-            (SELECT MAX(a.confidence) FROM ai_analysis_logs a INNER JOIN simulated_messages m ON a.messageId = m.id WHERE m.sessionId = e.sessionId) as maxConfidence
+            (SELECT MAX(c) FROM (
+                SELECT MAX(a.confidence) as c FROM ai_analysis_logs a INNER JOIN simulated_messages m ON a.messageId = m.id WHERE m.sessionId = e.sessionId
+                UNION ALL
+                SELECT MAX(ma.confidence) as c FROM manual_capture_analyses ma INNER JOIN manual_captures mc ON ma.captureId = mc.id WHERE mc.analysisSessionId = e.sessionId
+            )) as maxConfidence
         FROM scam_evidence e
         LEFT JOIN simulation_sessions s ON e.sessionId = s.id
         GROUP BY e.sessionId, e.sourceSender, s.reportedAt

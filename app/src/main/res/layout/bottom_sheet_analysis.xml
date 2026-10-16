@@ -60,6 +60,7 @@
                 app:chipStrokeWidth="0dp"
                 android:textStyle="bold"
                 app:chipMinHeight="32dp"
+                app:chipIcon="@drawable/ic_warning"
                 android:text="Scam Detected"/>
         </LinearLayout>
 
@@ -124,7 +125,10 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="🧠  Reasoning"
+                android:text="Reasoning"
+                app:drawableStartCompat="@drawable/ic_brain"
+                app:drawableTint="?attr/colorPrimary"
+                android:drawablePadding="8dp"
                 android:textAppearance="?attr/textAppearanceTitleSmall"
                 android:textStyle="bold"
                 android:textColor="?attr/colorPrimary"
@@ -151,7 +155,10 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="⚡  Triggered Rules"
+                android:text="Triggered Rules"
+                app:drawableStartCompat="@drawable/ic_lightning"
+                app:drawableTint="?attr/colorPrimary"
+                android:drawablePadding="8dp"
                 android:textAppearance="?attr/textAppearanceTitleSmall"
                 android:textStyle="bold"
                 android:textColor="?attr/colorPrimary"
@@ -176,7 +183,10 @@
                 android:id="@+id/evidenceLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="🔍  Verification Evidence"
+                android:text="Verification Evidence"
+                app:drawableStartCompat="@drawable/ic_scan"
+                app:drawableTint="?attr/colorPrimary"
+                android:drawablePadding="8dp"
                 android:textAppearance="?attr/textAppearanceTitleSmall"
                 android:textStyle="bold"
                 android:textColor="?attr/colorPrimary"
@@ -200,20 +210,20 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="📚  Knowledge Base Matches"
+                android:text="Knowledge Base Matches"
+                app:drawableStartCompat="@drawable/ic_book"
+                app:drawableTint="?attr/colorPrimary"
+                android:drawablePadding="8dp"
                 android:textAppearance="?attr/textAppearanceTitleSmall"
                 android:textStyle="bold"
                 android:textColor="?attr/colorPrimary"
                 android:layout_marginBottom="8dp"/>
 
-            <TextView
-                android:id="@+id/kbText"
+            <LinearLayout
+                android:id="@+id/kbGroup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="monospace"
-                android:textAppearance="?attr/textAppearanceBodySmall"
-                android:textColor="?attr/colorOnSurfaceVariant"
-                tools:text="Prize Scam (0.92)\nUrgency Pressure (0.85)"/>
+                android:orientation="vertical" />
         </LinearLayout>
 
         <!-- ── Suggested Honeypot Reply ──────────────────────────────── -->
@@ -237,7 +247,10 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="💬  Suggested Honeypot Reply"
+                android:text="Suggested Honeypot Reply"
+                app:drawableStartCompat="@drawable/ic_message"
+                app:drawableTint="?attr/colorPrimary"
+                android:drawablePadding="8dp"
                 android:textAppearance="?attr/textAppearanceTitleSmall"
                 android:textStyle="bold"
                 android:textColor="?attr/colorPrimary"/>

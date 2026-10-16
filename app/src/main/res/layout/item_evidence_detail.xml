@@ -94,7 +94,7 @@
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:layout_marginTop="10dp"
-                android:background="@color/bg_elevated"
+                android:background="@drawable/bg_chip_neutral"
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="5dp"
                 android:visibility="gone">

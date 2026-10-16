@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  In-Place Scan Overlay — shown on top of WhatsApp/Telegram/etc.
+  Always uses dark theme regardless of system setting.
+  Max height: 62% of screen height (enforced in InPlaceLensController).
+-->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -9,14 +14,14 @@
     android:focusableInTouchMode="true"
     android:fitsSystemWindows="false">
 
-    <!-- 1. Full-screen Screenshot & Interactive Bounding Box Overlay -->
+    <!-- 1. Full-screen screenshot + interactive bounding box overlay -->
     <com.example.myapplication.manualcapture.BlockOverlayView
         android:id="@+id/blockOverlayView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:contentDescription="Freeze-frame screenshot. Touch and drag to draw bounding boxes or tap text to select." />
 
-    <!-- 2. Top Control Bar (Google Lens style) -->
+    <!-- 2. Top control bar (Google Lens style) -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/topBar"
         android:layout_width="match_parent"
@@ -37,7 +42,6 @@
             android:gravity="center_vertical"
             android:paddingHorizontal="8dp">
 
-            <!-- Dismiss Lens Button -->
             <ImageButton
                 android:id="@+id/btnCloseLens"
                 android:layout_width="38dp"
@@ -60,47 +64,61 @@
                 android:maxLines="1"
                 android:ellipsize="end" />
 
-            <!-- Clear Boxes Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnClearBoxes"
                 style="@style/Widget.Material3.Button.TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:minHeight="36dp"
+                android:minWidth="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:insetLeft="0dp"
+                android:insetRight="0dp"
                 android:paddingHorizontal="8dp"
+                android:maxLines="1"
                 android:text="Clear"
                 android:textColor="#94A3B8"
                 android:textSize="11sp"
-                android:visibility="gone"
-                tools:visibility="visible" />
+                android:visibility="gone" />
 
-            <!-- Auto-Select Incoming Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnAutoSelectIncoming"
                 style="@style/Widget.Material3.Button.TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:minHeight="36dp"
+                android:minWidth="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:insetLeft="0dp"
+                android:insetRight="0dp"
                 android:paddingHorizontal="8dp"
+                android:maxLines="1"
                 android:text="Auto"
                 android:textColor="#38BDF8"
                 android:textSize="11sp" />
 
-            <!-- Select All Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSelectAll"
                 style="@style/Widget.Material3.Button.TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:minHeight="36dp"
+                android:minWidth="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:insetLeft="0dp"
+                android:insetRight="0dp"
                 android:paddingHorizontal="8dp"
+                android:maxLines="1"
                 android:text="All"
                 android:textColor="#F1F5F9"
                 android:textSize="11sp" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- 3. Bottom Floating Action Dock -->
+    <!-- 3. Bottom floating action dock -->
     <LinearLayout
         android:id="@+id/bottomDock"
         android:layout_width="match_parent"
@@ -118,7 +136,6 @@
             android:layout_height="1dp"
             android:layout_weight="1" />
 
-        <!-- Floating View Text Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/fabViewText"
             style="@style/Widget.Material3.Button.TonalButton"
@@ -126,6 +143,12 @@
             android:layout_height="48dp"
             android:text="View Text"
             android:textSize="13sp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:paddingHorizontal="14dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            app:iconPadding="6dp"
             app:icon="@drawable/ic_message"
             app:cornerRadius="24dp"
             app:elevation="8dp"
@@ -135,7 +158,6 @@
             android:layout_width="10dp"
             android:layout_height="1dp" />
 
-        <!-- Floating Analyze Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnAnalyse"
             style="@style/Widget.Material3.Button"
@@ -144,13 +166,19 @@
             android:text="Analyze"
             android:textSize="14sp"
             android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:paddingHorizontal="18dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            app:iconPadding="6dp"
             app:icon="@drawable/ic_scan"
             app:cornerRadius="24dp"
             app:elevation="10dp"
             android:contentDescription="Analyze selected messages for scam signals" />
     </LinearLayout>
 
-    <!-- 4. Selected Text Preview Modal (Hidden by default) -->
+    <!-- 4. Selected text preview modal (hidden by default) -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardSelectedText"
         android:layout_width="match_parent"
@@ -163,8 +191,7 @@
         app:strokeWidth="1dp"
         app:strokeColor="#33FFFFFF"
         app:cardBackgroundColor="#F81E293B"
-        android:visibility="gone"
-        tools:visibility="gone">
+        android:visibility="gone">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -218,31 +245,40 @@
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- 5. Floating In-Place Scam Analysis Card (Slides up over WhatsApp) -->
+    <!-- 5. Analysis result bottom sheet (slides up over the host app) -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardAnalysis"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:layout_marginHorizontal="12dp"
-        android:layout_marginBottom="24dp"
         app:cardCornerRadius="24dp"
-        app:cardElevation="20dp"
-        app:strokeWidth="1.5dp"
-        app:strokeColor="#33FFFFFF"
-        app:cardBackgroundColor="#FA1E293B"
+        app:cardElevation="24dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="#1E3050"
+        app:cardBackgroundColor="#0F1B2D"
         android:visibility="gone"
         tools:visibility="visible">
 
-        <FrameLayout
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-            <!-- Loading Spinner State -->
+            <!-- Drag handle -->
+            <View
+                android:layout_width="32dp"
+                android:layout_height="4dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="8dp"
+                android:background="#4A5C7A"
+                android:backgroundTint="#4A5C7A" />
+
+            <!-- Loading state -->
             <LinearLayout
                 android:id="@+id/layoutAnalysisProgress"
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
+                android:layout_height="180dp"
                 android:orientation="vertical"
                 android:gravity="center"
                 android:padding="24dp"
@@ -252,7 +288,7 @@
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:indeterminate="true"
-                    app:indicatorColor="@color/brand_primary"
+                    app:indicatorColor="#3B82F6"
                     app:trackThickness="4dp" />
 
                 <TextView
@@ -260,41 +296,42 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:text="Scanning conversation for scam indicators…"
+                    android:text="Scanning for scam indicators…"
                     android:textColor="#E2E8F0"
                     android:textSize="13sp"
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- Analysis Result Content -->
+            <!-- Analysis result content -->
             <LinearLayout
                 android:id="@+id/layoutAnalysisContent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="18dp"
+                android:paddingHorizontal="18dp"
+                android:paddingBottom="16dp"
                 android:visibility="gone"
                 tools:visibility="visible">
 
-                <!-- Header: Risk Badge + Close Button -->
+                <!-- Row 1: Risk badge + confidence + close -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="10dp">
 
-                    <!-- Risk Badge Chip -->
+                    <!-- Risk badge -->
                     <TextView
                         android:id="@+id/tvRiskBadge"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:paddingHorizontal="12dp"
-                        android:paddingVertical="5dp"
-                        android:background="@drawable/bg_evidence_item"
-                        android:backgroundTint="#EF4444"
-                        android:text="⚠️ HIGH SCAM RISK"
-                        android:textColor="@android:color/white"
-                        android:textSize="12sp"
+                        android:layout_height="32dp"
+                        android:gravity="center"
+                        android:paddingHorizontal="10dp"
+                        android:background="@drawable/bg_badge_red"
+                        android:text="HIGH RISK"
+                        android:textColor="#FF4757"
+                        android:textSize="11sp"
                         android:textStyle="bold" />
 
                     <TextView
@@ -302,9 +339,9 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
-                        android:text="85% Confidence"
-                        android:textColor="#94A3B8"
-                        android:textSize="12sp" />
+                        android:text="99% confidence"
+                        android:textColor="#7B8FAF"
+                        android:textSize="13sp" />
 
                     <View
                         android:layout_width="0dp"
@@ -313,118 +350,213 @@
 
                     <ImageButton
                         android:id="@+id/btnCloseAnalysis"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:src="@drawable/ic_close"
-                        app:tint="#94A3B8"
+                        app:tint="#4A5C7A"
                         android:contentDescription="Close scam analysis" />
                 </LinearLayout>
 
-                <!-- Scam Type -->
+                <!-- Row 2: Scam type — full width, most prominent -->
                 <TextView
                     android:id="@+id/tvScamType"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:text="Type: Urgent Financial Fraud"
-                    android:textColor="#F1F5F9"
-                    android:textSize="15sp"
+                    android:layout_marginBottom="8dp"
+                    android:text="Lottery Scam"
+                    android:textColor="#F0F4FF"
+                    android:textSize="17sp"
                     android:textStyle="bold" />
 
-                <!-- Reasoning & Red Flags -->
+                <!-- One-sentence explanation -->
                 <TextView
                     android:id="@+id/tvReasoning"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="The message creates artificial urgency demanding immediate funds transfer or credentials."
-                    android:textColor="#CBD5E1"
-                    android:textSize="13sp"
-                    android:lineSpacingExtra="2dp" />
+                    android:layout_marginBottom="10dp"
+                    android:text="Claims a prize from a draw you never entered, then redirects you to an unverified contact."
+                    android:textColor="#7B8FAF"
+                    android:textSize="14sp"
+                    android:lineSpacingMultiplier="1.35"
+                    android:maxLines="2"
+                    android:ellipsize="end" />
 
-                <!-- Triggers -->
-                <TextView
-                    android:id="@+id/tvTriggers"
+                <!-- Triggered signals chips (horizontally scrollable) -->
+                <HorizontalScrollView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:text="Triggers: Urgency, Payment Demand, Suspicious Link"
-                    android:textColor="#F59E0B"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
-                <!-- Recommended Safe Reply Container -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="0dp"
-                    app:strokeWidth="1dp"
-                    app:strokeColor="#2038BDF8"
-                    app:cardBackgroundColor="#220284C7">
+                    android:layout_marginBottom="10dp"
+                    android:scrollbars="none">
 
                     <LinearLayout
-                        android:layout_width="match_parent"
+                        android:id="@+id/triggersChipRow"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="12dp">
+                        android:orientation="horizontal" />
+                </HorizontalScrollView>
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="RECOMMENDED SAFE REPLY"
-                            android:textColor="#38BDF8"
-                            android:textSize="10sp"
-                            android:textStyle="bold"
-                            android:letterSpacing="0.08" />
+                <!-- Session grouping indicator row -->
+                <LinearLayout
+                    android:id="@+id/sessionGroupingRow"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp"
+                    android:visibility="gone"
+                    tools:visibility="visible">
 
-                        <TextView
-                            android:id="@+id/tvSafeReply"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="I am verifying this directly with the official company before proceeding. Do not contact me further."
-                            android:textColor="#F8FAFC"
-                            android:textSize="13sp"
-                            android:textIsSelectable="true"
-                            android:lineSpacingExtra="2dp" />
+                    <ImageView
+                        android:id="@+id/ivGroupingIcon"
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_marginEnd="6dp"
+                        android:src="@drawable/ic_scan"
+                        app:tint="#7B8FAF"
+                        android:contentDescription="Session grouping" />
 
-                        <!-- One-Tap Copy Button -->
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnCopyReply"
-                            style="@style/Widget.Material3.Button"
-                            android:layout_width="match_parent"
-                            android:layout_height="44dp"
-                            android:layout_marginTop="10dp"
-                            android:text="Copy Safe Reply &amp; Done"
-                            android:textSize="13sp"
-                            android:textStyle="bold"
-                            app:icon="@drawable/ic_copy"
-                            app:cornerRadius="12dp"
-                            android:contentDescription="Copy recommended safe reply to clipboard and close" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
+                    <TextView
+                        android:id="@+id/tvGroupingLabel"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="New session created"
+                        android:textColor="#7B8FAF"
+                        android:textSize="12sp"
+                        android:textStyle="italic" />
 
-                <!-- Footer / Secondary Action -->
+                    <TextView
+                        android:id="@+id/tvViewInApp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="View in app →"
+                        android:textColor="#3B82F6"
+                        android:textSize="12sp"
+                        android:padding="4dp" />
+                </LinearLayout>
+
+                <!-- Safe reply section label -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:gravity="center"
-                    android:layout_marginTop="10dp">
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="6dp">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnDoneAnalysis"
-                        style="@style/Widget.Material3.Button.TextButton"
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Safe Reply"
+                        android:textColor="#7B8FAF"
+                        android:textSize="11sp" />
+
+                    <TextView
+                        android:id="@+id/tvSafeReplyForApp"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Dismiss Overlay"
-                        android:textColor="#94A3B8"
-                        android:textSize="12sp" />
+                        android:text="For use in WhatsApp"
+                        android:textColor="#4A5C7A"
+                        android:textSize="11sp" />
                 </LinearLayout>
+
+                <!-- Safe reply text card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="14dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="#1E3050"
+                    app:cardBackgroundColor="#16243A">
+
+                    <TextView
+                        android:id="@+id/tvSafeReply"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="12dp"
+                        android:text="I am verifying this directly with the official company before proceeding. Do not contact me further."
+                        android:textColor="#F0F4FF"
+                        android:textSize="13sp"
+                        android:lineSpacingMultiplier="1.35"
+                        android:maxLines="4"
+                        android:ellipsize="end" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Action buttons row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
+
+                    <!-- Copy & Done (50% width) -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCopyReply"
+                        style="@style/Widget.Material3.Button"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:text="Copy &amp; Done"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/white"
+                        android:maxLines="1"
+                        android:ellipsize="end"
+                        android:paddingHorizontal="8dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        app:iconPadding="6dp"
+                        app:backgroundTint="#3B82F6"
+                        app:icon="@drawable/ic_copy"
+                        app:iconSize="16dp"
+                        app:cornerRadius="12dp"
+                        android:contentDescription="Copy safe reply to clipboard and dismiss" />
+
+                    <!-- Save to App (50% width) -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnSaveToApp"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:text="Save to App"
+                        android:textSize="13sp"
+                        android:textColor="#7B8FAF"
+                        android:maxLines="1"
+                        android:ellipsize="end"
+                        android:paddingHorizontal="8dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        app:iconPadding="6dp"
+                        app:backgroundTint="#16243A"
+                        app:strokeColor="#1E3050"
+                        app:strokeWidth="1dp"
+                        app:icon="@drawable/ic_scan"
+                        app:iconSize="16dp"
+                        app:iconTint="#7B8FAF"
+                        app:cornerRadius="12dp"
+                        android:contentDescription="Open session in Honeypot app" />
+                </LinearLayout>
+
+                <!-- Dismiss text button -->
+                <TextView
+                    android:id="@+id/btnDoneAnalysis"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:gravity="center"
+                    android:text="Dismiss"
+                    android:textColor="#4A5C7A"
+                    android:textSize="12sp"
+                    android:layout_marginBottom="4dp"
+                    android:background="?attr/selectableItemBackground" />
+
             </LinearLayout>
-        </FrameLayout>
+        </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
+
 </FrameLayout>
