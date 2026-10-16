@@ -46,10 +46,26 @@ class BertWordPieceTokenizer(private val context: Context) {
     suspend fun loadVocab() = withContext(Dispatchers.IO) {
         if (vocab.isNotEmpty()) return@withContext
         val t0 = System.currentTimeMillis()
-        context.assets.open("vocab.txt").bufferedReader().useLines { lines ->
+        val downloadedVocab = com.example.myapplication.download.ModelDownloadManager.resolveModelFile(context, "vocab.txt")
+        if (downloadedVocab != null && downloadedVocab.exists() && downloadedVocab.length() > 0) {
+            downloadedVocab.bufferedReader().useLines { lines ->
+                lines.forEachIndexed { idx, line -> vocab[line.trim()] = idx }
+            }
+            Log.d(TAG, "Vocab loaded from file (${downloadedVocab.absolutePath}): ${vocab.size} tokens in ${System.currentTimeMillis() - t0} ms")
+            return@withContext
+        }
+
+        // Fallback to assets
+        val assetPath = try {
+            context.assets.open("vocab.txt").close()
+            "vocab.txt"
+        } catch (_: Exception) {
+            "muril/vocab.txt"
+        }
+        context.assets.open(assetPath).bufferedReader().useLines { lines ->
             lines.forEachIndexed { idx, line -> vocab[line.trim()] = idx }
         }
-        Log.d(TAG, "Vocab loaded: ${vocab.size} tokens in ${System.currentTimeMillis() - t0} ms")
+        Log.d(TAG, "Vocab loaded from asset ($assetPath): ${vocab.size} tokens in ${System.currentTimeMillis() - t0} ms")
     }
 
     /** Tokenizes [text] and returns padded tensors of length [MAX_SEQ_LEN]. */

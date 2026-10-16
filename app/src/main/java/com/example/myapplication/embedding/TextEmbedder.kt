@@ -13,22 +13,39 @@ class ScamTextEmbedder(private val context: Context) {
     private var embedder: TextEmbedder? = null
     private val MODEL_PATH = "universal_sentence_encoder_lite.tflite"
 
+    val isInitialized: Boolean get() = embedder != null
+
+    fun isModelAvailable(): Boolean {
+        val downloaded = com.example.myapplication.download.ModelDownloadManager.resolveModelFile(context, MODEL_PATH)
+        if (downloaded != null && downloaded.exists() && downloaded.length() > 0) return true
+        return try {
+            context.assets.open(MODEL_PATH).close()
+            true
+        } catch (_: Exception) {
+            false
+        }
+    }
+
     suspend fun initialize() = withContext(Dispatchers.IO) {
         if (embedder != null) return@withContext
-        
-        try {
-            // Check if asset exists
-            context.assets.open(MODEL_PATH).close()
-        } catch (e: Exception) {
-            Log.e("ScamTextEmbedder", "Model asset not found: $MODEL_PATH. Vector search will be disabled.")
-            // Instead of throwing, we can set a flag or just let it fail later
-            // But engine.initialize() depends on this.
-            // For now, let's keep it throwing but with a better message.
-            throw IllegalStateException("Model asset $MODEL_PATH missing from assets folder. Please download it and place it in app/src/main/assets/")
+
+        val downloaded = com.example.myapplication.download.ModelDownloadManager.resolveModelFile(context, MODEL_PATH)
+        val modelPathToUse: String = if (downloaded != null && downloaded.exists() && downloaded.length() > 0) {
+            Log.d("ScamTextEmbedder", "Loading TextEmbedder model from file: ${downloaded.absolutePath}")
+            downloaded.absolutePath
+        } else {
+            try {
+                context.assets.open(MODEL_PATH).close()
+                Log.d("ScamTextEmbedder", "Loading TextEmbedder model from assets: $MODEL_PATH")
+                MODEL_PATH
+            } catch (e: Exception) {
+                Log.e("ScamTextEmbedder", "Model asset not found: $MODEL_PATH. Vector search disabled.")
+                throw IllegalStateException("USE Lite model missing. Please download it via Settings.")
+            }
         }
 
         val baseOptions = BaseOptions.builder()
-            .setModelAssetPath(MODEL_PATH)
+            .setModelAssetPath(modelPathToUse)
             .setDelegate(Delegate.CPU)
             .build()
 

@@ -42,6 +42,27 @@ class OnnxScamClassifier(private val context: Context) {
         val confidence: Float get() = if (isScam) scamProbability else hamProbability
     }
 
+    val isInitialized: Boolean get() = session != null
+
+    /** Checks whether the ONNX model and tokenizer are present either on disk or in assets. */
+    fun isModelAvailable(): Boolean {
+        val resolved = com.example.myapplication.download.ModelDownloadManager.resolveModelFile(context, "scam_classifier_int8.onnx")
+            ?: com.example.myapplication.download.ModelDownloadManager.resolveModelFile(context, MODEL_ASSET)
+        if (resolved != null && resolved.exists() && resolved.length() > 0) return true
+
+        return try {
+            context.assets.open("muril/scam_classifier_int8.onnx").close()
+            true
+        } catch (_: Exception) {
+            try {
+                context.assets.open(MODEL_ASSET).close()
+                true
+            } catch (_: Exception) {
+                false
+            }
+        }
+    }
+
     /**
      * Loads vocab + ONNX model. Must be called once before [classify].
      * Model is cached to internal storage so subsequent starts are faster.
@@ -53,6 +74,8 @@ class OnnxScamClassifier(private val context: Context) {
         tokenizer.loadVocab()
 
         val modelFile = ensureModelFile()
+            ?: throw IllegalStateException("MuRIL ONNX model not found on device or assets. Download via Settings.")
+
         val opts = OrtSession.SessionOptions().apply {
             setIntraOpNumThreads(2)
             setOptimizationLevel(OrtSession.SessionOptions.OptLevel.BASIC_OPT)
@@ -113,17 +136,38 @@ class OnnxScamClassifier(private val context: Context) {
     // ── Private ───────────────────────────────────────────────────────────────
 
     /**
-     * Copies the ONNX model from assets to internal storage on first run.
-     * ONNX Runtime performs much better with a file-path session (OS can mmap
-     * the file) than loading the full 227 MB into a byte array.
+     * Resolves the ONNX model file. If downloaded into context.filesDir/models/,
+     * returns it directly (zero copying). If bundled in assets, copies it to internal storage.
      */
-    private fun ensureModelFile(): File {
-        val dest = File(context.filesDir, MODEL_ASSET)
-        if (dest.exists()) return dest
+    private fun ensureModelFile(): File? {
+        // 1. Check if model is already downloaded to filesDir/models/
+        val downloaded = com.example.myapplication.download.ModelDownloadManager.resolveModelFile(context, "scam_classifier_int8.onnx")
+            ?: com.example.myapplication.download.ModelDownloadManager.resolveModelFile(context, MODEL_ASSET)
+        if (downloaded != null && downloaded.exists() && downloaded.length() > 0) {
+            Log.d(TAG, "Using downloaded ONNX model from: ${downloaded.absolutePath}")
+            return downloaded
+        }
 
-        Log.d(TAG, "Copying ONNX model to internal storage (~227 MB)…")
+        // 2. Check direct internal storage
+        val dest = File(context.filesDir, MODEL_ASSET)
+        if (dest.exists() && dest.length() > 0) return dest
+
+        // 3. Fallback: Copy from assets if bundled during development
+        val assetSource = try {
+            context.assets.open("muril/scam_classifier_int8.onnx").close()
+            "muril/scam_classifier_int8.onnx"
+        } catch (_: Exception) {
+            try {
+                context.assets.open(MODEL_ASSET).close()
+                MODEL_ASSET
+            } catch (_: Exception) {
+                null
+            }
+        } ?: return null
+
+        Log.d(TAG, "Copying ONNX model from assets ($assetSource) to internal storage…")
         val tmp = File(context.filesDir, "$MODEL_ASSET.tmp")
-        context.assets.open(MODEL_ASSET).use { ins ->
+        context.assets.open(assetSource).use { ins ->
             FileOutputStream(tmp).use { out -> ins.copyTo(out) }
         }
         tmp.renameTo(dest)

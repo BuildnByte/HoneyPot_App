@@ -82,16 +82,13 @@ dependencies {
     // MediaPipe Text Embedder
     implementation("com.google.mediapipe:tasks-text:1.0.0")
 
-    // LiteRT-LM (kept for now — remove after verifying ONNX works)
-    implementation("com.google.mediapipe:tasks-genai:0.10.35")
-
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 
     // Kotlin Serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
 
-    // OkHttp — used for cloud API (OpenAI GPT-4o-mini) reply generation
+    // OkHttp — used for cloud API (Google Gemini 3.5 Flash Lite) reasoning and reply generation
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     // Lifecycle

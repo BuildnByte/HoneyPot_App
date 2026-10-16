@@ -43,9 +43,21 @@ class ScamDetectionEngine(private val context: Context) {
 
     suspend fun initialize() {
         populateKnowledgeBaseIfNeeded()
-        embedder.initialize()
-        vectorSearch.precomputeEmbeddings()
-        onnxClassifier.initialize()   // loads vocab + ONNX model
+        if (embedder.isModelAvailable()) {
+            try {
+                embedder.initialize()
+                vectorSearch.precomputeEmbeddings()
+            } catch (e: Exception) {
+                android.util.Log.w("ScamDetectionEngine", "Vector search init deferred: ${e.message}")
+            }
+        }
+        if (onnxClassifier.isModelAvailable()) {
+            try {
+                onnxClassifier.initialize()
+            } catch (e: Exception) {
+                android.util.Log.w("ScamDetectionEngine", "MuRIL ONNX init deferred: ${e.message}")
+            }
+        }
     }
 
     // ── Main processing pipeline ──────────────────────────────────────────────
@@ -77,37 +89,67 @@ class ScamDetectionEngine(private val context: Context) {
             return DetectionResult(sms, filterResult, triggerResult, emptyList(), null, conversationText)
         }
 
+        // Lazy initialize models if they were recently downloaded
+        if (!onnxClassifier.isInitialized && onnxClassifier.isModelAvailable()) {
+            try { onnxClassifier.initialize() } catch (_: Exception) {}
+        }
+        if (!embedder.isInitialized && embedder.isModelAvailable()) {
+            try {
+                embedder.initialize()
+                vectorSearch.precomputeEmbeddings()
+            } catch (_: Exception) {}
+        }
+
         // ── STAGE 5: Vector search ────────────────────────────────────────────
-        val kbResults = withContext(Dispatchers.Default) {
-            vectorSearch.search(queryText = conversationText, topK = 3, minSimilarity = 0.45f)
+        val kbResults = if (embedder.isInitialized) {
+            withContext(Dispatchers.Default) {
+                vectorSearch.search(queryText = conversationText, topK = 3, minSimilarity = 0.45f)
+            }
+        } else {
+            emptyList()
         }
 
         if (kbResults.isEmpty() && triggerResult.priority == TriggerEngine.Priority.LOW) {
             return DetectionResult(sms, filterResult, triggerResult, kbResults, null, conversationText)
         }
 
-        // ── STAGE 6: MuRIL BERT ONNX Classification ───────────────────────────
-        val bertResult = withContext(Dispatchers.Default) {
-            onnxClassifier.classify(sms.body)
-        }
+        // ── STAGE 6: Classification (MuRIL ONNX or Trigger Fallback) ─────────
+        val scamProbability: Float
+        if (onnxClassifier.isInitialized) {
+            val bertResult = withContext(Dispatchers.Default) {
+                onnxClassifier.classify(sms.body)
+            }
 
-        if (!bertResult.isScam) {
-            // Safe — return early with no ScamResult
-            return DetectionResult(sms, filterResult, triggerResult, kbResults, null, conversationText)
+            if (!bertResult.isScam) {
+                // Safe — return early with no ScamResult
+                return DetectionResult(sms, filterResult, triggerResult, kbResults, null, conversationText)
+            }
+            scamProbability = bertResult.scamProbability
+        } else {
+            // Graceful fallback when on-device MuRIL model is not yet downloaded:
+            // High/Critical triggers are routed to CloudReasoningService
+            if (triggerResult.priority == TriggerEngine.Priority.LOW) {
+                return DetectionResult(sms, filterResult, triggerResult, kbResults, null, conversationText)
+            }
+            scamProbability = when (triggerResult.priority) {
+                TriggerEngine.Priority.CRITICAL -> 0.95f
+                TriggerEngine.Priority.HIGH     -> 0.85f
+                else                            -> 0.65f
+            }
+            android.util.Log.i("ScamDetectionEngine", "On-device MuRIL model not ready. Using heuristic fallback (score=$scamProbability).")
         }
 
         // ── STAGE 6b: Confidence blending ─────────────────────────────────────
-        // BERT softmax is well-calibrated; blend lightly with trigger score for robustness
         val triggerScore = when (triggerResult.priority) {
             TriggerEngine.Priority.CRITICAL -> 1.0f
             TriggerEngine.Priority.HIGH     -> 0.8f
             TriggerEngine.Priority.MEDIUM   -> 0.5f
             TriggerEngine.Priority.LOW      -> 0.2f
         }
-        val blendedConf = if (bertResult.scamProbability >= 0.90f) {
-            bertResult.scamProbability                                  // high confidence → trust BERT
+        val blendedConf = if (scamProbability >= 0.90f) {
+            scamProbability                                  // high confidence → trust classifier
         } else {
-            (bertResult.scamProbability * 0.75f) + (triggerScore * 0.25f) // blend for borderline
+            (scamProbability * 0.75f) + (triggerScore * 0.25f) // blend for borderline
         }
 
         // ── STAGE 6c: Scam type resolution ────────────────────────────────────
