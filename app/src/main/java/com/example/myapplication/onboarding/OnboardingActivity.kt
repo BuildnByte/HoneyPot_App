@@ -62,6 +62,13 @@ class OnboardingActivity : AppCompatActivity() {
                 isScreenshot = false
             ),
             OnboardingPage(
+                illustrationRes = R.drawable.ic_scan,
+                chipLabel = "Cross-App Scanner",
+                title = "Set Up Cross-App\nScanning",
+                body = "Detect scams inside WhatsApp, Telegram, and other apps. Enable accessibility and overlay permissions to activate on-screen scanning.",
+                isScreenshot = false
+            ),
+            OnboardingPage(
                 illustrationRes = R.drawable.ic_onboard_ready,
                 chipLabel = "Let's Go",
                 title = "You're Ready To\nCatch Scammers",
@@ -111,7 +118,8 @@ class OnboardingActivity : AppCompatActivity() {
             findViewById(R.id.dot2),
             findViewById(R.id.dot3),
             findViewById(R.id.dot4),
-            findViewById(R.id.dot5)
+            findViewById(R.id.dot5),
+            findViewById(R.id.dot6)
         )
 
         val adapter = OnboardingPagerAdapter(this)

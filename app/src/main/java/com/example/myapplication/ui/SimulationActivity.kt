@@ -78,12 +78,6 @@ class SimulationActivity : AppCompatActivity() {
                         }
                     }
                     supportActionBar?.title = title
-                    supportActionBar?.subtitle = when {
-                        session.attackerSenderId.isNotBlank() && session.attackerPhone.isNotBlank() ->
-                            "${session.attackerSenderId} (${session.attackerPhone})"
-                        session.attackerSenderId.isNotBlank() -> session.attackerSenderId
-                        else -> session.attackerPhone
-                    }
                 }
             }
         }

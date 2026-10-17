@@ -195,7 +195,7 @@ class HoneypotAccessibilityService : AccessibilityService() {
                             val fgPackage = lastForegroundPackage ?: AppForegroundDetector.getForegroundPackage(context)
                             val appName = AppForegroundDetector.getAppName(context, fgPackage)
 
-                            val captureDir = File(context.filesDir, "evidence_captures").also { it.mkdirs() }
+                            val captureDir = File(context.cacheDir, "scan_cache").also { it.mkdirs() }
                             val captureId = UUID.randomUUID().toString()
                             val tmpFile = File(captureDir, "$captureId.tmp")
                             val finalFile = File(captureDir, "$captureId.png")

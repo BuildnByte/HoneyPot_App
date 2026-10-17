@@ -27,8 +27,7 @@
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
                 app:title="Review capture"
-                app:navigationIcon="?attr/homeAsUpIndicator"
-                app:subtitle="Draw boxes or tap to select text" />
+                app:navigationIcon="?attr/homeAsUpIndicator" />
 
             <!-- Google Lens Bounding Box Tools Bar -->
             <LinearLayout

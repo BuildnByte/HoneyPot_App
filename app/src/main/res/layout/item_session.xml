@@ -1,38 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Universal session list item — used for Threats, Sandbox, Scans tabs -->
+<!-- Clean Google Messages / Material 3 style item — used for Threats, Sandbox, Recent Activity -->
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/sessionCardRoot"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="4dp"
-    android:layout_marginVertical="6dp"
+    android:layout_marginHorizontal="6dp"
+    android:layout_marginVertical="4dp"
     android:clickable="true"
     android:focusable="true"
     android:longClickable="true"
     app:cardBackgroundColor="@color/bg_card"
-    app:cardCornerRadius="14dp"
+    app:cardCornerRadius="16dp"
     app:cardElevation="0dp"
-    app:strokeWidth="1dp"
-    app:strokeColor="@color/card_stroke">
+    app:strokeWidth="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="14dp"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="12dp"
         android:gravity="center_vertical">
 
-        <!-- ── Avatar circle ──────────────────────────────────────────── -->
-        <com.google.android.material.card.MaterialCardView
+        <!-- ── 40dp Circular Avatar ───────────────────────────────────── -->
+        <FrameLayout
             android:id="@+id/sessionIconCard"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            app:cardCornerRadius="22dp"
-            app:cardBackgroundColor="@color/badge_red_bg"
-            app:cardElevation="0dp"
-            app:strokeWidth="0dp">
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_m3_avatar_dark">
 
             <ImageView
                 android:id="@+id/sessionIconView"
@@ -40,37 +38,47 @@
                 android:layout_height="20dp"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_message"
-                android:contentDescription="Scam type"
-                app:tint="@color/accent_red" />
-        </com.google.android.material.card.MaterialCardView>
+                android:contentDescription="Icon"
+                android:visibility="gone"
+                app:tint="@color/accent_blue" />
+
+            <TextView
+                android:id="@+id/sessionInitialView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="S"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/accent_blue" />
+        </FrameLayout>
 
         <!-- ── Content ───────────────────────────────────────────────── -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="14dp"
             android:orientation="vertical">
 
-            <!-- Number + time row -->
+            <!-- Title + Date row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical">
 
-                <!-- Masked number / session title -->
                 <TextView
                     android:id="@+id/sessionName"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:textSize="16sp"
+                    android:textSize="15sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary"
-                    android:maxLines="1"
+                    android:singleLine="true"
                     android:ellipsize="end"
-                    tools:text="+91 XXXXX 01353" />
+                    tools:text="+91 98231 09841" />
 
                 <TextView
                     android:id="@+id/sessionDate"
@@ -78,90 +86,46 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:textSize="12sp"
-                    android:textColor="@color/text_muted"
-                    tools:text="2h ago" />
+                    android:textColor="@color/text_secondary"
+                    tools:text="Today" />
             </LinearLayout>
 
-            <!-- Scam type chip -->
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <TextView
-                    android:id="@+id/sessionScamType"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_badge_amber"
-                    android:text="Lottery Scam"
-                    android:textColor="@color/accent_amber"
-                    android:textSize="11sp"
-                    android:textStyle="bold"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="3dp"
-                    tools:text="Lottery Scam" />
-            </LinearLayout>
-
-            <!-- Message count row -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <TextView
-                    android:id="@+id/sessionAttacker"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:textSize="12sp"
-                    android:textColor="@color/text_muted"
-                    android:maxLines="1"
-                    android:ellipsize="end"
-                    tools:text="5 messages • Active" />
-
-                <!-- Status indicator -->
-                <LinearLayout
-                    android:id="@+id/sessionStatusContainer"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:visibility="gone">
-
-                    <View
-                        android:id="@+id/sessionStatusDot"
-                        android:layout_width="6dp"
-                        android:layout_height="6dp"
-                        android:layout_marginEnd="5dp"
-                        android:background="@drawable/bg_badge_green" />
-
-                    <TextView
-                        android:id="@+id/sessionStatusLabel"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Active"
-                        android:textColor="@color/accent_green"
-                        android:textSize="11sp" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <!-- Notes preview (optional) -->
+            <!-- Snippet / Notes row (Single line, ellipsize end) -->
             <TextView
                 android:id="@+id/sessionNotes"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textSize="12sp"
-                android:textColor="@color/text_muted"
-                android:maxLines="1"
+                android:layout_marginTop="2dp"
+                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                android:singleLine="true"
                 android:ellipsize="end"
-                android:visibility="gone"
-                tools:visibility="visible"
-                tools:text="Notes preview…" />
+                tools:text="Your power will be disconnected at 9:30 PM due to unpaid bills..." />
+
+            <!-- Hidden / legacy fields kept for backwards-compatibility -->
+            <TextView
+                android:id="@+id/sessionAttacker"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/sessionScamType"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+
+            <View
+                android:id="@+id/sessionStatusDot"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/sessionStatusLabel"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
         </LinearLayout>
 
         <!-- ── Chevron ───────────────────────────────────────────────── -->

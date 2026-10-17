@@ -62,6 +62,12 @@ class ScanDetailActivity : AppCompatActivity() {
     private lateinit var bottomActionBar: View
     private lateinit var btnCopySafeReply: MaterialButton
     private lateinit var btnShareEvidence: MaterialButton
+    private lateinit var sectionLabelScreenshot: View
+    private lateinit var cardEvidenceScreenshot: View
+    private lateinit var layoutScreenshotPreview: View
+    private lateinit var ivEvidenceScreenshot: android.widget.ImageView
+    private lateinit var tvScreenshotMeta: TextView
+    private lateinit var tvScreenshotSha256: TextView
 
     private var captureId: String? = null
     private var sessionId: String? = null
@@ -124,6 +130,12 @@ class ScanDetailActivity : AppCompatActivity() {
         bottomActionBar = findViewById(R.id.bottomActionBar)
         btnCopySafeReply = findViewById(R.id.btnCopySafeReply)
         btnShareEvidence = findViewById(R.id.btnShareEvidence)
+        sectionLabelScreenshot = findViewById(R.id.sectionLabelScreenshot)
+        cardEvidenceScreenshot = findViewById(R.id.cardEvidenceScreenshot)
+        layoutScreenshotPreview = findViewById(R.id.layoutScreenshotPreview)
+        ivEvidenceScreenshot = findViewById(R.id.ivEvidenceScreenshot)
+        tvScreenshotMeta = findViewById(R.id.tvScreenshotMeta)
+        tvScreenshotSha256 = findViewById(R.id.tvScreenshotSha256)
     }
 
     private fun setupToolbar() {
@@ -208,13 +220,36 @@ class ScanDetailActivity : AppCompatActivity() {
     private fun populateUI(capture: ManualCapture, analysis: ManualCaptureAnalysis?) {
         sourceApp = UiUtil.formatSourceApp(capture.sourceApp)
 
-        // App bar title / subtitle
+        // App bar title
         toolbar.title = "Scanned Message"
-        toolbar.subtitle = "Via $sourceApp"
 
         // Build message card(s)
         messagesContainer.removeAllViews()
         addMessageCard(capture)
+
+        // ── Evidence Screenshot ──────────────────────────────────────────
+        val imageFile = if (capture.imagePath.isNotBlank()) java.io.File(capture.imagePath) else null
+        if (imageFile != null && imageFile.exists()) {
+            sectionLabelScreenshot.visibility = View.VISIBLE
+            cardEvidenceScreenshot.visibility = View.VISIBLE
+
+            val bmp = android.graphics.BitmapFactory.decodeFile(imageFile.absolutePath)
+            if (bmp != null) {
+                ivEvidenceScreenshot.setImageBitmap(bmp)
+            }
+
+            val dateStr = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault())
+                .format(Date(capture.capturedAt))
+            tvScreenshotMeta.text = "Captured $dateStr • Includes status bar timestamp"
+            tvScreenshotSha256.text = "SHA-256: ${capture.imageSha256}"
+
+            layoutScreenshotPreview.setOnClickListener {
+                showFullscreenScreenshot(imageFile.absolutePath, dateStr)
+            }
+        } else {
+            sectionLabelScreenshot.visibility = View.GONE
+            cardEvidenceScreenshot.visibility = View.GONE
+        }
 
         // Analysis section
         if (analysis != null) {
@@ -237,6 +272,23 @@ class ScanDetailActivity : AppCompatActivity() {
         }
 
         showContent()
+    }
+
+    private fun showFullscreenScreenshot(imagePath: String, timestampText: String) {
+        val dialog = android.app.Dialog(this, android.R.style.Theme_Black_NoTitleBar_Fullscreen)
+        dialog.setContentView(R.layout.dialog_fullscreen_screenshot)
+
+        val ivFull = dialog.findViewById<android.widget.ImageView>(R.id.ivFullscreenScreenshot)
+        val tvTimestamp = dialog.findViewById<TextView>(R.id.tvFullscreenTimestamp)
+        val btnClose = dialog.findViewById<View>(R.id.btnCloseFullscreen)
+
+        val bmp = android.graphics.BitmapFactory.decodeFile(imagePath)
+        ivFull.setImageBitmap(bmp)
+        tvTimestamp.text = timestampText
+
+        btnClose.setOnClickListener { dialog.dismiss() }
+        ivFull.setOnClickListener { dialog.dismiss() }
+        dialog.show()
     }
 
     private fun addMessageCard(capture: ManualCapture) {

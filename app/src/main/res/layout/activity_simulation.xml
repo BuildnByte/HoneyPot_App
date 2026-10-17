@@ -12,16 +12,15 @@
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/bg_card"
+        android:background="@color/bg_primary"
         app:elevation="0dp">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/bg_card"
+            android:background="@color/bg_primary"
             app:titleTextColor="@color/text_primary"
-            app:subtitleTextColor="@color/text_secondary"
             app:navigationIconTint="@color/text_secondary"
             app:title="Testing Session"
             app:navigationIcon="?attr/homeAsUpIndicator" />

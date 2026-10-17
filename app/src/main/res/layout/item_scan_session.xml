@@ -5,12 +5,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="12dp"
+    android:layout_marginHorizontal="6dp"
+    android:layout_marginVertical="4dp"
     app:cardBackgroundColor="@color/bg_card"
     app:cardCornerRadius="16dp"
     app:cardElevation="0dp"
-    app:strokeWidth="1dp"
-    app:strokeColor="@color/card_stroke"
+    app:strokeWidth="0dp"
     android:clickable="true"
     android:focusable="true">
 
@@ -18,24 +18,27 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="16dp"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="12dp"
         android:gravity="center_vertical">
 
-        <!-- Left icon (source app) -->
+        <!-- Left 40dp circular avatar (source app) -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardSourceIcon"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            app:cardCornerRadius="22dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            app:cardCornerRadius="20dp"
             app:cardElevation="0dp"
-            app:strokeWidth="0dp">
+            app:strokeWidth="0dp"
+            app:cardBackgroundColor="@color/badge_blue_bg">
 
             <ImageView
                 android:id="@+id/ivSourceIcon"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_scan"
+                app:tint="@color/accent_blue"
                 android:contentDescription="Source Icon" />
         </com.google.android.material.card.MaterialCardView>
 
@@ -52,7 +55,7 @@
                 android:id="@+id/tvScanTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
+                android:textSize="15sp"
                 android:textColor="@color/text_primary"
                 android:textStyle="bold"
                 android:maxLines="1"
@@ -69,6 +72,33 @@
                 android:maxLines="1"
                 android:ellipsize="end"
                 tools:text="From WhatsApp" />
+
+            <LinearLayout
+                android:id="@+id/evidenceTagRow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <ImageView
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:layout_marginEnd="4dp"
+                    android:src="@drawable/ic_scan"
+                    app:tint="@color/accent_red" />
+
+                <TextView
+                    android:id="@+id/tvEvidenceScreenshotTag"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Screenshot Evidence"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/accent_red" />
+            </LinearLayout>
         </LinearLayout>
 
         <!-- Right content (Date, Badge) -->
@@ -83,14 +113,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="12sp"
-                android:textColor="@color/text_muted"
+                android:textColor="@color/text_secondary"
                 tools:text="2m ago" />
 
             <TextView
                 android:id="@+id/tvScanRiskBadge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="6dp"
                 android:paddingHorizontal="8dp"
                 android:paddingVertical="3dp"
                 android:textSize="10sp"

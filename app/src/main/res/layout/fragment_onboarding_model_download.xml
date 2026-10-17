@@ -204,11 +204,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="8dp"
-                app:cardCornerRadius="14dp"
-                app:cardBackgroundColor="#0A2818"
-                app:strokeColor="#10B981"
-                app:strokeWidth="1dp"
-                app:cardElevation="2dp"
+                app:cardCornerRadius="16dp"
+                app:cardBackgroundColor="#0B2518"
+                app:strokeWidth="1.5dp"
+                app:strokeColor="#1E5238"
+                app:cardElevation="0dp"
                 android:visibility="gone">
 
                 <LinearLayout
@@ -216,15 +216,25 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:padding="12dp">
+                    android:padding="14dp">
 
-                    <ImageView
-                        android:layout_width="26dp"
-                        android:layout_height="26dp"
-                        android:src="@drawable/ic_onboard_ready"
-                        app:tint="#34D399"
-                        android:layout_marginEnd="12dp"
-                        android:contentDescription="@null" />
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        app:cardCornerRadius="19dp"
+                        app:cardBackgroundColor="#133824"
+                        app:strokeWidth="0dp"
+                        app:cardElevation="0dp"
+                        android:layout_marginEnd="12dp">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_onboard_ready"
+                            app:tint="#34D399"
+                            android:contentDescription="@null" />
+                    </com.google.android.material.card.MaterialCardView>
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -236,7 +246,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Offline Protection Active"
-                            android:textSize="14sp"
+                            android:textSize="14.5sp"
                             android:textStyle="bold"
                             android:textColor="#34D399" />
 

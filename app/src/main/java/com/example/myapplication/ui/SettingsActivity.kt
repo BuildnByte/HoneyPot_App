@@ -2,6 +2,8 @@ package com.example.myapplication.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import com.example.myapplication.R
@@ -14,7 +16,12 @@ import kotlinx.coroutines.launch
 
 class SettingsActivity : AppCompatActivity() {
 
+    enum class SettingsPage {
+        MAIN, DISPLAY, PRE_FILTERS, AI_ENGINE, HELP, ABOUT
+    }
+
     private lateinit var filterPrefs: FilterPreferenceManager
+    private var currentPage = SettingsPage.MAIN
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,38 +33,101 @@ class SettingsActivity : AppCompatActivity() {
         val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        toolbar.setNavigationOnClickListener { finish() }
 
-        // ── Theme ──────────────────────────────────────────────────────────
-        val themePrefs = getSharedPreferences("theme_prefs", android.content.Context.MODE_PRIVATE)
-        val currentMode = themePrefs.getInt("night_mode", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+        fun navigateTo(page: SettingsPage) {
+            currentPage = page
+            findViewById<View>(R.id.pageMainSettings)?.visibility = if (page == SettingsPage.MAIN) View.VISIBLE else View.GONE
+            findViewById<View>(R.id.pageChildDisplay)?.visibility = if (page == SettingsPage.DISPLAY) View.VISIBLE else View.GONE
+            findViewById<View>(R.id.pageChildPreFilters)?.visibility = if (page == SettingsPage.PRE_FILTERS) View.VISIBLE else View.GONE
+            findViewById<View>(R.id.pageChildAiEngine)?.visibility = if (page == SettingsPage.AI_ENGINE) View.VISIBLE else View.GONE
+            findViewById<View>(R.id.pageChildHelp)?.visibility = if (page == SettingsPage.HELP) View.VISIBLE else View.GONE
+            findViewById<View>(R.id.pageChildAbout)?.visibility = if (page == SettingsPage.ABOUT) View.VISIBLE else View.GONE
 
-        val sysBtn = findViewById<MaterialButton>(R.id.systemThemeButton)
-        val lightBtn = findViewById<MaterialButton>(R.id.lightThemeButton)
-        val darkBtn = findViewById<MaterialButton>(R.id.darkThemeButton)
-
-        fun updateThemeButtons(selectedMode: Int) {
-            val buttons = listOf(sysBtn to AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM, 
-                                 lightBtn to AppCompatDelegate.MODE_NIGHT_NO, 
-                                 darkBtn to AppCompatDelegate.MODE_NIGHT_YES)
-            buttons.forEach { (btn, mode) ->
-                val isActive = mode == selectedMode
-                btn.backgroundTintList = getColorStateList(if (isActive) R.color.accent_blue else android.R.color.transparent)
-                btn.setTextColor(getColor(if (isActive) R.color.text_on_accent else R.color.text_secondary))
+            supportActionBar?.title = when (page) {
+                SettingsPage.MAIN -> "Settings"
+                SettingsPage.DISPLAY -> "Display"
+                SettingsPage.PRE_FILTERS -> "SMS pre-filters"
+                SettingsPage.AI_ENGINE -> "AI & engine"
+                SettingsPage.HELP -> "Help & developer"
+                SettingsPage.ABOUT -> "About"
             }
         }
 
-        updateThemeButtons(currentMode)
+        toolbar.setNavigationOnClickListener {
+            if (currentPage != SettingsPage.MAIN) {
+                navigateTo(SettingsPage.MAIN)
+            } else {
+                finish()
+            }
+        }
+
+        onBackPressedDispatcher.addCallback(this) {
+            if (currentPage != SettingsPage.MAIN) {
+                navigateTo(SettingsPage.MAIN)
+            } else {
+                isEnabled = false
+                onBackPressedDispatcher.onBackPressed()
+            }
+        }
+
+        // Section rows click listeners
+        findViewById<View>(R.id.rowSectionDisplay)?.setOnClickListener { navigateTo(SettingsPage.DISPLAY) }
+        findViewById<View>(R.id.rowSectionPreFilters)?.setOnClickListener { navigateTo(SettingsPage.PRE_FILTERS) }
+        findViewById<View>(R.id.rowSectionAiEngine)?.setOnClickListener { navigateTo(SettingsPage.AI_ENGINE) }
+        findViewById<View>(R.id.rowSectionHelp)?.setOnClickListener { navigateTo(SettingsPage.HELP) }
+        findViewById<View>(R.id.rowSectionAbout)?.setOnClickListener { navigateTo(SettingsPage.ABOUT) }
+
+        // ── Theme (Google Contacts M3 Dialog) ─────────────────────────────
+        val themePrefs = getSharedPreferences("theme_prefs", android.content.Context.MODE_PRIVATE)
+        var currentMode = themePrefs.getInt("night_mode", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+
+        val tvThemeSubtitle = findViewById<android.widget.TextView>(R.id.tvThemeSubtitle)
+        val tvDisplayPreview = findViewById<android.widget.TextView>(R.id.tvDisplayPreview)
+
+        fun getThemeLabel(mode: Int): String = when (mode) {
+            AppCompatDelegate.MODE_NIGHT_NO -> "Light"
+            AppCompatDelegate.MODE_NIGHT_YES -> "Dark"
+            else -> "System default"
+        }
+        val initialThemeLabel = getThemeLabel(currentMode)
+        tvThemeSubtitle?.text = initialThemeLabel
+        tvDisplayPreview?.text = "Theme ($initialThemeLabel)"
 
         fun setMode(mode: Int) {
+            currentMode = mode
             themePrefs.edit().putInt("night_mode", mode).apply()
-            updateThemeButtons(mode)
+            val label = getThemeLabel(mode)
+            tvThemeSubtitle?.text = label
+            tvDisplayPreview?.text = "Theme ($label)"
             AppCompatDelegate.setDefaultNightMode(mode)
         }
 
-        sysBtn.setOnClickListener { setMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM) }
-        lightBtn.setOnClickListener { setMode(AppCompatDelegate.MODE_NIGHT_NO) }
-        darkBtn.setOnClickListener { setMode(AppCompatDelegate.MODE_NIGHT_YES) }
+        findViewById<android.view.View>(R.id.itemTheme)?.setOnClickListener {
+            val options = arrayOf("System default", "Light", "Dark")
+            val modeValues = intArrayOf(
+                AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM,
+                AppCompatDelegate.MODE_NIGHT_NO,
+                AppCompatDelegate.MODE_NIGHT_YES
+            )
+            val checkedIndex = when (currentMode) {
+                AppCompatDelegate.MODE_NIGHT_NO -> 1
+                AppCompatDelegate.MODE_NIGHT_YES -> 2
+                else -> 0
+            }
+
+            com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setTitle("Choose theme")
+                .setSingleChoiceItems(options, checkedIndex) { dialog, which ->
+                    setMode(modeValues[which])
+                    dialog.dismiss()
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+        }
+
+        findViewById<MaterialButton?>(R.id.systemThemeButton)?.setOnClickListener { setMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM) }
+        findViewById<MaterialButton?>(R.id.lightThemeButton)?.setOnClickListener { setMode(AppCompatDelegate.MODE_NIGHT_NO) }
+        findViewById<MaterialButton?>(R.id.darkThemeButton)?.setOnClickListener { setMode(AppCompatDelegate.MODE_NIGHT_YES) }
 
         // ── Developer tools ────────────────────────────────────────────────
         findViewById<MaterialButton>(R.id.openDeveloperToolsButton).setOnClickListener {
@@ -97,6 +167,15 @@ class SettingsActivity : AppCompatActivity() {
                     putExtra("FORCE_SHOW", true)
                 }
             )
+        }
+
+        // ── Technical Architecture & Engine Specs ───────────────────────────
+        findViewById<android.view.View>(R.id.btnTechnicalArchitecture).setOnClickListener {
+            val dialog = com.google.android.material.bottomsheet.BottomSheetDialog(this)
+            val view = layoutInflater.inflate(R.layout.dialog_technical_architecture, null)
+            view.findViewById<android.view.View>(R.id.btnCloseSpecs)?.setOnClickListener { dialog.dismiss() }
+            dialog.setContentView(view)
+            dialog.show()
         }
 
         // ── On-device AI Model Download Section ─────────────────────────────

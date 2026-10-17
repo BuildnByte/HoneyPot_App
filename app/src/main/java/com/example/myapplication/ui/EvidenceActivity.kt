@@ -219,12 +219,7 @@ class EvidenceSessionAdapter(
             
             subtitleText.text = "${summary.evidenceCount} items captured"
             
-            dateText.text = DateUtils.getRelativeTimeSpanString(
-                summary.lastTimestamp,
-                System.currentTimeMillis(),
-                DateUtils.DAY_IN_MILLIS,
-                DateUtils.FORMAT_ABBREV_RELATIVE
-            )
+            dateText.text = UiUtil.formatDisplayDate(summary.lastTimestamp)
             
             // Bind Reported Status
             if (summary.reportedAt != null) {

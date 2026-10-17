@@ -17,6 +17,12 @@ class ScanSessionsAdapter(
     private val onClick: (SimulationSession) -> Unit
 ) : ListAdapter<SimulationSession, ScanSessionsAdapter.ScanViewHolder>(ScanSessionDiffCallback()) {
 
+    var evidenceSessionIds: Set<String> = emptySet()
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ScanViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_scan_session, parent, false)
@@ -24,7 +30,8 @@ class ScanSessionsAdapter(
     }
 
     override fun onBindViewHolder(holder: ScanViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        val session = getItem(position)
+        holder.bind(session, evidenceSessionIds.contains(session.id))
     }
 
     class ScanViewHolder(
@@ -37,8 +44,9 @@ class ScanSessionsAdapter(
         private val iconView: ImageView = itemView.findViewById(R.id.ivSourceIcon)
         private val iconContainer: MaterialCardView = itemView.findViewById(R.id.cardSourceIcon)
         private val riskBadge: TextView = itemView.findViewById(R.id.tvScanRiskBadge)
+        private val evidenceTagRow: View = itemView.findViewById(R.id.evidenceTagRow)
 
-        fun bind(session: SimulationSession) {
+        fun bind(session: SimulationSession, hasScreenshotEvidence: Boolean) {
             itemView.setOnClickListener { onClick(session) }
 
             // Extract info
@@ -48,22 +56,23 @@ class ScanSessionsAdapter(
             val sourceApp = UiUtil.formatSourceApp(session.serviceCenterAddress.removePrefix("manual:"))
             subtitleView.text = "From $sourceApp"
 
-            dateView.text = DateUtils.getRelativeTimeSpanString(
-                session.createdAt,
-                System.currentTimeMillis(),
-                DateUtils.MINUTE_IN_MILLIS,
-                DateUtils.FORMAT_ABBREV_RELATIVE
-            )
+            dateView.text = UiUtil.formatDisplayDate(session.createdAt)
 
             // Setup icon
             iconContainer.setCardBackgroundColor(itemView.context.getColor(R.color.badge_blue_bg))
             iconView.imageTintList = android.content.res.ColorStateList.valueOf(itemView.context.getColor(R.color.accent_blue))
 
-            // Risk badge placeholder - we don't have analysis in SimulationSession directly,
-            // but we can query it or just show "Scanned"
-            riskBadge.text = "Scanned"
-            riskBadge.setBackgroundResource(R.drawable.bg_badge_blue)
-            riskBadge.setTextColor(itemView.context.getColor(R.color.accent_blue))
+            if (hasScreenshotEvidence) {
+                riskBadge.text = "SCAM"
+                riskBadge.setBackgroundResource(R.drawable.bg_badge_red)
+                riskBadge.setTextColor(itemView.context.getColor(R.color.badge_red_text))
+                evidenceTagRow.visibility = View.VISIBLE
+            } else {
+                riskBadge.text = "SAFE"
+                riskBadge.setBackgroundResource(R.drawable.bg_badge_green)
+                riskBadge.setTextColor(itemView.context.getColor(R.color.badge_green_text))
+                evidenceTagRow.visibility = View.GONE
+            }
         }
     }
 }

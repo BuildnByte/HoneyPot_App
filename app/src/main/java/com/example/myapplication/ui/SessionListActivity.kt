@@ -46,7 +46,6 @@ class SessionListActivity : AppCompatActivity() {
         isLiveMode = intent.getBooleanExtra("EXTRA_LIVE_MODE", false)
         if (isLiveMode) {
             supportActionBar?.title = "Flagged Messages"
-            supportActionBar?.subtitle = "Live honeypot conversations"
             fab.visibility = View.GONE
         }
 

@@ -16,7 +16,6 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="Evidence Vault"
-            app:subtitle="Captured scam evidence"
             app:navigationIcon="?attr/homeAsUpIndicator"/>
 
         <com.google.android.material.divider.MaterialDivider

@@ -200,7 +200,6 @@ class HoneypotConversationActivity : AppCompatActivity() {
                         .trim()
                 }
                 supportActionBar?.title = title
-                supportActionBar?.subtitle = "Honeypot Session"
             }
         }
     }

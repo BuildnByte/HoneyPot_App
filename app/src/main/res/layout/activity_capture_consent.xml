@@ -14,8 +14,7 @@
         android:minHeight="?attr/actionBarSize"
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
-        app:title="Capture a screenshot"
-        app:subtitle="One screenshot for scam analysis" />
+        app:title="Capture a screenshot" />
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -102,8 +101,7 @@
             <com.google.android.material.card.MaterialCardView
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="?attr/colorOutlineVariant"
+                app:strokeWidth="0dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="20dp">
@@ -170,8 +168,7 @@
             <com.google.android.material.card.MaterialCardView
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="?attr/colorOutlineVariant"
+                app:strokeWidth="0dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="28dp">

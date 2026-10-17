@@ -514,9 +514,26 @@ class InPlaceLensController(private val context: Context) {
             } catch (_: Exception) {}
         }
         currentBitmap = null
+        val capIdToClean = currentCaptureId
         currentCaptureId = null
         ocrBlocks.clear()
         currentSelectedText = ""
+
+        if (capIdToClean != null) {
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val dao = KnowledgeBaseDatabase.getInstance(context).knowledgeBaseDao()
+                    val cap = dao.getManualCapture(capIdToClean)
+                    if (cap != null && cap.status != "COMPLETE" && cap.status != "ANALYSING") {
+                        dao.updateManualCaptureStatus(capIdToClean, "DISCARDED")
+                        if (cap.imagePath.isNotBlank()) {
+                            val f = java.io.File(cap.imagePath)
+                            if (f.exists()) f.delete()
+                        }
+                    }
+                } catch (_: Exception) {}
+            }
+        }
 
         onDismissCallback?.invoke()
         onDismissCallback = null

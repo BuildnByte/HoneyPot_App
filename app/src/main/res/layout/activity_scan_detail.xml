@@ -17,20 +17,18 @@
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/bg_card"
+        android:background="@color/bg_primary"
         app:elevation="0dp">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/bg_card"
+            android:background="@color/bg_primary"
             app:titleTextColor="@color/text_primary"
-            app:subtitleTextColor="@color/text_secondary"
             app:navigationIconTint="@color/text_secondary"
             app:navigationIcon="?attr/homeAsUpIndicator"
-            tools:title="B Raut"
-            tools:subtitle="WhatsApp" />
+            tools:title="B Raut" />
 
         <!-- Divider -->
         <View
@@ -131,6 +129,126 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical" />
 
+            <!-- ── SECTION: EVIDENCE SCREENSHOT ───────────────────────────── -->
+            <TextView
+                android:id="@+id/sectionLabelScreenshot"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="10dp"
+                android:text="Evidence Screenshot"
+                android:visibility="gone"
+                style="@style/TextAppearance.Honeypot.SectionLabel" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardEvidenceScreenshot"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:visibility="gone"
+                app:cardBackgroundColor="@color/bg_card"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <!-- Screenshot preview with status bar -->
+                    <FrameLayout
+                        android:id="@+id/layoutScreenshotPreview"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:foreground="?attr/selectableItemBackground">
+
+                        <ImageView
+                            android:id="@+id/ivEvidenceScreenshot"
+                            android:layout_width="match_parent"
+                            android:layout_height="260dp"
+                            android:scaleType="centerCrop"
+                            android:adjustViewBounds="true"
+                            android:background="@color/bg_elevated"
+                            android:contentDescription="Evidence Screenshot with status bar timestamp" />
+
+                        <!-- Tap to view full size badge -->
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="bottom|end"
+                            android:layout_margin="12dp"
+                            android:background="@drawable/bg_chip_neutral"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="6dp">
+
+                            <ImageView
+                                android:layout_width="14dp"
+                                android:layout_height="14dp"
+                                android:layout_marginEnd="6dp"
+                                android:src="@drawable/ic_scan"
+                                app:tint="@color/text_primary" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Tap to expand"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/text_primary" />
+                        </LinearLayout>
+                    </FrameLayout>
+
+                    <!-- Evidence Metadata Footer -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="14dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <TextView
+                                android:id="@+id/tvScreenshotMeta"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Full screenshot with status bar timestamp"
+                                android:textSize="12sp"
+                                android:textColor="@color/text_secondary" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Verified Proof"
+                                android:textSize="11sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/accent_green"
+                                android:background="@drawable/bg_badge_green"
+                                android:paddingHorizontal="8dp"
+                                android:paddingVertical="2dp" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tvScreenshotSha256"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:fontFamily="monospace"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_muted"
+                            android:ellipsize="middle"
+                            android:singleLine="true" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- ── SECTION: ANALYSIS ─────────────────────────────────────── -->
             <TextView
                 android:id="@+id/sectionLabelAnalysis"
@@ -149,10 +267,9 @@
                 android:layout_marginBottom="4dp"
                 android:visibility="gone"
                 app:cardBackgroundColor="@color/bg_card"
-                app:cardCornerRadius="14dp"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="@color/card_stroke">
+                app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -288,10 +405,9 @@
                 android:layout_height="wrap_content"
                 android:visibility="gone"
                 app:cardBackgroundColor="@color/badge_blue_bg"
-                app:cardCornerRadius="14dp"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="@color/accent_blue">
+                app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"

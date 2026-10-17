@@ -37,8 +37,9 @@ class SessionAdapter(
         private val countView: TextView = itemView.findViewById(R.id.sessionAttacker)
         private val scamTypeView: TextView = itemView.findViewById(R.id.sessionScamType)
         private val notesView: TextView = itemView.findViewById(R.id.sessionNotes)
-        private val iconCard: com.google.android.material.card.MaterialCardView = itemView.findViewById(R.id.sessionIconCard)
+        private val iconCard: View = itemView.findViewById(R.id.sessionIconCard)
         private val iconView: android.widget.ImageView = itemView.findViewById(R.id.sessionIconView)
+        private val initialView: TextView? = itemView.findViewById(R.id.sessionInitialView)
 
         fun bind(session: SimulationSession) {
             val rawName = session.attackerPhone.ifBlank { session.name }
@@ -65,43 +66,39 @@ class SessionAdapter(
             }
             nameView.text = cleanName
 
-            val statusStr = if (session.isArchived) "Archived" else "Active"
-            countView.text = statusStr
-
-            // Scam type fallback for simple Session
-            val typeStr = if (isManualCapture) "Manual Scan" else "Flagged Threat"
-            scamTypeView.text = typeStr
-
             val context = itemView.context
-            when {
-                isManualCapture -> {
-                    iconView.setImageResource(R.drawable.ic_scan)
-                    iconCard.setCardBackgroundColor(context.getColor(R.color.bg_surface))
-                    iconView.imageTintList = android.content.res.ColorStateList.valueOf(context.getColor(R.color.text_secondary))
-                    scamTypeView.setBackgroundResource(R.drawable.bg_badge_blue)
-                    scamTypeView.setTextColor(context.getColor(R.color.accent_blue))
-                }
-                else -> { 
-                    iconView.setImageResource(R.drawable.ic_message)
-                    iconCard.setCardBackgroundColor(context.getColor(R.color.badge_red_bg))
-                    iconView.imageTintList = android.content.res.ColorStateList.valueOf(context.getColor(R.color.accent_red))
-                    scamTypeView.setBackgroundResource(R.drawable.bg_badge_red)
-                    scamTypeView.setTextColor(context.getColor(R.color.accent_red))
+            val isDark = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
+
+            if (isManualCapture) {
+                iconView.visibility = View.VISIBLE
+                initialView?.visibility = View.GONE
+                iconView.setImageResource(R.drawable.ic_scan)
+                iconCard.setBackgroundResource(if (isDark) R.drawable.bg_m3_avatar_dark else R.drawable.bg_m3_avatar_light)
+                iconView.imageTintList = android.content.res.ColorStateList.valueOf(context.getColor(R.color.accent_blue))
+            } else {
+                // Sender initial (Google Contacts / Messages paradigm - NO caution emojis)
+                iconView.visibility = View.GONE
+                initialView?.visibility = View.VISIBLE
+                val initialChar = cleanName.firstOrNull { it.isLetterOrDigit() }?.uppercaseChar()?.toString() ?: "S"
+                initialView?.text = initialChar
+                val isScam = !session.isArchived
+                if (isScam) {
+                    iconCard.setBackgroundResource(if (isDark) R.drawable.bg_m3_avatar_alert_dark else R.drawable.bg_m3_avatar_alert_light)
+                    initialView?.setTextColor(context.getColor(R.color.accent_red))
+                } else {
+                    iconCard.setBackgroundResource(if (isDark) R.drawable.bg_m3_avatar_dark else R.drawable.bg_m3_avatar_light)
+                    initialView?.setTextColor(context.getColor(R.color.accent_blue))
                 }
             }
 
-            dateView.text = DateUtils.getRelativeTimeSpanString(
-                session.createdAt,
-                System.currentTimeMillis(),
-                DateUtils.DAY_IN_MILLIS,
-                DateUtils.FORMAT_ABBREV_RELATIVE
-            )
+            dateView.text = UiUtil.formatDisplayDate(session.createdAt)
 
             if (session.notes.isNotBlank()) {
                 notesView.visibility = View.VISIBLE
                 notesView.text = session.notes
             } else {
-                notesView.visibility = View.GONE
+                notesView.visibility = View.VISIBLE
+                notesView.text = if (isManualCapture) "Scanned screenshot evidence" else "Simulated live threat conversation"
             }
 
             itemView.setOnClickListener { onClick(session) }

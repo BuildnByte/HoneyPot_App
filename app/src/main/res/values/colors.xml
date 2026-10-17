@@ -1,83 +1,99 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Backgrounds -->
-    <color name="bg_primary">#F0F2F5</color>
+    <!-- Backgrounds (Google Contacts M3 Light - Screenshot 1) -->
+    <color name="bg_primary">#F2F4F9</color>
     <color name="bg_card">#FFFFFF</color>
     <color name="bg_elevated">#E8EBF0</color>
-    <color name="bg_surface">#DBEAFE</color>
+    <color name="bg_surface">#D3E3FD</color>
 
     <!-- Accents -->
-    <color name="accent_red">#DC2626</color>
-    <color name="accent_green">#16A34A</color>
-    <color name="accent_blue">#2563EB</color>
-    <color name="accent_amber">#D97706</color>
+    <color name="accent_red">#B3261E</color>
+    <color name="accent_green">#146C2E</color>
+    <color name="accent_blue">#0B57D0</color>
+    <color name="accent_amber">#B54708</color>
 
-    <!-- Text -->
-    <color name="text_primary">#0F172A</color>
-    <color name="text_secondary">#475569</color>
-    <color name="text_muted">#94A3B8</color>
+    <!-- Text (Google Material 3 Light - Screenshot 1) -->
+    <color name="text_primary">#1F1F1F</color>
+    <color name="text_secondary">#444746</color>
+    <color name="text_muted">#747775</color>
     <color name="text_on_accent">#FFFFFF</color>
 
+    <!-- Settings category section titles (Google Contacts M3 - onSurfaceVariant / text_secondary) -->
+    <color name="settings_section_title">@color/text_secondary</color>
+
     <!-- Badge backgrounds -->
-    <color name="badge_red_bg">#FEF2F2</color>
-    <color name="badge_red_text">#DC2626</color>
-    <color name="badge_green_bg">#F0FDF4</color>
-    <color name="badge_green_text">#16A34A</color>
-    <color name="badge_amber_bg">#FFFBEB</color>
-    <color name="badge_amber_text">#D97706</color>
-    <color name="badge_blue_bg">#EFF6FF</color>
-    <color name="badge_blue_text">#2563EB</color>
+    <color name="badge_red_bg">#FCE8E6</color>
+    <color name="badge_red_text">#B3261E</color>
+    <color name="badge_green_bg">#E6F4EA</color>
+    <color name="badge_green_text">#146C2E</color>
+    <color name="badge_amber_bg">#FEF7E0</color>
+    <color name="badge_amber_text">#B54708</color>
+    <color name="badge_blue_bg">#E8F0FE</color>
+    <color name="badge_blue_text">#0B57D0</color>
 
     <!-- Badge strokes -->
-    <color name="badge_red_stroke">#FECACA</color>
-    <color name="badge_green_stroke">#BBF7D0</color>
-    <color name="badge_amber_stroke">#FDE68A</color>
-    <color name="badge_blue_stroke">#BFDBFE</color>
+    <color name="badge_red_stroke">@color/transparent</color>
+    <color name="badge_green_stroke">@color/transparent</color>
+    <color name="badge_amber_stroke">@color/transparent</color>
+    <color name="badge_blue_stroke">@color/transparent</color>
 
     <!-- Chat bubbles -->
-    <color name="scammer_bubble_bg">#FEF2F2</color>
-    <color name="scammer_bubble_border">#DC2626</color>
-    <color name="ai_bubble_bg">#EFF6FF</color>
-    <color name="ai_bubble_border">#2563EB</color>
+    <color name="scammer_bubble_bg">#FCE8E6</color>
+    <color name="scammer_bubble_border">#B3261E</color>
+    <color name="ai_bubble_bg">#E8F0FE</color>
+    <color name="ai_bubble_border">#0B57D0</color>
     <color name="user_bubble_border">#94A3B8</color>
-    <color name="bubble_attacker_bg">#FEF2F2</color>
-    <color name="bubble_honeypot_bg">#EFF6FF</color>
+    <color name="bubble_attacker_bg">#FCE8E6</color>
+    <color name="bubble_honeypot_bg">#E8F0FE</color>
     <color name="bubble_user_bg">#F1F5F9</color>
 
     <!-- Structure -->
-    <color name="divider_color">#E2E8F2</color>
-    <color name="card_stroke">#D1D9E6</color>
+    <color name="divider_color">#E0E3E8</color>
+    <color name="card_stroke">#E0E3E8</color>
 
     <!-- Keep legacy aliases just in case -->
-    <color name="background_primary">#F0F2F5</color>
+    <color name="background_primary">#F2F4F9</color>
     <color name="background_card">#FFFFFF</color>
     <color name="background_elevated">#E8EBF0</color>
 
-    <color name="brand_primary">#2563EB</color>
-    <color name="brand_primary_dark">#2563EB</color>
-    <color name="brand_secondary">#475569</color>
-    <color name="brand_secondary_dark">#475569</color>
-    <color name="brand_tertiary">#2563EB</color>
-    <color name="brand_tertiary_dark">#2563EB</color>
+    <color name="brand_primary">#0B57D0</color>
+    <color name="brand_primary_dark">#0B57D0</color>
+    <color name="brand_secondary">#444746</color>
+    <color name="brand_secondary_dark">#444746</color>
+    <color name="brand_tertiary">#0B57D0</color>
+    <color name="brand_tertiary_dark">#0B57D0</color>
 
-    <color name="success">#16A34A</color>
-    <color name="warning">#D97706</color>
-    <color name="danger">#DC2626</color>
+    <color name="success">#146C2E</color>
+    <color name="warning">#B54708</color>
+    <color name="danger">#B3261E</color>
 
     <!-- Material3 surface aliases -->
-    <color name="app_surface">#FFFFFF</color>
+    <color name="app_surface">#F2F4F9</color>
     <color name="app_surface_container">#FFFFFF</color>
     <color name="app_surface_container_high">#E8EBF0</color>
-    <color name="app_surface_variant">#DBEAFE</color>
-    <color name="app_on_surface">#0F172A</color>
-    <color name="app_on_surface_variant">#475569</color>
-    <color name="app_outline_variant">#D1D9E6</color>
-    <color name="app_primary_container">#EFF6FF</color>
-    <color name="app_on_primary_container">#2563EB</color>
-    <color name="app_tertiary_container">#F0FDF4</color>
-    <color name="app_on_tertiary_container">#16A34A</color>
+    <color name="app_surface_variant">#D3E3FD</color>
+    <color name="app_on_surface">#1F1F1F</color>
+    <color name="app_on_surface_variant">#444746</color>
+    <color name="app_outline_variant">#E0E3E8</color>
+    <color name="app_primary_container">#D3E3FD</color>
+    <color name="app_on_primary_container">#041E49</color>
+    <color name="app_tertiary_container">#E6F4EA</color>
+    <color name="app_on_tertiary_container">#146C2E</color>
 
-    <color name="black">#FF000000</color>
+    <!-- Material 3 Navigation Bar (Google Contacts style - Screenshot 1) -->
+    <color name="m3_nav_indicator">#D3E3FD</color>
+    <color name="m3_nav_icon_selected">#041E49</color>
+    <color name="m3_nav_icon_unselected">#444746</color>
+    <color name="m3_nav_text_selected">#1F1F1F</color>
+    <color name="m3_nav_text_unselected">#444746</color>
+
+    <!-- Switch colors (Google Material 3 / Google Contacts) -->
+    <color name="switch_track_checked">#D3E3FD</color>
+    <color name="switch_thumb_checked">#1A73E8</color>
+    <color name="switch_track_unchecked">#E0E3E8</color>
+    <color name="switch_thumb_unchecked">#747775</color>
+
+    <color name="black">#FF1F1F1F</color>
     <color name="white">#FFFFFFFF</color>
     <color name="transparent">#00000000</color>
 </resources>

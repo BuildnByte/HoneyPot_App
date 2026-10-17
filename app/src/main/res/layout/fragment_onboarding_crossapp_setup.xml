@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:overScrollMode="never">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:paddingHorizontal="24dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="20dp">
+
+        <!-- Phone Frame Preview Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardPreview"
+            android:layout_width="165dp"
+            android:layout_height="220dp"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="6dp"
+            app:strokeWidth="1.5dp"
+            app:strokeColor="#254777"
+            app:cardBackgroundColor="#0F1B2D"
+            android:layout_marginBottom="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="16dp">
+
+                <!-- Circular scanner illustration container -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="84dp"
+                    android:layout_height="84dp"
+                    app:cardCornerRadius="42dp"
+                    app:cardBackgroundColor="#132338"
+                    app:strokeColor="#254777"
+                    app:strokeWidth="1.5dp"
+                    app:cardElevation="0dp">
+
+                    <ImageView
+                        android:layout_width="52dp"
+                        android:layout_height="52dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_scan"
+                        app:tint="#60A5FA"
+                        android:contentDescription="@null" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Cross-App Scanner"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="#F0F4FF"
+                    android:layout_marginTop="14dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="WhatsApp • Telegram • Browsers"
+                    android:textSize="11sp"
+                    android:textColor="#60A5FA"
+                    android:layout_marginTop="3dp" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/onboardTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Set Up Cross-App\nScanning"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#F0F4FF"
+            android:gravity="center"
+            android:lineSpacingMultiplier="1.15"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Body description -->
+        <TextView
+            android:id="@+id/onboardBody"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Detect scams inside WhatsApp, Telegram, and other apps. Enable accessibility and overlay permissions to activate on-screen scanning."
+            android:textSize="13.5sp"
+            android:textColor="#7B8FAF"
+            android:gravity="center"
+            android:lineSpacingMultiplier="1.35"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Permission 1: Accessibility Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardAccessibility"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="#254777"
+            app:cardBackgroundColor="#0F1B2D"
+            android:layout_marginBottom="10dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="14dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginEnd="10dp">
+
+                    <TextView
+                        android:id="@+id/tvAccessibilityTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="1. Accessibility Service"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="#F0F4FF" />
+
+                    <TextView
+                        android:id="@+id/tvAccessibilityDesc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Allows silent on-screen capture without screen recording dialogs"
+                        android:textSize="12sp"
+                        android:textColor="#7B8FAF"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAccessibilityAction"
+                    style="@style/Widget.MaterialComponents.Button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="38dp"
+                    android:text="Enable"
+                    android:textAllCaps="false"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFFFFF"
+                    app:backgroundTint="#2563EB"
+                    app:cornerRadius="19dp"
+                    android:paddingHorizontal="14dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Permission 2: Overlay / Draw Over Apps Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardOverlay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="#254777"
+            app:cardBackgroundColor="#0F1B2D"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="14dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginEnd="10dp">
+
+                    <TextView
+                        android:id="@+id/tvOverlayTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="2. Draw Over Other Apps"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="#F0F4FF" />
+
+                    <TextView
+                        android:id="@+id/tvOverlayDesc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Shows floating scan button and risk breakdown over external apps"
+                        android:textSize="12sp"
+                        android:textColor="#7B8FAF"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnOverlayAction"
+                    style="@style/Widget.MaterialComponents.Button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="38dp"
+                    android:text="Grant"
+                    android:textAllCaps="false"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFFFFF"
+                    app:backgroundTint="#2563EB"
+                    app:cornerRadius="19dp"
+                    android:paddingHorizontal="14dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:id="@+id/tvCrossAppNote"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Optional • You can also enable or turn these off anytime in Settings"
+            android:textSize="11.5sp"
+            android:textColor="#64748B"
+            android:gravity="center" />
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

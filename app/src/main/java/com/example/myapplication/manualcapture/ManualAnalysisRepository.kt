@@ -163,7 +163,39 @@ class ManualAnalysisRepository(private val context: Context) {
                 )
                 dao.insertManualCaptureAnalysis(analysis)
 
-                // 8. Mark COMPLETE, update prefs
+                // 9. Conditional Evidence Screenshot Storage:
+                // Scams require evidence screenshots for proof & reporting.
+                // Non-scams are discarded immediately to protect user privacy.
+                if (isScam && capture.imagePath.isNotBlank()) {
+                    try {
+                        val cachedFile = java.io.File(capture.imagePath)
+                        if (cachedFile.exists()) {
+                            val permDir = java.io.File(context.filesDir, "evidence_screenshots").also { it.mkdirs() }
+                            val permFile = java.io.File(permDir, "${capture.id}.png")
+                            cachedFile.copyTo(permFile, overwrite = true)
+                            if (permFile.exists()) {
+                                cachedFile.delete()
+                                dao.updateManualCaptureImagePath(captureId, permFile.absolutePath)
+                                Log.d(TAG, "Scam detected: Persisted evidence screenshot to ${permFile.absolutePath}")
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to persist evidence screenshot", e)
+                    }
+                } else if (!isScam && capture.imagePath.isNotBlank()) {
+                    try {
+                        val cachedFile = java.io.File(capture.imagePath)
+                        if (cachedFile.exists()) {
+                            cachedFile.delete()
+                            Log.d(TAG, "No scam detected: Discarded screenshot from cache")
+                        }
+                        dao.updateManualCaptureImagePath(captureId, "")
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to discard cached screenshot", e)
+                    }
+                }
+
+                // 10. Mark COMPLETE, update prefs
                 dao.updateManualCaptureStatus(captureId, "COMPLETE")
                 prefs.isAnalysing = false
                 prefs.unviewedCaptureId = captureId
@@ -174,6 +206,13 @@ class ManualAnalysisRepository(private val context: Context) {
                 try {
                     val msg = e.message?.take(200) ?: "Analysis failed"
                     dao.updateManualCaptureStatusWithError(captureId, "FAILED", msg)
+                    val cap = dao.getManualCapture(captureId)
+                    if (cap != null && cap.imagePath.isNotBlank()) {
+                        val f = java.io.File(cap.imagePath)
+                        if (f.exists() && f.parentFile?.name == "scan_cache") {
+                            f.delete()
+                        }
+                    }
                 } catch (_: Exception) {}
                 prefs.isAnalysing = false
                 Result.failure(e)

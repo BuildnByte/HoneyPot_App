@@ -87,6 +87,13 @@
             android:layout_marginHorizontal="4dp"
             android:background="@drawable/onboard_dot_indicator"/>
 
+        <View
+            android:id="@+id/dot6"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_marginHorizontal="4dp"
+            android:background="@drawable/onboard_dot_indicator"/>
+
     </LinearLayout>
 
     <!-- Next / Get Started button -->

@@ -93,18 +93,15 @@ class MainActivity : AppCompatActivity() {
         findViewById<BottomNavigationView>(R.id.bottomNavigation)
             .setOnItemSelectedListener { item ->
                 when (item.itemId) {
-                    R.id.nav_home -> { showPage(R.id.homeContent, "Honeypot", "SMS threat analysis"); true }
+                    R.id.nav_home -> { showPage(R.id.homeContent, "Honeypot"); true }
                     R.id.nav_messages -> {
-                        showPage(R.id.messagesContent, "Flagged messages", "Live honeypot conversations"); true
+                        showPage(R.id.messagesContent, "Flagged messages"); true
                     }
                     R.id.nav_history -> {
-                        showPage(R.id.historyContent, "History", "Captured evidence and sessions"); true
-                    }
-                    R.id.nav_sandbox -> {
-                        showPage(R.id.sandboxContent, "Testing Sandbox", "Controlled pipeline sessions"); true
+                        showPage(R.id.historyContent, "History"); true
                     }
                     R.id.nav_scans -> {
-                        showPage(R.id.scansContent, "Scanned Messages", "Messages analysed from other apps"); true
+                        showPage(R.id.scansContent, "Scanned Messages"); true
                     }
                     else -> false
                 }
@@ -123,7 +120,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.testButton).setOnClickListener { runPipelineTest() }
 
         findViewById<Button>(R.id.simulationButton).setOnClickListener {
-            findViewById<BottomNavigationView>(R.id.bottomNavigation).selectedItemId = R.id.nav_sandbox
+            startActivity(Intent(this, com.example.myapplication.ui.SimulationActivity::class.java))
         }
 
         findViewById<View>(R.id.evidenceButton).setOnClickListener {
@@ -184,12 +181,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showPage(pageId: Int, title: String, subtitle: String) {
+    private fun showPage(pageId: Int, title: String) {
         listOf(R.id.homeContent, R.id.messagesContent, R.id.historyContent, R.id.sandboxContent, R.id.scansContent).forEach { id ->
             findViewById<View>(id)?.visibility = if (id == pageId) View.VISIBLE else View.GONE
         }
         findViewById<TextView>(R.id.customTitleText)?.text = title
-        findViewById<TextView>(R.id.customSubtitleText)?.text = subtitle
+        findViewById<TextView>(R.id.customSubtitleText)?.visibility = View.GONE
         applyEmptyStateBottomMargin()
     }
 
@@ -376,6 +373,13 @@ class MainActivity : AppCompatActivity() {
                 val hasSmsPerm = ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.RECEIVE_SMS) == PackageManager.PERMISSION_GRANTED
                 heroProtectionStatus?.text = if (hasSmsPerm) "Protection Active" else "Setup Needed"
                 heroProtectionStatus?.setTextColor(getColor(if (hasSmsPerm) R.color.accent_green else R.color.accent_amber))
+
+                val scamSessionIdsWithScreenshot = dao.getActiveManualCaptures()
+                    .filter { it.imagePath.isNotBlank() && java.io.File(it.imagePath).exists() }
+                    .mapNotNull { it.analysisSessionId }
+                    .toSet()
+
+                scansAdapter.evidenceSessionIds = scamSessionIdsWithScreenshot
 
                 liveAdapter.submitList(live)
                 sandboxAdapter.submitList(sandbox)

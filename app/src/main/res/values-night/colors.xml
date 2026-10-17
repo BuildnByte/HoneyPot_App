@@ -1,51 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="app_surface">#121318</color>
+    <color name="app_surface">#111318</color>
     <color name="app_surface_container">#1E1F25</color>
     <color name="app_surface_container_high">#282A31</color>
-    <color name="app_surface_variant">#44474F</color>
+    <color name="app_surface_variant">#282A31</color>
     <color name="app_on_surface">#E2E2E9</color>
     <color name="app_on_surface_variant">#C4C6D0</color>
-    <color name="app_outline_variant">#44474F</color>
-    <color name="app_primary_container">#254777</color>
-    <color name="app_on_primary_container">#D9E2FF</color>
-    <color name="app_tertiary_container">#5A3F68</color>
-    <color name="app_on_tertiary_container">#F5D9FF</color>
+    <color name="app_outline_variant">#282A30</color>
+    <color name="app_primary_container">#004A77</color>
+    <color name="app_on_primary_container">#D3E3FD</color>
+    <color name="app_tertiary_container">#0F381E</color>
+    <color name="app_on_tertiary_container">#6DD58C</color>
 
-    <!-- Backgrounds -->
-    <color name="bg_primary">#080F1E</color>
-    <color name="bg_card">#0F1B2D</color>
-    <color name="bg_elevated">#16243A</color>
-    <color name="bg_surface">#1C2E47</color>
+    <!-- Backgrounds (Google Contacts M3 Dark - Screenshot 2 & 3) -->
+    <color name="bg_primary">#111318</color>
+    <color name="bg_card">#1E1F25</color>
+    <color name="bg_elevated">#282A31</color>
+    <color name="bg_surface">#282A31</color>
 
     <!-- Accents -->
-    <color name="accent_red">#FF4757</color>
-    <color name="accent_green">#26D467</color>
-    <color name="accent_blue">#3B82F6</color>
-    <color name="accent_amber">#F59E0B</color>
+    <color name="accent_red">#F2B8B5</color>
+    <color name="accent_green">#6DD58C</color>
+    <color name="accent_blue">#A8C7FA</color>
+    <color name="accent_amber">#F8BD00</color>
 
-    <!-- Text -->
-    <color name="text_primary">#F0F4FF</color>
-    <color name="text_secondary">#7B8FAF</color>
-    <color name="text_muted">#4A5C7A</color>
-    <color name="text_on_accent">#FFFFFF</color>
+    <!-- Text (Google Contacts Dark - Screenshot 2 & 3) -->
+    <color name="text_primary">#E2E2E9</color>
+    <color name="text_secondary">#C4C6D0</color>
+    <color name="text_muted">#8E918F</color>
+    <color name="text_on_accent">#003258</color>
+
+    <!-- Settings category section titles (Google Contacts M3 Dark - onSurfaceVariant / text_secondary) -->
+    <color name="settings_section_title">@color/text_secondary</color>
 
     <!-- Badge backgrounds -->
-    <color name="badge_red_bg">#2D0A0C</color>
+    <color name="badge_red_bg">#370B0E</color>
     <color name="badge_green_bg">#082A14</color>
-    <color name="badge_amber_bg">#2A1A02</color>
-    <color name="badge_blue_bg">#0A1A3A</color>
+    <color name="badge_amber_bg">#2E1C00</color>
+    <color name="badge_blue_bg">#002D4C</color>
 
     <!-- Structure -->
-    <color name="divider_color">#1A2A3F</color>
-    <color name="card_stroke">#1E3050</color>
+    <color name="divider_color">#282A30</color>
+    <color name="card_stroke">#282A30</color>
 
     <!-- Chat bubbles -->
-    <color name="bubble_attacker_bg">#2D0A0C</color>
-    <color name="bubble_honeypot_bg">#0A1A3A</color>
-    <color name="bubble_user_bg">#1C2E47</color>
+    <color name="bubble_attacker_bg">#370B0E</color>
+    <color name="bubble_honeypot_bg">#002D4C</color>
+    <color name="bubble_user_bg">#282A31</color>
     <color name="badge_red_stroke">@color/transparent</color>
     <color name="badge_green_stroke">@color/transparent</color>
     <color name="badge_amber_stroke">@color/transparent</color>
     <color name="badge_blue_stroke">@color/transparent</color>
+
+    <!-- Material 3 Navigation Bar (Google Contacts Dark - Screenshot 2) -->
+    <color name="m3_nav_indicator">#004A77</color>
+    <color name="m3_nav_icon_selected">#D3E3FD</color>
+    <color name="m3_nav_icon_unselected">#C4C6D0</color>
+    <color name="m3_nav_text_selected">#E2E2E9</color>
+    <color name="m3_nav_text_unselected">#C4C6D0</color>
+
+    <!-- Switch colors (Google Material 3 Dark) -->
+    <color name="switch_track_checked">#004A77</color>
+    <color name="switch_thumb_checked">#A8C7FA</color>
+    <color name="switch_track_unchecked">#282A30</color>
+    <color name="switch_thumb_unchecked">#8E918F</color>
 </resources>

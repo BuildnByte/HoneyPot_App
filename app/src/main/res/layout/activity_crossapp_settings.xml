@@ -15,11 +15,9 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/bg_card"
+            android:background="@color/bg_primary"
             app:title="Cross-app scanning"
             app:titleTextColor="@color/text_primary"
-            app:subtitle="Settings and evidence"
-            app:subtitleTextColor="@color/text_secondary"
             app:navigationIcon="?attr/homeAsUpIndicator"
             app:navigationIconTint="@color/text_secondary" />
 

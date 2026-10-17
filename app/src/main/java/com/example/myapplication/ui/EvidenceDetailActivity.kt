@@ -45,8 +45,6 @@ class EvidenceDetailActivity : AppCompatActivity() {
 
         val sessionId = intent.getStringExtra("EXTRA_SESSION_ID") ?: return
         val sourceSender = intent.getStringExtra("EXTRA_SOURCE_SENDER") ?: ""
-        
-        supportActionBar?.subtitle = sourceSender
 
         val recyclerView = findViewById<RecyclerView>(R.id.detailRecyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)

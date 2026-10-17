@@ -353,7 +353,7 @@ class ScanOverlayService : LifecycleService() {
                 }
 
                 withContext(Dispatchers.IO) {
-                    val captureDir = File(filesDir, "evidence_captures").also { it.mkdirs() }
+                    val captureDir = File(cacheDir, "scan_cache").also { it.mkdirs() }
                     val captureId = UUID.randomUUID().toString()
                     val tmpFile = File(captureDir, "$captureId.tmp")
                     val finalFile = File(captureDir, "$captureId.png")

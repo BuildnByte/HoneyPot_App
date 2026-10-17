@@ -9,9 +9,9 @@ class OnboardingPagerAdapter(activity: FragmentActivity) : FragmentStateAdapter(
     override fun getItemCount(): Int = OnboardingActivity.PAGES.size
 
     override fun createFragment(position: Int): Fragment =
-        if (position == 4) {
-            OnboardingModelDownloadFragment.newInstance()
-        } else {
-            OnboardingPageFragment.newInstance(position)
+        when (position) {
+            4 -> OnboardingModelDownloadFragment.newInstance()
+            5 -> OnboardingCrossAppSetupFragment.newInstance()
+            else -> OnboardingPageFragment.newInstance(position)
         }
 }

@@ -221,6 +221,9 @@ interface KnowledgeBaseDao {
     @Query("UPDATE manual_captures SET analysisSessionId = :sessionId WHERE id = :id")
     suspend fun updateManualCaptureSessionId(id: String, sessionId: String)
 
+    @Query("UPDATE manual_captures SET imagePath = :path WHERE id = :id")
+    suspend fun updateManualCaptureImagePath(id: String, path: String)
+
     @Query("UPDATE manual_captures SET viewedAt = :viewedAt WHERE id = :id")
     suspend fun markManualCaptureViewed(id: String, viewedAt: Long)
 

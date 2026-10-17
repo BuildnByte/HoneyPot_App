@@ -16,6 +16,8 @@
         <item name="colorOnPrimaryContainer">@color/app_on_primary_container</item>
         <item name="colorTertiaryContainer">@color/app_tertiary_container</item>
         <item name="colorOnTertiaryContainer">@color/app_on_tertiary_container</item>
+        <item name="android:windowBackground">@color/bg_primary</item>
+        <item name="elevationOverlayEnabled">false</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:navigationBarColor">?attr/colorSurface</item>
 

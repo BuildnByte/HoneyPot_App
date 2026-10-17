@@ -92,4 +92,29 @@ object UiUtil {
             else -> com.example.myapplication.R.color.text_secondary
         }
     }
+
+    /**
+     * Standardized date formatting according to HoneyPot UI Guidelines:
+     * - If today: "Today"
+     * - If within current week: Abbreviated day name (e.g. "Thu", "Mon")
+     * - If earlier: "dd/MM/yy" (e.g. "12/10/26")
+     */
+    fun formatDisplayDate(timestamp: Long): String {
+        if (timestamp <= 0L) return ""
+        val now = java.util.Calendar.getInstance()
+        val target = java.util.Calendar.getInstance().apply { timeInMillis = timestamp }
+
+        val isToday = now.get(java.util.Calendar.YEAR) == target.get(java.util.Calendar.YEAR)
+                && now.get(java.util.Calendar.DAY_OF_YEAR) == target.get(java.util.Calendar.DAY_OF_YEAR)
+        if (isToday) return "Today"
+
+        val diffMillis = now.timeInMillis - target.timeInMillis
+        val diffDays = diffMillis / (1000 * 60 * 60 * 24)
+        if (diffDays in 1..6 && now.get(java.util.Calendar.WEEK_OF_YEAR) == target.get(java.util.Calendar.WEEK_OF_YEAR)) {
+            return java.text.SimpleDateFormat("EEE", java.util.Locale.getDefault()).format(java.util.Date(timestamp))
+        }
+
+        return java.text.SimpleDateFormat("dd/MM/yy", java.util.Locale.getDefault()).format(java.util.Date(timestamp))
+    }
 }
+
