@@ -101,7 +101,7 @@ class TimelineAdapter(
             // Map raw types to clean labels
             val label = when (evidence.entityType) {
                 "AMOUNT" -> "Financial Amounts"
-                "PERSON" -> "People Mentioned"
+                "PERSON" -> "People"
                 "ORGANIZATION" -> "Organisations"
                 "PHONE" -> "Phone Numbers"
                 "UPI_ID" -> "UPI IDs"
@@ -111,9 +111,18 @@ class TimelineAdapter(
                 else -> "${evidence.entityType.lowercase().replaceFirstChar { it.uppercase() }}s"
             }
             
-            headerText.text = "EXTRACTED $label"
-            headerText.setTextColor(android.graphics.Color.parseColor("#B71C1C")) // Make it stand out
-            headerIcon.setImageResource(R.drawable.ic_history)
+            headerText.text = label
+            headerText.setTextColor(itemView.context.getColor(R.color.text_secondary))
+            
+            // Map icons based on entity type
+            val iconRes = when (evidence.entityType) {
+                "AMOUNT", "ACCOUNT", "UPI_ID" -> R.drawable.ic_message // fallback
+                "PERSON", "ORGANIZATION" -> R.drawable.ic_message
+                "URL", "EMAIL", "PHONE" -> R.drawable.ic_message
+                else -> R.drawable.ic_history
+            }
+            headerIcon.setImageResource(iconRes)
+            headerIcon.imageTintList = android.content.res.ColorStateList.valueOf(itemView.context.getColor(R.color.text_secondary))
             
             cardContainer.visibility = View.VISIBLE
             
@@ -122,7 +131,8 @@ class TimelineAdapter(
             
             if (crossSessionSenders.isNotEmpty()) {
                 badgeContainer.visibility = View.VISIBLE
-                badgeText.text = "Also seen in: ${crossSessionSenders.joinToString(", ")}"
+                val cleanedSenders = crossSessionSenders.map { if (it == "MANUAL_CAPTURE") "Manual Scan" else it }
+                badgeText.text = "Also seen in: ${cleanedSenders.joinToString(", ")}"
             } else {
                 badgeContainer.visibility = View.GONE
             }

@@ -80,9 +80,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:orientation="vertical"
-        android:background="@color/bg_primary"
+        android:background="@color/transparent"
         android:paddingHorizontal="12dp"
-        android:paddingTop="10dp"
         android:paddingBottom="12dp">
 
         <!-- Row 1: text input + send button -->

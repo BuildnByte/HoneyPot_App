@@ -79,6 +79,7 @@ class SmsProcessingService : LifecycleService() {
     }
 
     private suspend fun processSms(sms: IncomingSms) {
+        com.example.myapplication.util.AppStatsManager.incrementScannedSms(this@SmsProcessingService)
         val filterPrefs = FilterPreferenceManager(this@SmsProcessingService)
 
         // STAGE 0: Check Contacts (if "Trust safe senders" is on and permission granted)

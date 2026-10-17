@@ -129,7 +129,11 @@ interface KnowledgeBaseDao {
             MAX(e.timestamp) as lastTimestamp, 
             COUNT(e.id) as evidenceCount,
             s.reportedAt,
-            (SELECT MAX(a.confidence) FROM ai_analysis_logs a INNER JOIN simulated_messages m ON a.messageId = m.id WHERE m.sessionId = e.sessionId) as maxConfidence
+            (SELECT MAX(c) FROM (
+                SELECT MAX(a.confidence) as c FROM ai_analysis_logs a INNER JOIN simulated_messages m ON a.messageId = m.id WHERE m.sessionId = e.sessionId
+                UNION ALL
+                SELECT MAX(ma.confidence) as c FROM manual_capture_analyses ma INNER JOIN manual_captures mc ON ma.captureId = mc.id WHERE mc.analysisSessionId = e.sessionId
+            )) as maxConfidence
         FROM scam_evidence e
         LEFT JOIN simulation_sessions s ON e.sessionId = s.id
         GROUP BY e.sessionId, e.sourceSender, s.reportedAt
@@ -233,6 +237,39 @@ interface KnowledgeBaseDao {
 
     @Query("DELETE FROM manual_capture_analyses WHERE captureId = :captureId")
     suspend fun deleteManualCaptureAnalysis(captureId: String)
+
+    // ── App Statistics & Metrics ────────────────────────────────────────────────
+    @Query("SELECT COUNT(*) FROM manual_captures")
+    suspend fun getManualCapturesCount(): Int
+
+    @Query("""
+        SELECT COUNT(*) FROM simulated_messages m
+        INNER JOIN simulation_sessions s ON m.sessionId = s.id
+        WHERE m.senderType = 'A'
+          AND s.name NOT LIKE '[LIVE] %'
+          AND s.name NOT LIKE '[CAPTURE] %'
+    """)
+    suspend fun getSandboxAttackerMessagesCount(): Int
+
+    @Query("SELECT * FROM manual_capture_analyses WHERE isScam = 1")
+    suspend fun getScamManualCaptureAnalyses(): List<ManualCaptureAnalysis>
+
+    @Query("SELECT * FROM ai_analysis_logs WHERE isScam = 1")
+    suspend fun getAllScamAiLogs(): List<AiAnalysisLog>
+
+    @Query("""
+        SELECT DISTINCT m.sessionId FROM simulated_messages m
+        INNER JOIN ai_analysis_logs a ON m.id = a.messageId
+        WHERE a.isScam = 1
+    """)
+    suspend fun getScamAiSessionIds(): List<String>
+
+    @Query("""
+        SELECT DISTINCT m.sessionId FROM simulated_messages m
+        INNER JOIN ai_analysis_logs a ON m.id = a.messageId
+        WHERE a.isScam = 1 AND a.timestamp >= :sinceTimestamp
+    """)
+    suspend fun getScamAiSessionIdsSince(sinceTimestamp: Long): List<String>
 }
 
 data class EvidenceSessionSummary(

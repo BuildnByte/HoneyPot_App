@@ -44,7 +44,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                android:text="SCAN OVERLAY"
+                android:text="Scan overlay"
                 style="@style/TextAppearance.Honeypot.SectionLabel" />
 
             <com.google.android.material.card.MaterialCardView
@@ -54,8 +54,7 @@
                 app:cardBackgroundColor="@color/bg_card"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="@color/card_stroke">
+                app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -78,8 +77,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
                         android:text="Open Accessibility Settings"
-                        android:textColor="@color/text_primary"
-                        app:backgroundTint="@color/bg_elevated"
+                        android:textColor="@color/accent_blue"
+                        app:backgroundTint="@color/badge_blue_bg"
                         app:iconTint="@color/accent_blue"
                         app:icon="@drawable/ic_scan" />
 
@@ -89,9 +88,10 @@
                         android:orientation="vertical"
                         android:layout_marginTop="16dp"
                         android:padding="12dp"
-                        android:background="@drawable/bg_message_input">
+                        android:background="@drawable/bg_chip_neutral">
 
                         <TextView
+                            android:id="@+id/tvInstructionTitle"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="How to turn off accessibility:"
@@ -100,6 +100,7 @@
                             android:textSize="14sp" />
 
                         <TextView
+                            android:id="@+id/tvInstructionBody"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
@@ -124,7 +125,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                android:text="QUICK SETTINGS TILE"
+                android:text="Quick settings tile"
                 style="@style/TextAppearance.Honeypot.SectionLabel" />
 
             <com.google.android.material.card.MaterialCardView
@@ -134,8 +135,7 @@
                 app:cardBackgroundColor="@color/bg_card"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="@color/card_stroke">
+                app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -165,8 +165,8 @@
                             android:layout_weight="1"
                             android:layout_marginEnd="6dp"
                             android:text="Add tile"
-                            android:textColor="@color/text_primary"
-                            app:backgroundTint="@color/bg_elevated"
+                            android:textColor="@color/accent_blue"
+                            app:backgroundTint="@color/badge_blue_bg"
                             app:iconTint="@color/accent_blue"
                             app:icon="@drawable/ic_scan" />
 
@@ -191,7 +191,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
-                android:text="EVIDENCE"
+                android:text="Evidence"
                 style="@style/TextAppearance.Honeypot.SectionLabel" />
 
             <com.google.android.material.card.MaterialCardView
@@ -200,8 +200,7 @@
                 app:cardBackgroundColor="@color/bg_card"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="@color/card_stroke">
+                app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"

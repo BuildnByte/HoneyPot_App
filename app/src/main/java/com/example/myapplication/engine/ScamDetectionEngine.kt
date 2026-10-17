@@ -65,7 +65,8 @@ class ScamDetectionEngine(private val context: Context) {
     suspend fun processMessage(
         sms: IncomingSms,
         history: List<String>,
-        explicitSessionId: String? = null
+        explicitSessionId: String? = null,
+        skipHoneypotReply: Boolean = false
     ): DetectionResult {
 
         // ── STAGE 1: Pre-filter ───────────────────────────────────────────────
@@ -243,7 +244,7 @@ class ScamDetectionEngine(private val context: Context) {
         }
 
         // ── STAGE 10: Honeypot reply suggestion ───────────────────────────────
-        val suggestedReply = withContext(Dispatchers.Default) {
+        val suggestedReply = if (skipHoneypotReply) "" else withContext(Dispatchers.Default) {
             CloudReplyGenerator.generateReply(fullHistory, scamType)
         }
 

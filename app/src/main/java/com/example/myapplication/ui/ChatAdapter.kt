@@ -45,6 +45,19 @@ class ChatAdapter(private val onBrainClick: (Int) -> Unit) :
         if (holder is VViewHolder) {
             holder.messageText.text = message.content
             holder.timeText.text = timeStr
+            if (message.senderType == "U") {
+                holder.senderLabel.text = "You (Manual)"
+                holder.senderLabel.setTextColor(holder.itemView.context.getColor(R.color.user_bubble_label))
+                holder.messageCard.setCardBackgroundColor(android.content.res.ColorStateList.valueOf(
+                    holder.itemView.context.getColor(R.color.user_bubble_bg)))
+                holder.rightBorder.setBackgroundColor(holder.itemView.context.getColor(R.color.user_bubble_border))
+            } else {
+                holder.senderLabel.text = "AI Honeypot"
+                holder.senderLabel.setTextColor(holder.itemView.context.getColor(R.color.accent_blue))
+                holder.messageCard.setCardBackgroundColor(android.content.res.ColorStateList.valueOf(
+                    holder.itemView.context.getColor(R.color.bubble_honeypot_bg)))
+                holder.rightBorder.setBackgroundColor(holder.itemView.context.getColor(R.color.accent_blue))
+            }
         } else if (holder is AViewHolder) {
             holder.messageText.text = message.content
             holder.timeText.text = timeStr
@@ -73,7 +86,9 @@ class ChatAdapter(private val onBrainClick: (Int) -> Unit) :
                                 holder.itemView.context.getColor(R.color.attacker_bubble_warn_bg)))
                         }
                         analysis.isScam -> {
-                            holder.brainIndicator.text = "⚠️ SCAM DETECTED"
+                            holder.brainIndicator.text = "SCAM DETECTED"
+                            holder.brainIndicator.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_warning, 0, 0, 0)
+                            holder.brainIndicator.compoundDrawablePadding = 8
                             holder.brainIndicator.setTextColor(holder.itemView.context.getColor(R.color.attacker_bubble_scam_stroke))
                             holder.messageCard.setStrokeColor(android.content.res.ColorStateList.valueOf(
                                 holder.itemView.context.getColor(R.color.attacker_bubble_scam_stroke)))
@@ -81,7 +96,8 @@ class ChatAdapter(private val onBrainClick: (Int) -> Unit) :
                                 holder.itemView.context.getColor(R.color.attacker_bubble_scam_bg)))
                         }
                         else -> {
-                            holder.brainIndicator.text = "✅ Safe (AI Analyzed)"
+                            holder.brainIndicator.text = "Safe (AI Analyzed)"
+                            holder.brainIndicator.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0)
                             holder.brainIndicator.setTextColor(holder.itemView.context.getColor(R.color.attacker_bubble_safe_stroke))
                             holder.messageCard.setStrokeColor(android.content.res.ColorStateList.valueOf(
                                 holder.itemView.context.getColor(R.color.attacker_bubble_safe_stroke)))
@@ -96,7 +112,9 @@ class ChatAdapter(private val onBrainClick: (Int) -> Unit) :
 
                     if (isSessionScam) {
                         holder.brainIndicator.visibility = View.VISIBLE
-                        holder.brainIndicator.text = "⚠️ SCAM DETECTED"
+                        holder.brainIndicator.text = "SCAM DETECTED"
+                        holder.brainIndicator.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_warning, 0, 0, 0)
+                        holder.brainIndicator.compoundDrawablePadding = 8
                         holder.brainIndicator.setTextColor(holder.itemView.context.getColor(R.color.attacker_bubble_scam_stroke))
                         holder.messageCard.setStrokeColor(android.content.res.ColorStateList.valueOf(
                             holder.itemView.context.getColor(R.color.attacker_bubble_scam_stroke)))
@@ -104,7 +122,8 @@ class ChatAdapter(private val onBrainClick: (Int) -> Unit) :
                             holder.itemView.context.getColor(R.color.attacker_bubble_scam_bg)))
                     } else if (message.id == firstAttackerMessageId) {
                         holder.brainIndicator.visibility = View.VISIBLE
-                        holder.brainIndicator.text = "🧠 Tap for AI analysis"
+                        holder.brainIndicator.text = "Tap for AI analysis"
+                        holder.brainIndicator.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0)
                         holder.brainIndicator.setTextColor(holder.itemView.context.getColor(R.color.attacker_bubble_label))
                         holder.messageCard.setStrokeColor(android.content.res.ColorStateList.valueOf(
                             holder.itemView.context.getColor(R.color.attacker_bubble_label)))
@@ -159,6 +178,9 @@ class ChatAdapter(private val onBrainClick: (Int) -> Unit) :
     }
 
     class VViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val senderLabel: TextView = view.findViewById(R.id.senderLabel)
+        val messageCard: com.google.android.material.card.MaterialCardView = view.findViewById(R.id.messageCard)
+        val rightBorder: View = view.findViewById(R.id.rightBorder)
         val messageText: TextView = view.findViewById(R.id.messageText)
         val timeText: TextView = view.findViewById(R.id.timeText)
     }

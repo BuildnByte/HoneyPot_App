@@ -92,7 +92,8 @@
                 app:cardBackgroundColor="@color/bg_card"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
-                app:strokeWidth="0dp">
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/card_stroke">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -110,6 +111,7 @@
 
 
                         <TextView
+                            android:id="@+id/heroProtectionStatus"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
@@ -126,7 +128,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
-                        android:text="247 messages scanned"
+                        android:text="0 messages scanned"
                         android:textColor="@color/text_primary"
                         android:textSize="28sp"
                         android:textStyle="bold" />
@@ -166,8 +168,8 @@
                                 android:id="@+id/statScamsCaught"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="3 scams caught"
-                                android:textColor="@color/text_primary"
+                                android:text="0 scams caught"
+                                android:textColor="@color/accent_red"
                                 android:textStyle="bold"
                                 android:textSize="14sp" />
                         </LinearLayout>
@@ -214,7 +216,7 @@
                         android:layout_height="44dp"
                         android:paddingHorizontal="16dp"
                         android:text="Scan message"
-                        android:textColor="@color/text_primary"
+                        android:textColor="@color/text_secondary"
                         android:textSize="14sp"
                         app:backgroundTint="@color/bg_elevated"
                         app:cornerRadius="14dp"
@@ -230,12 +232,12 @@
                         android:layout_marginStart="10dp"
                         android:paddingHorizontal="16dp"
                         android:text="View threats"
-                        android:textColor="@color/text_primary"
+                        android:textColor="@color/text_secondary"
                         android:textSize="14sp"
                         app:backgroundTint="@color/bg_elevated"
                         app:cornerRadius="14dp"
                         app:icon="@drawable/ic_message"
-                        app:iconTint="@color/accent_red"
+                        app:iconTint="@color/text_secondary"
                         app:iconSize="18dp" />
 
                     <com.google.android.material.button.MaterialButton
@@ -246,7 +248,7 @@
                         android:layout_marginStart="10dp"
                         android:paddingHorizontal="16dp"
                         android:text="File report"
-                        android:textColor="@color/text_primary"
+                        android:textColor="@color/text_secondary"
                         android:textSize="14sp"
                         app:backgroundTint="@color/bg_elevated"
                         app:cornerRadius="14dp"
@@ -382,14 +384,47 @@
         android:visibility="gone"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/messagesRecyclerView"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:paddingTop="8dp"
-            android:paddingBottom="120dp"
-            android:paddingHorizontal="12dp" />
+            android:layout_height="match_parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/messagesRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingTop="8dp"
+                android:paddingBottom="120dp"
+                android:paddingHorizontal="12dp" />
+
+            <!-- Empty state for flagged messages -->
+            <LinearLayout
+                android:id="@+id/messagesEmptyState"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center_horizontal"
+                android:layout_marginBottom="280dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_message"
+                    android:contentDescription="No messages"
+                    app:tint="@color/text_muted" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="No flagged messages yet"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </FrameLayout>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <!-- ═══════════════════════════════════════════════════════════════════ -->
@@ -474,24 +509,52 @@
             android:layout_height="0dp"
             android:layout_weight="1">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/historyRecyclerView"
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:clipToPadding="false"
-                android:paddingBottom="120dp"
-                android:paddingHorizontal="12dp" />
+                android:layout_height="match_parent">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/historyRecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:paddingBottom="120dp"
+                    android:paddingHorizontal="12dp" />
+
+                <!-- Empty state for history -->
+                <LinearLayout
+                    android:id="@+id/historyEmptyState"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|center_horizontal"
+                    android:layout_marginBottom="280dp"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@drawable/ic_history"
+                        android:contentDescription="No history"
+                        app:tint="@color/text_muted" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="No history yet"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </FrameLayout>
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
         <TextView
             android:id="@+id/historyEmptyText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="48dp"
-            android:gravity="center"
-            android:text="No history yet"
-            android:textColor="@color/text_muted"
-            android:textSize="14sp"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
             android:visibility="gone" />
 
         <!-- keep legacy button ID -->
@@ -517,15 +580,38 @@
             android:paddingBottom="120dp"
             android:paddingHorizontal="12dp" />
 
+        <!-- Empty state for sandbox -->
+        <LinearLayout
+            android:id="@+id/sandboxEmptyState"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="280dp"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_sandbox"
+                android:contentDescription="No sessions"
+                app:tint="@color/text_muted" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="No testing sessions yet"
+                android:textColor="@color/text_secondary"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
         <TextView
             android:id="@+id/sandboxEmptyText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:text="No testing sessions yet"
-            android:textColor="@color/text_muted"
-            android:textSize="14sp"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
             android:visibility="gone" />
 
         <!-- FAB -->
@@ -546,95 +632,126 @@
     <!-- ═══════════════════════════════════════════════════════════════════ -->
     <!-- SCANS TAB                                                           -->
     <!-- ═══════════════════════════════════════════════════════════════════ -->
-    <FrameLayout
+    <LinearLayout
         android:id="@+id/scansContent"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:orientation="vertical"
         android:visibility="gone"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/scansRecyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:paddingTop="8dp"
-            android:paddingBottom="120dp"
-            android:paddingHorizontal="12dp" />
-
-        <!-- Empty state -->
-        <LinearLayout
-            android:id="@+id/scansEmptyState"
+        <!-- Filter chips -->
+        <HorizontalScrollView
+            android:id="@+id/scansFilterScroll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:padding="32dp"
+            android:paddingHorizontal="12dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="8dp"
+            android:scrollbars="none"
+            android:clipToPadding="false"
             android:visibility="gone">
 
-            <ImageView
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:src="@drawable/ic_scan"
-                android:contentDescription="No scans"
-                app:tint="@color/text_muted" />
-
-            <TextView
+            <LinearLayout
+                android:id="@+id/scansFilterContainer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="No scans yet"
-                android:textColor="@color/text_primary"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:orientation="horizontal">
+                <!-- Chips dynamically added in MainActivity -->
+            </LinearLayout>
+        </HorizontalScrollView>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:gravity="center"
-                android:text="Tap the button below to scan a screenshot"
-                android:textColor="@color/text_muted"
-                android:textSize="14sp" />
-        </LinearLayout>
-
-        <!-- Empty text (legacy ID kept) -->
-        <TextView
-            android:id="@+id/scansEmptyText"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:visibility="gone" />
-
-        <!-- FAB -->
-        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-            android:id="@+id/openScansButton"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_gravity="bottom|center_horizontal"
-            android:layout_margin="16dp"
-            android:layout_marginBottom="88dp"
-            android:text="+ Scan New Screenshot"
-            android:textColor="@color/text_primary"
-            app:backgroundTint="@color/accent_blue"
-            app:iconTint="@color/text_primary" />
-    </FrameLayout>
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/scansRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingTop="8dp"
+                android:paddingBottom="120dp"
+                android:paddingHorizontal="12dp" />
+
+            <!-- Empty state -->
+            <LinearLayout
+                android:id="@+id/scansEmptyState"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center_horizontal"
+                android:layout_marginBottom="280dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_scan"
+                    android:contentDescription="No scans"
+                    app:tint="@color/text_muted" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="No scans yet"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Empty text (legacy ID kept) -->
+            <TextView
+                android:id="@+id/scansEmptyText"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+
+            <!-- FAB -->
+            <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+                android:id="@+id/openScansButton"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_gravity="bottom|center_horizontal"
+                android:layout_margin="16dp"
+                android:layout_marginBottom="88dp"
+                android:text="+ Scan New Screenshot"
+                android:textColor="@color/text_primary"
+                app:backgroundTint="@color/accent_blue"
+                app:iconTint="@color/text_primary" />
+        </FrameLayout>
+    </LinearLayout>
 
     <!-- ═══════════════════════════════════════════════════════════════════ -->
     <!-- BOTTOM NAVIGATION                                                   -->
     <!-- ═══════════════════════════════════════════════════════════════════ -->
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNavigation"
+    <LinearLayout
+        android:id="@+id/bottomNavContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="@color/bg_elevated"
-        android:elevation="0dp"
-        app:itemIconTint="@color/bottom_nav_item"
-        app:itemTextColor="@color/bottom_nav_item"
-        app:itemRippleColor="@android:color/transparent"
-        app:itemActiveIndicatorStyle="@style/Widget.Honeypot.BottomNav.Indicator"
-        app:labelVisibilityMode="labeled"
-        app:menu="@menu/main_bottom_nav" />
+        android:orientation="vertical">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/card_stroke" />
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottomNavigation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/bg_card"
+            android:elevation="0dp"
+            app:itemIconTint="@color/bottom_nav_item"
+            app:itemTextColor="@color/bottom_nav_item"
+            app:itemRippleColor="@android:color/transparent"
+            app:itemActiveIndicatorStyle="@style/Widget.Honeypot.BottomNav.Indicator"
+            app:labelVisibilityMode="labeled"
+            app:menu="@menu/main_bottom_nav" />
+    </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

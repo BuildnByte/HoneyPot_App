@@ -18,7 +18,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         com.example.myapplication.manualcapture.model.ManualCapture::class,
         com.example.myapplication.manualcapture.model.ManualCaptureAnalysis::class
     ],
-    version = 13,
+    version = 14,
     exportSchema = false
 )
 abstract class KnowledgeBaseDatabase : RoomDatabase() {
@@ -148,6 +148,13 @@ abstract class KnowledgeBaseDatabase : RoomDatabase() {
             }
         }
 
+        /** Adds safeReply column to manual_capture_analyses. */
+        private val MIGRATION_13_14 = object : Migration(13, 14) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                addColumnIfNotExists(db, "manual_capture_analyses", "safeReply", "TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
         fun getInstance(context: Context): KnowledgeBaseDatabase =
             INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room.databaseBuilder(
@@ -155,7 +162,7 @@ abstract class KnowledgeBaseDatabase : RoomDatabase() {
                     KnowledgeBaseDatabase::class.java,
                     "knowledge_base.db"
                 )
-                    .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13)
+                    .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14)
                     .fallbackToDestructiveMigration()
                     .build()
                     .also { INSTANCE = it }

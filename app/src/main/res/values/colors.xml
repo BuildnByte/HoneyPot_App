@@ -1,81 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- ══════════════════════════════════════════════════════════════════ -->
-    <!-- HONEYPOT DESIGN SYSTEM v2 — dark navy                             -->
-    <!-- ══════════════════════════════════════════════════════════════════ -->
-
     <!-- Backgrounds -->
-    <color name="bg_primary">#F8FAFC</color> <!-- slate-50 -->
+    <color name="bg_primary">#F0F2F5</color>
     <color name="bg_card">#FFFFFF</color>
-    <color name="bg_elevated">#F1F5F9</color> <!-- slate-100 -->
-    <color name="bg_surface">#FFFFFF</color>
+    <color name="bg_elevated">#E8EBF0</color>
+    <color name="bg_surface">#DBEAFE</color>
 
     <!-- Accents -->
-    <color name="accent_red">#EF4444</color>
-    <color name="accent_green">#10B981</color>
-    <color name="accent_blue">#3B82F6</color>
-    <color name="accent_amber">#F59E0B</color>
+    <color name="accent_red">#DC2626</color>
+    <color name="accent_green">#16A34A</color>
+    <color name="accent_blue">#2563EB</color>
+    <color name="accent_amber">#D97706</color>
 
     <!-- Text -->
-    <color name="text_primary">#0F172A</color> <!-- slate-900 -->
-    <color name="text_secondary">#475569</color> <!-- slate-600 -->
-    <color name="text_muted">#64748B</color> <!-- slate-500 -->
+    <color name="text_primary">#0F172A</color>
+    <color name="text_secondary">#475569</color>
+    <color name="text_muted">#94A3B8</color>
     <color name="text_on_accent">#FFFFFF</color>
 
     <!-- Badge backgrounds -->
-    <color name="badge_red_bg">#FEE2E2</color> <!-- red-100 -->
-    <color name="badge_green_bg">#DCFCE7</color> <!-- green-100 -->
-    <color name="badge_amber_bg">#FEF3C7</color> <!-- amber-100 -->
-    <color name="badge_blue_bg">#DBEAFE</color> <!-- blue-100 -->
+    <color name="badge_red_bg">#FEF2F2</color>
+    <color name="badge_red_text">#DC2626</color>
+    <color name="badge_green_bg">#F0FDF4</color>
+    <color name="badge_green_text">#16A34A</color>
+    <color name="badge_amber_bg">#FFFBEB</color>
+    <color name="badge_amber_text">#D97706</color>
+    <color name="badge_blue_bg">#EFF6FF</color>
+    <color name="badge_blue_text">#2563EB</color>
 
-    <!-- Structure -->
-    <color name="divider_color">#E2E8F0</color> <!-- slate-200 -->
-    <color name="card_stroke">#CBD5E1</color> <!-- slate-300 -->
+    <!-- Badge strokes -->
+    <color name="badge_red_stroke">#FECACA</color>
+    <color name="badge_green_stroke">#BBF7D0</color>
+    <color name="badge_amber_stroke">#FDE68A</color>
+    <color name="badge_blue_stroke">#BFDBFE</color>
 
     <!-- Chat bubbles -->
-    <color name="bubble_attacker_bg">#FEF2F2</color> <!-- red-50 -->
-    <color name="bubble_honeypot_bg">#EFF6FF</color> <!-- blue-50 -->
-    <color name="bubble_user_bg">#F1F5F9</color> <!-- slate-100 -->
+    <color name="scammer_bubble_bg">#FEF2F2</color>
+    <color name="scammer_bubble_border">#DC2626</color>
+    <color name="ai_bubble_bg">#EFF6FF</color>
+    <color name="ai_bubble_border">#2563EB</color>
+    <color name="user_bubble_border">#94A3B8</color>
+    <color name="bubble_attacker_bg">#FEF2F2</color>
+    <color name="bubble_honeypot_bg">#EFF6FF</color>
+    <color name="bubble_user_bg">#F1F5F9</color>
 
-    <!-- ── Legacy aliases (keep for any code referencing old names) ───── -->
-    <color name="background_primary">#080F1E</color>
-    <color name="background_card">#0F1B2D</color>
-    <color name="background_elevated">#16243A</color>
+    <!-- Structure -->
+    <color name="divider_color">#E2E8F2</color>
+    <color name="card_stroke">#D1D9E6</color>
 
-    <color name="brand_primary">#3B82F6</color>
-    <color name="brand_primary_dark">#93C5FD</color>
-    <color name="brand_secondary">#7B8FAF</color>
-    <color name="brand_secondary_dark">#BEC7DC</color>
-    <color name="brand_tertiary">#3B82F6</color>
-    <color name="brand_tertiary_dark">#93C5FD</color>
+    <!-- Keep legacy aliases just in case -->
+    <color name="background_primary">#F0F2F5</color>
+    <color name="background_card">#FFFFFF</color>
+    <color name="background_elevated">#E8EBF0</color>
 
-    <color name="success">#26D467</color>
-    <color name="warning">#F59E0B</color>
-    <color name="danger">#FF4757</color>
+    <color name="brand_primary">#2563EB</color>
+    <color name="brand_primary_dark">#2563EB</color>
+    <color name="brand_secondary">#475569</color>
+    <color name="brand_secondary_dark">#475569</color>
+    <color name="brand_tertiary">#2563EB</color>
+    <color name="brand_tertiary_dark">#2563EB</color>
+
+    <color name="success">#16A34A</color>
+    <color name="warning">#D97706</color>
+    <color name="danger">#DC2626</color>
 
     <!-- Material3 surface aliases -->
-    <color name="app_surface">#080F1E</color>
-    <color name="app_surface_container">#0F1B2D</color>
-    <color name="app_surface_container_high">#16243A</color>
-    <color name="app_surface_variant">#1A2A3F</color>
-    <color name="app_on_surface">#F0F4FF</color>
-    <color name="app_on_surface_variant">#7B8FAF</color>
-    <color name="app_outline_variant">#1A2A3F</color>
-    <color name="app_primary_container">#0A1A3A</color>
-    <color name="app_on_primary_container">#93C5FD</color>
-    <color name="app_tertiary_container">#082A14</color>
-    <color name="app_on_tertiary_container">#26D467</color>
-    <color name="app_surface_dark">#080F1E</color>
-    <color name="app_surface_container_dark">#0F1B2D</color>
-    <color name="app_surface_container_high_dark">#16243A</color>
-    <color name="app_surface_variant_dark">#1A2A3F</color>
-    <color name="app_on_surface_dark">#F0F4FF</color>
-    <color name="app_on_surface_variant_dark">#7B8FAF</color>
-    <color name="app_outline_variant_dark">#1A2A3F</color>
-    <color name="app_primary_container_dark">#0A1A3A</color>
-    <color name="app_on_primary_container_dark">#93C5FD</color>
-    <color name="app_tertiary_container_dark">#082A14</color>
-    <color name="app_on_tertiary_container_dark">#26D467</color>
+    <color name="app_surface">#FFFFFF</color>
+    <color name="app_surface_container">#FFFFFF</color>
+    <color name="app_surface_container_high">#E8EBF0</color>
+    <color name="app_surface_variant">#DBEAFE</color>
+    <color name="app_on_surface">#0F172A</color>
+    <color name="app_on_surface_variant">#475569</color>
+    <color name="app_outline_variant">#D1D9E6</color>
+    <color name="app_primary_container">#EFF6FF</color>
+    <color name="app_on_primary_container">#2563EB</color>
+    <color name="app_tertiary_container">#F0FDF4</color>
+    <color name="app_on_tertiary_container">#16A34A</color>
 
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>

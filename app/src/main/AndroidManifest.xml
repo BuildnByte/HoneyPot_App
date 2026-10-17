@@ -10,8 +10,9 @@
     <uses-permission android:name="android.permission.READ_SMS"/>
     <uses-permission android:name="android.permission.SEND_SMS"/>
 
-    <!-- Phone state -->
+    <!-- Phone state & Contacts -->
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.READ_CONTACTS"/>
 
     <!-- Boot receiver -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
@@ -67,12 +68,20 @@
         <!-- Main Activity -->
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.MyApplication">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Onboarding — shown only on first launch, or replayed from settings -->
+        <activity
+            android:name=".onboarding.OnboardingActivity"
+            android:exported="false"
+            android:label="Welcome"
+            android:theme="@style/Theme.MyApplication"/>
 
         <activity
             android:name=".ui.SettingsActivity"
@@ -200,6 +209,13 @@
             android:name=".manualcapture.CrossAppSettingsActivity"
             android:exported="false"
             android:label="Cross-app scanning"
+            android:theme="@style/Theme.MyApplication" />
+
+        <!-- Scanned message / session detail viewer (read-only evidence) -->
+        <activity
+            android:name=".manualcapture.ScanDetailActivity"
+            android:exported="false"
+            android:label="Scanned Messages"
             android:theme="@style/Theme.MyApplication" />
 
         <!-- FileProvider for sharing PDF reports -->

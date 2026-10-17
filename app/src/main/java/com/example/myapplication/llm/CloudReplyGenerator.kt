@@ -66,6 +66,135 @@ object CloudReplyGenerator {
         }
     }
 
+    /**
+     * Generates a safe, defensive brush-off reply using the Gemini API for scanned messages.
+     * Unlike [generateReply] (which acts as a curious victim in a simulation sandbox),
+     * this produces a firm, protective reply that a real user can copy and send back to
+     * shut down a suspected scammer and safeguard their personal security.
+     */
+    suspend fun generateSafeReply(
+        messageText: String,
+        scamType: String,
+        reasoning: String
+    ): String = withContext(Dispatchers.IO) {
+        val apiKey = BuildConfig.GEMINI_API_KEY
+        if (apiKey.isBlank() || apiKey == "YOUR_GEMINI_API_KEY_HERE") {
+            Log.w(TAG, "API key not set — using local safe reply fallback")
+            return@withContext fallbackSafeReply(scamType)
+        }
+
+        try {
+            val reply = callGeminiForSafeReply(apiKey, messageText, scamType, reasoning)
+            if (reply.isNullOrBlank()) {
+                Log.w(TAG, "Empty safe reply from Gemini — using local fallback")
+                fallbackSafeReply(scamType)
+            } else {
+                reply
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Gemini safe reply call failed — using local fallback", e)
+            fallbackSafeReply(scamType)
+        }
+    }
+
+    private fun callGeminiForSafeReply(
+        apiKey: String,
+        messageText: String,
+        scamType: String,
+        reasoning: String
+    ): String? {
+        val systemPrompt = """
+            You are a cybersecurity assistant. A user has received a suspected scam message on a messaging app (WhatsApp, Telegram, SMS, etc.).
+            Your job is to generate a short, firm, and protective brush-off reply (1 to 2 sentences maximum) that the user can copy and send back to the sender.
+
+            Guidelines:
+            - Firmly decline the offer, request, prize, payment, or demand.
+            - Explicitly state that you do not click links, share verification codes/OTPs, or make unverified payments.
+            - State that you will verify directly with official authorities or organizations if needed.
+            - Tell the sender not to contact you again.
+            - Do NOT ask questions. Do NOT show curiosity. Do NOT engage in conversation.
+            - Tone: Calm, firm, cautious, and uncompromising.
+            - Output ONLY the plain text reply. No quotes, no markdown, no explanation.
+        """.trimIndent()
+
+        val contents = JSONArray().apply {
+            put(JSONObject().apply {
+                put("role", "user")
+                put("parts", JSONArray().apply {
+                    put(JSONObject().apply {
+                        put("text", "Scam Type: $scamType\nAnalysis: $reasoning\nMessage received: \"$messageText\"\n\nWrite the safe reply:")
+                    })
+                })
+            })
+        }
+
+        val body = JSONObject().apply {
+            put("systemInstruction", JSONObject().apply {
+                put("parts", JSONArray().apply {
+                    put(JSONObject().apply { put("text", systemPrompt) })
+                })
+            })
+            put("contents", contents)
+            put("generationConfig", JSONObject().apply {
+                put("temperature", 0.4)
+                put("maxOutputTokens", 256)
+            })
+        }
+
+        val request = Request.Builder()
+            .url("$ENDPOINT?key=$apiKey")
+            .header("Content-Type", "application/json")
+            .post(body.toString().toRequestBody(JSON_MEDIA_TYPE))
+            .build()
+
+        client.newCall(request).execute().use { response ->
+            val rawBody = response.body?.string() ?: return null
+            Log.d(TAG, "Gemini safe reply raw response (${response.code}): $rawBody")
+
+            if (!response.isSuccessful) {
+                Log.e(TAG, "Gemini safe reply error ${response.code}: $rawBody")
+                return null
+            }
+
+            return try {
+                val json = JSONObject(rawBody)
+                val candidate = json.getJSONArray("candidates").getJSONObject(0)
+                if (candidate.optString("finishReason", "STOP") == "SAFETY") return null
+                candidate
+                    .getJSONObject("content")
+                    .getJSONArray("parts")
+                    .getJSONObject(0)
+                    .getString("text")
+                    .trim()
+                    .removePrefix("\"")
+                    .removeSuffix("\"")
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to parse Gemini safe reply", e)
+                null
+            }
+        }
+    }
+
+    fun fallbackSafeReply(scamType: String): String {
+        val lower = scamType.lowercase()
+        return when {
+            lower.contains("lottery") || lower.contains("prize") || lower.contains("kbc") || lower.contains("lucky") ->
+                "I never entered any lottery or draw. Do not contact me again."
+            lower.contains("delivery") || lower.contains("courier") || lower.contains("package") || lower.contains("parcel") ->
+                "I do not open tracking links sent over chat. I verify all shipments directly via the official merchant app."
+            lower.contains("electricity") || lower.contains("bill") || lower.contains("utility") ->
+                "I pay utility bills only through official apps. Do not send further disconnection threats."
+            lower.contains("bank") || lower.contains("kyc") || lower.contains("account") || lower.contains("freeze") || lower.contains("financial") || lower.contains("upi") ->
+                "I am verifying this directly with my bank branch. I do not share account details or verification codes over chat."
+            lower.contains("job") || lower.contains("task") || lower.contains("part-time") || lower.contains("crypto") || lower.contains("invest") ->
+                "I am not interested in unsolicited job or investment offers. Remove my number from your database immediately."
+            lower.contains("impersonat") || lower.contains("police") || lower.contains("cbi") || lower.contains("customs") || lower.contains("official") ->
+                "I am reporting this number to cyber crime authorities. Do not contact me further."
+            else ->
+                "I do not click unverified links or share personal information. Please contact me only through official verified channels."
+        }
+    }
+
     // ── Private ───────────────────────────────────────────────────────────────
 
     private fun callGemini(

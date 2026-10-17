@@ -22,6 +22,7 @@ import com.example.myapplication.filter.SmsPreFilter
 import com.example.myapplication.model.IncomingSms
 import com.example.myapplication.preprocessor.SmsPreprocessor
 import com.example.myapplication.trigger.TriggerEngine
+import com.example.myapplication.onboarding.OnboardingActivity
 import com.example.myapplication.ui.EvidenceActivity
 import com.example.myapplication.ui.SessionListActivity
 import com.example.myapplication.ui.SettingsActivity
@@ -45,9 +46,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var liveAdapter: com.example.myapplication.ui.SessionAdapter
     private lateinit var sandboxAdapter: com.example.myapplication.ui.SessionAdapter
     private lateinit var historyAdapter: com.example.myapplication.ui.EvidenceSessionAdapter
-    private lateinit var scansAdapter: com.example.myapplication.ui.SessionAdapter
+    private lateinit var scansAdapter: com.example.myapplication.ui.ScanSessionsAdapter
 
     private var currentHistoryFilter = "ALL"
+    private var currentScansFilter = "ALL"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,6 +57,20 @@ class MainActivity : AppCompatActivity() {
         androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(
             themePrefs.getInt("night_mode", androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         )
+
+        // ── Onboarding gate ─────────────────────────────────────────────────
+        val onboardingPrefs = getSharedPreferences(
+            OnboardingActivity.PREFS_NAME, android.content.Context.MODE_PRIVATE
+        )
+        if (!onboardingPrefs.getBoolean(OnboardingActivity.KEY_COMPLETED, false)) {
+            startActivity(Intent(this, OnboardingActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            })
+            finish()
+            return
+        }
+        // ────────────────────────────────────────────────────────────────────
+
         setContentView(R.layout.activity_main)
         SystemBars.apply(this, findViewById(android.R.id.content))
         val toolbar = findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbar)
@@ -88,7 +104,7 @@ class MainActivity : AppCompatActivity() {
                         showPage(R.id.sandboxContent, "Testing Sandbox", "Controlled pipeline sessions"); true
                     }
                     R.id.nav_scans -> {
-                        showPage(R.id.scansContent, "Screen Scans", "Manual overlay captures"); true
+                        showPage(R.id.scansContent, "Scanned Messages", "Messages analysed from other apps"); true
                     }
                     else -> false
                 }
@@ -132,6 +148,13 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        findViewById<View>(R.id.statScamsCaught)?.setOnClickListener {
+            findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottomNavigation).selectedItemId = R.id.nav_messages
+        }
+        findViewById<View>(R.id.statThreatsToday)?.setOnClickListener {
+            findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottomNavigation).selectedItemId = R.id.nav_messages
+        }
+
         // openMessagesButton and openHistoryButton removed in redesigned layout
         // Scans FAB and sandbox FAB are wired via the new ExtendedFAB IDs
         try { findViewById<View>(R.id.openSandboxButton)?.setOnClickListener { showCreateSessionSheet() } } catch (_: Exception) {}
@@ -167,6 +190,41 @@ class MainActivity : AppCompatActivity() {
         }
         findViewById<TextView>(R.id.customTitleText)?.text = title
         findViewById<TextView>(R.id.customSubtitleText)?.text = subtitle
+        applyEmptyStateBottomMargin()
+    }
+
+    private fun applyEmptyStateBottomMargin() {
+        val navContainer = findViewById<View>(R.id.bottomNavContainer)
+            ?: findViewById<View>(R.id.bottomNavigation)
+            ?: return
+        navContainer.post {
+            val displayMetrics = resources.displayMetrics
+            val screenHeight = displayMetrics.heightPixels
+            val distance = (0.35f * screenHeight).toInt()
+            val navHeight = navContainer.height.takeIf { it > 0 } ?: (70 * displayMetrics.density).toInt()
+            val targetMargin = navHeight + distance
+
+            val emptyViewIds = listOf(
+                R.id.messagesEmptyState,
+                R.id.historyEmptyState,
+                R.id.sandboxEmptyState,
+                R.id.scansEmptyState
+            )
+
+            emptyViewIds.forEach { id ->
+                findViewById<View?>(id)?.let { view ->
+                    val lp = view.layoutParams as? android.widget.FrameLayout.LayoutParams ?: return@let
+                    lp.gravity = android.view.Gravity.BOTTOM or android.view.Gravity.CENTER_HORIZONTAL
+                    lp.bottomMargin = targetMargin
+                    view.layoutParams = lp
+                }
+            }
+        }
+    }
+
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        applyEmptyStateBottomMargin()
     }
 
     private fun setupInlineSections() {
@@ -187,9 +245,10 @@ class MainActivity : AppCompatActivity() {
             },
             onLongClick = { summary -> confirmInlineDeleteEvidence(summary) }
         )
-        scansAdapter = com.example.myapplication.ui.SessionAdapter(
-            onClick = { session -> startActivity(Intent(this, com.example.myapplication.ui.SimulationActivity::class.java).apply { putExtra("EXTRA_SESSION_ID", session.id) }) },
-            onLongClick = { session -> showInlineSessionOptions(session.id, session.name) }
+        scansAdapter = com.example.myapplication.ui.ScanSessionsAdapter(
+            onClick = { session ->
+                startActivity(com.example.myapplication.manualcapture.ScanDetailActivity.buildIntentForSession(this, session.id))
+            }
         )
         // Threats tab (full list) — this is the only messagesRecyclerView now
         findViewById<RecyclerView>(R.id.messagesRecyclerView).apply { layoutManager = LinearLayoutManager(this@MainActivity); adapter = liveAdapter }
@@ -204,7 +263,13 @@ class MainActivity : AppCompatActivity() {
         findViewById<androidx.swiperefreshlayout.widget.SwipeRefreshLayout>(R.id.historySwipeRefresh).setOnRefreshListener { loadInlineSections() }
 
         setupHistoryFilters()
+        setupScansFilters()
         loadInlineSections()
+        applyEmptyStateBottomMargin()
+    }
+
+    private fun setupScansFilters() {
+        // Will be populated dynamically in loadInlineSections
     }
 
     private fun setupHistoryFilters() {
@@ -235,27 +300,162 @@ class MainActivity : AppCompatActivity() {
             val sandbox = dao.getSimulatedSessions()
             val scans = dao.getOverlayCaptureSessions()
             val history = dao.getEvidenceSessionSummaries()
+
+            // ── Live App Stats ──────────────────────────────────────────────
+            val inboxSmsCount = com.example.myapplication.util.AppStatsManager.getDeviceInboxSmsCount(this@MainActivity)
+            com.example.myapplication.util.AppStatsManager.recordInboxBaseline(this@MainActivity, inboxSmsCount)
+            val liveSmsProcessed = com.example.myapplication.util.AppStatsManager.getScannedSmsCount(this@MainActivity)
+            val scannedSmsCount = maxOf(inboxSmsCount, liveSmsProcessed)
+            val manualCapturesCount = dao.getManualCapturesCount()
+            val sandboxMessagesCount = dao.getSandboxAttackerMessagesCount()
+            val totalScanned = scannedSmsCount + manualCapturesCount + sandboxMessagesCount
+
+            val scamCaptures = dao.getScamManualCaptureAnalyses()
+            val scamAiLogs = dao.getAllScamAiLogs()
+            val scamAiSessionIds = dao.getScamAiSessionIds()
+
+            // Unique scams caught across all sources
+            val scamSessionIds = mutableSetOf<String>()
+            live.forEach { scamSessionIds.add(it.id) }
+            history.forEach { scamSessionIds.add(it.sessionId) }
+            scamCaptures.forEach { scamSessionIds.add(it.captureId) }
+            scamAiSessionIds.forEach { scamSessionIds.add(it) }
+            val scamsCaught = scamSessionIds.size
+
+            // Threats today (since midnight today in device local time)
+            val startOfDay = java.util.Calendar.getInstance().apply {
+                set(java.util.Calendar.HOUR_OF_DAY, 0)
+                set(java.util.Calendar.MINUTE, 0)
+                set(java.util.Calendar.SECOND, 0)
+                set(java.util.Calendar.MILLISECOND, 0)
+            }.timeInMillis
+
+            val todayThreatIds = mutableSetOf<String>()
+            live.filter { it.createdAt >= startOfDay }.forEach { todayThreatIds.add(it.id) }
+            history.filter { it.lastTimestamp >= startOfDay }.forEach { todayThreatIds.add(it.sessionId) }
+            scamCaptures.filter { it.completedAt >= startOfDay }.forEach { todayThreatIds.add(it.captureId) }
+            val scamAiSessionIdsToday = dao.getScamAiSessionIdsSince(startOfDay)
+            todayThreatIds.addAll(scamAiSessionIdsToday)
+
+            val scamAiLogsTodayCount = scamAiLogs.count { it.timestamp >= startOfDay }
+            val scamCapturesTodayCount = scamCaptures.count { it.completedAt >= startOfDay }
+            val threatsToday = maxOf(todayThreatIds.size, scamAiLogsTodayCount + scamCapturesTodayCount)
+
             val filteredHistory = when (currentHistoryFilter) {
                 "HIGH_RISK" -> history.filter { it.maxConfidence != null && it.maxConfidence >= 0.8f }
                 "LOW_RISK" -> history.filter { it.maxConfidence == null || it.maxConfidence < 0.8f }
                 "REPORTED" -> history.filter { it.reportedAt != null }
                 else -> history
             }
+            
+            // Scans filtering
+            val allSources = scans.map { com.example.myapplication.ui.UiUtil.formatSourceApp(it.serviceCenterAddress.removePrefix("manual:")) }.distinct().sorted()
+            val filteredScans = if (currentScansFilter == "ALL") scans else scans.filter {
+                val app = com.example.myapplication.ui.UiUtil.formatSourceApp(it.serviceCenterAddress.removePrefix("manual:"))
+                if (currentScansFilter == "Other") {
+                    app != "WhatsApp" && app != "Messages" && app != "Telegram"
+                } else {
+                    app.equals(currentScansFilter, ignoreCase = true)
+                }
+            }
+
             withContext(Dispatchers.Main) {
+                // ── Hero Card Dynamic Stats ──────────────────────────────────
+                findViewById<TextView?>(R.id.statMessagesScanned)?.text =
+                    "$totalScanned ${if (totalScanned == 1) "message" else "messages"} scanned"
+                val statScamsCaught = findViewById<TextView?>(R.id.statScamsCaught)
+                val statThreatsToday = findViewById<TextView?>(R.id.statThreatsToday)
+                val heroProtectionStatus = findViewById<TextView?>(R.id.heroProtectionStatus)
+
+                statScamsCaught?.text = "$scamsCaught ${if (scamsCaught == 1) "scam" else "scams"} caught"
+                statThreatsToday?.text = "$threatsToday ${if (threatsToday == 1) "threat" else "threats"} today"
+
+                statScamsCaught?.setTextColor(getColor(if (scamsCaught > 0) R.color.accent_red else R.color.text_primary))
+                statThreatsToday?.setTextColor(getColor(if (threatsToday > 0) R.color.accent_red else R.color.text_primary))
+
+                val hasSmsPerm = ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.RECEIVE_SMS) == PackageManager.PERMISSION_GRANTED
+                heroProtectionStatus?.text = if (hasSmsPerm) "Protection Active" else "Setup Needed"
+                heroProtectionStatus?.setTextColor(getColor(if (hasSmsPerm) R.color.accent_green else R.color.accent_amber))
+
                 liveAdapter.submitList(live)
                 sandboxAdapter.submitList(sandbox)
-                scansAdapter.submitList(scans)
+                scansAdapter.submitList(filteredScans)
                 historyAdapter.setItems(filteredHistory)
                 findViewById<View?>(R.id.recentActivityEmptyText)?.visibility = if (live.isEmpty()) View.VISIBLE else View.GONE
-                findViewById<View>(R.id.historyEmptyText).visibility = if (filteredHistory.isEmpty()) View.VISIBLE else View.GONE
-                findViewById<View>(R.id.sandboxEmptyText).visibility = if (sandbox.isEmpty()) View.VISIBLE else View.GONE
-                findViewById<View?>(R.id.scansEmptyText)?.visibility = if (scans.isEmpty()) View.VISIBLE else View.GONE
+                findViewById<View?>(R.id.messagesEmptyState)?.visibility = if (live.isEmpty()) View.VISIBLE else View.GONE
+                findViewById<View?>(R.id.historyEmptyState)?.visibility = if (filteredHistory.isEmpty()) View.VISIBLE else View.GONE
+                findViewById<View?>(R.id.historyEmptyText)?.visibility = View.GONE
+                findViewById<View?>(R.id.sandboxEmptyState)?.visibility = if (sandbox.isEmpty()) View.VISIBLE else View.GONE
+                findViewById<View?>(R.id.sandboxEmptyText)?.visibility = View.GONE
+                findViewById<View?>(R.id.scansEmptyState)?.visibility = if (filteredScans.isEmpty()) View.VISIBLE else View.GONE
+                
+                // Build dynamic filter chips for Scans
+                updateScansFilterUI(allSources)
                 
                 // Stop swipe refresh spinners if active
                 findViewById<androidx.swiperefreshlayout.widget.SwipeRefreshLayout>(R.id.messagesContent).isRefreshing = false
                 findViewById<androidx.swiperefreshlayout.widget.SwipeRefreshLayout>(R.id.historySwipeRefresh).isRefreshing = false
             }
         }
+    }
+
+    private fun updateScansFilterUI(sources: List<String>) {
+        val container = findViewById<android.widget.LinearLayout>(R.id.scansFilterContainer)
+        val scroll = findViewById<android.widget.HorizontalScrollView>(R.id.scansFilterScroll)
+        if (container == null || scroll == null) return
+
+        if (sources.isEmpty()) {
+            scroll.visibility = View.GONE
+            return
+        }
+        scroll.visibility = View.VISIBLE
+        container.removeAllViews()
+
+        val chips = mutableListOf<TextView>()
+
+        fun addChip(label: String, filterValue: String) {
+            val tv = TextView(this).apply {
+                text = label
+                textSize = 13f
+                gravity = android.view.Gravity.CENTER
+                setPadding(
+                    (16 * resources.displayMetrics.density).toInt(),
+                    0,
+                    (16 * resources.displayMetrics.density).toInt(),
+                    0
+                )
+                layoutParams = android.widget.LinearLayout.LayoutParams(
+                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
+                    (36 * resources.displayMetrics.density).toInt()
+                ).apply {
+                    if (container.childCount > 0) marginStart = (8 * resources.displayMetrics.density).toInt()
+                }
+            }
+            tv.setOnClickListener {
+                currentScansFilter = filterValue
+                loadInlineSections()
+            }
+            container.addView(tv)
+            chips.add(tv)
+
+            if (currentScansFilter == filterValue) {
+                tv.setBackgroundResource(R.drawable.bg_chip_active)
+                tv.setTextColor(getColor(R.color.text_primary))
+                tv.setTypeface(null, android.graphics.Typeface.BOLD)
+            } else {
+                tv.setBackgroundResource(R.drawable.bg_chip_neutral)
+                tv.setTextColor(getColor(R.color.text_secondary))
+                tv.setTypeface(null, android.graphics.Typeface.NORMAL)
+            }
+        }
+
+        addChip("All", "ALL")
+        if (sources.contains("WhatsApp")) addChip("WhatsApp", "WhatsApp")
+        if (sources.contains("Messages")) addChip("Messages", "Messages")
+        if (sources.contains("Telegram")) addChip("Telegram", "Telegram")
+
+        val hasOther = sources.any { it != "WhatsApp" && it != "Messages" && it != "Telegram" }
+        if (hasOther) addChip("Other", "Other")
     }
 
     private fun showCreateSessionSheet() {
@@ -506,7 +706,8 @@ class MainActivity : AppCompatActivity() {
         val perms = mutableListOf(
             Manifest.permission.RECEIVE_SMS,
             Manifest.permission.READ_SMS,
-            Manifest.permission.SEND_SMS
+            Manifest.permission.SEND_SMS,
+            Manifest.permission.READ_CONTACTS
         )
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             perms.add(Manifest.permission.POST_NOTIFICATIONS)
@@ -538,6 +739,7 @@ class MainActivity : AppCompatActivity() {
                 Log.d(TAG, "${perm.substringAfterLast(".")}: ${if (granted) "GRANTED ✅" else "DENIED ❌"}")
             }
             updatePermissionStatus()
+            loadInlineSections()
         }
     }
 

@@ -21,7 +21,7 @@
     <color name="victim_bubble_time">#64748B</color>
 
     <!-- Manual user input bubble -->
-    <color name="user_bubble_bg">#F1F5F9</color>
+    <color name="user_bubble_bg">#E2E8F0</color>
     <color name="user_bubble_label">#475569</color>
 
     <!-- Chat screen background -->

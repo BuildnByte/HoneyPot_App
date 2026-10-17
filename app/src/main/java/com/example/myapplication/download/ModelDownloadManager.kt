@@ -4,6 +4,9 @@ import android.content.Context
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
@@ -85,6 +88,12 @@ object ModelDownloadManager {
         object Completed : DownloadProgress()
         data class Failed(val error: String) : DownloadProgress()
     }
+
+    private val _downloadStatus = MutableStateFlow<DownloadProgress>(DownloadProgress.Idle)
+    val downloadStatus: StateFlow<DownloadProgress> = _downloadStatus.asStateFlow()
+
+    fun isDownloading(): Boolean =
+        _downloadStatus.value is DownloadProgress.Downloading || currentCall != null
 
     /**
      * Returns the target directory for downloaded models: context.filesDir/models/
@@ -185,6 +194,7 @@ object ModelDownloadManager {
             currentCall?.cancel()
         } catch (_: Exception) {}
         currentCall = null
+        _downloadStatus.value = DownloadProgress.Idle
     }
 
     /**
@@ -197,6 +207,7 @@ object ModelDownloadManager {
         }
 
         if (missing.isEmpty()) {
+            _downloadStatus.value = DownloadProgress.Completed
             emit(DownloadProgress.Completed)
             return@flow
         }
@@ -220,16 +231,16 @@ object ModelDownloadManager {
             Log.d(TAG, "Starting download: ${spec.fileName} from $url")
 
             // Immediately emit 0% progress so UI switches out of 'Connecting...' without waiting for first socket byte
-            emit(
-                DownloadProgress.Downloading(
-                    currentFileName = spec.displayName,
-                    currentFileIndex = index + 1,
-                    totalFiles = missing.size,
-                    fileProgressPercent = 0,
-                    totalDownloadedMB = totalBytesDownloadedCumulative / (1024f * 1024f),
-                    totalSizeMB = totalBytesToDownload / (1024f * 1024f)
-                )
+            val initialProgress = DownloadProgress.Downloading(
+                currentFileName = spec.displayName,
+                currentFileIndex = index + 1,
+                totalFiles = missing.size,
+                fileProgressPercent = 0,
+                totalDownloadedMB = totalBytesDownloadedCumulative / (1024f * 1024f),
+                totalSizeMB = totalBytesToDownload / (1024f * 1024f)
             )
+            _downloadStatus.value = initialProgress
+            emit(initialProgress)
 
             val request = Request.Builder()
                 .url(url)
@@ -267,16 +278,16 @@ object ModelDownloadManager {
                                 if (percent != lastEmittedPercent || now - lastEmittedTime >= 200) {
                                     lastEmittedPercent = percent
                                     lastEmittedTime = now
-                                    emit(
-                                        DownloadProgress.Downloading(
-                                            currentFileName = spec.displayName,
-                                            currentFileIndex = index + 1,
-                                            totalFiles = missing.size,
-                                            fileProgressPercent = percent,
-                                            totalDownloadedMB = totalBytesDownloadedCumulative / (1024f * 1024f),
-                                            totalSizeMB = totalBytesToDownload / (1024f * 1024f)
-                                        )
+                                    val progress = DownloadProgress.Downloading(
+                                        currentFileName = spec.displayName,
+                                        currentFileIndex = index + 1,
+                                        totalFiles = missing.size,
+                                        fileProgressPercent = percent,
+                                        totalDownloadedMB = totalBytesDownloadedCumulative / (1024f * 1024f),
+                                        totalSizeMB = totalBytesToDownload / (1024f * 1024f)
                                     )
+                                    _downloadStatus.value = progress
+                                    emit(progress)
                                 }
                             }
                             output.flush()
@@ -297,16 +308,20 @@ object ModelDownloadManager {
                 if (e is kotlinx.coroutines.CancellationException ||
                     (e is java.io.IOException && e.message?.contains("Canceled", ignoreCase = true) == true)) {
                     Log.d(TAG, "Download cancelled for ${spec.fileName}")
+                    _downloadStatus.value = DownloadProgress.Idle
                     return@flow
                 }
                 Log.e(TAG, "Error downloading ${spec.fileName}", e)
-                emit(DownloadProgress.Failed(e.message ?: "Failed downloading ${spec.displayName}"))
+                val failed = DownloadProgress.Failed(e.message ?: "Failed downloading ${spec.displayName}")
+                _downloadStatus.value = failed
+                emit(failed)
                 return@flow
             } finally {
                 currentCall = null
             }
         }
 
+        _downloadStatus.value = DownloadProgress.Completed
         emit(DownloadProgress.Completed)
     }.flowOn(Dispatchers.IO)
 }
