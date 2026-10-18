@@ -27,8 +27,7 @@
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
                 app:title="Review capture"
-                app:navigationIcon="?attr/homeAsUpIndicator"
-                app:subtitle="Draw boxes or tap to select text" />
+                app:navigationIcon="?attr/homeAsUpIndicator" />
 
             <!-- Google Lens Bounding Box Tools Bar -->
             <LinearLayout
@@ -91,7 +90,7 @@
         </com.google.android.material.appbar.AppBarLayout>
 
         <!-- Screenshot overlay view (expands to take all remaining space) -->
-        <com.example.myapplication.manualcapture.BlockOverlayView
+        <com.honeypot.app.manualcapture.BlockOverlayView
             android:id="@+id/blockOverlayView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

@@ -1,166 +1,303 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="24dp">
+    android:fillViewport="true">
 
-    <View
-        android:layout_width="40dp"
-        android:layout_height="4dp"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="16dp"
-        android:background="?attr/colorOutlineVariant" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="AI Analysis"
-        android:textAppearance="?attr/textAppearanceHeadlineSmall"
-        android:layout_marginBottom="16dp" />
-
-    <TextView
-        android:id="@+id/timestampText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:textAppearance="?attr/textAppearanceLabelSmall"
-        android:textColor="?attr/colorOutline" />
-
-    <com.google.android.material.chip.Chip
-        android:id="@+id/scamChip"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        app:chipBackgroundColor="#FDECEA"
-        app:chipStrokeWidth="0dp"
-        android:textColor="#D32F2F"
-        android:text="Scam Detected" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Confidence Score"
-        android:textAppearance="?attr/textAppearanceTitleSmall"
-        android:textColor="?attr/colorPrimary" />
-
-    <com.google.android.material.progressindicator.LinearProgressIndicator
-        android:id="@+id/confidenceProgress"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="16dp"
-        app:trackCornerRadius="4dp"
-        app:trackThickness="8dp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Reasoning"
-        android:textAppearance="?attr/textAppearanceTitleSmall"
-        android:textColor="?attr/colorPrimary" />
-
-    <TextView
-        android:id="@+id/reasoningText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="16dp"
-        android:textAppearance="?attr/textAppearanceBodyMedium" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Triggered Rules"
-        android:textAppearance="?attr/textAppearanceTitleSmall"
-        android:textColor="?attr/colorPrimary" />
-
-    <com.google.android.material.chip.ChipGroup
-        android:id="@+id/triggerGroup"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="16dp" />
-
-    <TextView
-        android:id="@+id/evidenceLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Verification Evidence"
-        android:textAppearance="?attr/textAppearanceTitleSmall"
-        android:textColor="?attr/colorPrimary" />
-
-    <com.google.android.material.chip.ChipGroup
-        android:id="@+id/evidenceGroup"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="16dp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Knowledge Base Matches"
-        android:textAppearance="?attr/textAppearanceTitleSmall"
-        android:textColor="?attr/colorPrimary" />
-
-    <TextView
-        android:id="@+id/kbText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:fontFamily="monospace"
-        android:textAppearance="?attr/textAppearanceBodySmall" />
-
-    <!-- Honeypot Reply Suggestion — only visible when isScam=true -->
     <LinearLayout
-        android:id="@+id/replySuggestionSection"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_marginTop="16dp"
-        android:background="@drawable/bg_reply_suggestion"
-        android:padding="16dp"
-        android:visibility="gone">
+        android:paddingBottom="32dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="💬 Suggested Honeypot Reply"
-            android:textAppearance="?attr/textAppearanceTitleSmall"
-            android:textColor="?attr/colorPrimary"
-            android:layout_marginBottom="8dp" />
+        <!-- Drag handle -->
+        <View
+            android:layout_width="40dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="16dp"
+            android:background="?attr/colorOutlineVariant"/>
 
-        <TextView
-            android:id="@+id/suggestedReplyText"
+        <!-- ── Header Row ─────────────────────────────────────────────── -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAppearance="?attr/textAppearanceBodyMedium"
-            android:textStyle="italic"
-            android:layout_marginBottom="12dp" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="20dp"
+            android:paddingBottom="12dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/copyReplyButton"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Copy to Clipboard"
-            app:icon="@android:drawable/ic_menu_send" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
 
-        <!-- Source badge: "☁️ Generated with Gemini API" or "📱 Generated on-device" -->
-        <TextView
-            android:id="@+id/replySourceBadge"
-            android:layout_width="wrap_content"
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="AI Analysis Report"
+                    android:textAppearance="?attr/textAppearanceHeadlineSmall"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/timestampText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textAppearance="?attr/textAppearanceLabelSmall"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    tools:text="Analyzed on: 11 Sep, 01:05"/>
+            </LinearLayout>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/scamChip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:chipStrokeWidth="0dp"
+                android:textStyle="bold"
+                app:chipMinHeight="32dp"
+                app:chipIcon="@drawable/ic_warning"
+                android:text="Scam Detected"/>
+        </LinearLayout>
+
+        <com.google.android.material.divider.MaterialDivider
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:textAppearance="?attr/textAppearanceLabelSmall"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            android:alpha="0.7"
+            android:layout_marginBottom="4dp"
+            app:dividerColor="?attr/colorOutlineVariant"/>
+
+        <!-- ── Confidence Score ──────────────────────────────────────── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="20dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="8dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Confidence Score"
+                    android:textAppearance="?attr/textAppearanceTitleSmall"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/confidenceLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?attr/textAppearanceLabelSmall"
+                    android:textColor="?attr/colorPrimary"
+                    tools:text="78%"/>
+            </LinearLayout>
+
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/confidenceProgress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:trackCornerRadius="6dp"
+                app:trackThickness="10dp"/>
+        </LinearLayout>
+
+        <!-- ── Reasoning ─────────────────────────────────────────────── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="20dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="4dp"
+            android:background="?attr/colorSurfaceContainerHigh"
+            android:layout_marginTop="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Reasoning"
+                app:drawableStartCompat="@drawable/ic_brain"
+                app:drawableTint="?attr/colorPrimary"
+                android:drawablePadding="8dp"
+                android:textAppearance="?attr/textAppearanceTitleSmall"
+                android:textStyle="bold"
+                android:textColor="?attr/colorPrimary"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:id="@+id/reasoningText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                android:lineSpacingMultiplier="1.4"
+                android:paddingBottom="16dp"
+                tools:text="This message contains a lottery prize claim with urgency markers and a request for personal contact via WhatsApp, consistent with prize scam patterns."/>
+        </LinearLayout>
+
+        <!-- ── Triggered Rules ───────────────────────────────────────── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="20dp"
+            android:paddingTop="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Triggered Rules"
+                app:drawableStartCompat="@drawable/ic_lightning"
+                app:drawableTint="?attr/colorPrimary"
+                android:drawablePadding="8dp"
+                android:textAppearance="?attr/textAppearanceTitleSmall"
+                android:textStyle="bold"
+                android:textColor="?attr/colorPrimary"
+                android:layout_marginBottom="8dp"/>
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/triggerGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"/>
+        </LinearLayout>
+
+        <!-- ── Evidence Flags ────────────────────────────────────────── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="20dp"
+            android:paddingTop="16dp">
+
+            <TextView
+                android:id="@+id/evidenceLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Verification Evidence"
+                app:drawableStartCompat="@drawable/ic_scan"
+                app:drawableTint="?attr/colorPrimary"
+                android:drawablePadding="8dp"
+                android:textAppearance="?attr/textAppearanceTitleSmall"
+                android:textStyle="bold"
+                android:textColor="?attr/colorPrimary"
+                android:layout_marginBottom="8dp"/>
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/evidenceGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"/>
+        </LinearLayout>
+
+        <!-- ── Knowledge Base Matches ────────────────────────────────── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="20dp"
+            android:paddingTop="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Knowledge Base Matches"
+                app:drawableStartCompat="@drawable/ic_book"
+                app:drawableTint="?attr/colorPrimary"
+                android:drawablePadding="8dp"
+                android:textAppearance="?attr/textAppearanceTitleSmall"
+                android:textStyle="bold"
+                android:textColor="?attr/colorPrimary"
+                android:layout_marginBottom="8dp"/>
+
+            <LinearLayout
+                android:id="@+id/kbGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </LinearLayout>
+
+        <!-- ── Suggested Honeypot Reply ──────────────────────────────── -->
+        <LinearLayout
+            android:id="@+id/replySuggestionSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="8dp"
+            android:background="?attr/colorSurfaceContainerHighest"
+            android:paddingTop="14dp"
+            android:paddingBottom="14dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
             android:visibility="gone"
-            tools:text="☁️ Generated with Gemini API" />
+            tools:visibility="visible">
+
+            <!-- Title row -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Suggested Honeypot Reply"
+                app:drawableStartCompat="@drawable/ic_message"
+                app:drawableTint="?attr/colorPrimary"
+                android:drawablePadding="8dp"
+                android:textAppearance="?attr/textAppearanceTitleSmall"
+                android:textStyle="bold"
+                android:textColor="?attr/colorPrimary"/>
+
+            <!-- Source badge — below title, full width -->
+            <TextView
+                android:id="@+id/replySourceBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:layout_marginBottom="10dp"
+                android:textAppearance="?attr/textAppearanceLabelSmall"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:visibility="gone"
+                tools:text="☁️ Generated with Gemini API"
+                tools:visibility="visible"/>
+
+            <!-- Reply text in a speech-bubble card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
+
+                <TextView
+                    android:id="@+id/suggestedReplyText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="14dp"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:lineSpacingMultiplier="1.4"
+                    tools:text="Oh my goodness, really? What is Mr. Sharma's full name and office location?"/>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/copyReplyButton"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Copy to Clipboard"
+                app:icon="@drawable/ic_copy"/>
+
+        </LinearLayout>
 
     </LinearLayout>
-
-</LinearLayout>
+</androidx.core.widget.NestedScrollView>

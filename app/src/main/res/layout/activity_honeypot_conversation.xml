@@ -1,141 +1,127 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Using LinearLayout with fitsSystemWindows="true" so the keyboard pushes the input up correctly, especially with Edge-to-Edge themes -->
-<LinearLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="?attr/colorSurface">
+    android:background="@color/bg_primary">
 
+    <!-- ── App bar ──────────────────────────────────────────────────────── -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="@color/bg_primary"
+        app:elevation="0dp">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Flagged Conversation"
-            app:subtitle="Loading..."
-            app:navigationIcon="?attr/homeAsUpIndicator"/>
+            android:background="@color/bg_primary"
+            app:titleTextColor="@color/text_primary"
+            app:navigationIconTint="@color/text_secondary" />
+
+        <!-- 1dp divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/divider_color" />
+
+        <!-- Scam alert banner (hidden by default, shown when session = scam) -->
+        <LinearLayout
+            android:id="@+id/scamAlertBanner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@color/badge_red_bg"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="10dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_close"
+                android:contentDescription="Scam detected"
+                app:tint="@color/accent_red" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="10dp"
+                android:text="Scam detected — AI honeypot active"
+                android:textColor="@color/accent_red"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- ── Chat messages ────────────────────────────────────────────────── -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chatRecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
+        app:stackFromEnd="false"
         android:clipToPadding="false"
-        android:paddingHorizontal="8dp"
         android:paddingTop="8dp"
-        android:paddingBottom="4dp"/>
+        android:paddingBottom="148dp"
+        android:paddingHorizontal="12dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-    <com.google.android.material.divider.MaterialDivider
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-
-    <!-- AI Suggestion Area — hidden until a reply is suggested -->
+    <!-- ── Bottom input area ────────────────────────────────────────────── -->
     <LinearLayout
-        android:id="@+id/suggestionContainer"
+        android:id="@+id/bottomInputArea"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:layout_gravity="bottom"
+        android:orientation="vertical"
+        android:background="@color/transparent"
         android:paddingHorizontal="12dp"
-        android:paddingVertical="8dp"
-        android:gravity="center_vertical"
-        android:background="?attr/colorSurfaceContainer"
-        android:visibility="gone"
-        tools:visibility="visible">
+        android:paddingBottom="12dp">
 
+        <!-- Row 1: text input + send button -->
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            android:orientation="horizontal"
+            android:gravity="bottom">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🤖 AI Reply Suggestion"
-                android:textAppearance="?attr/textAppearanceLabelSmall"
-                android:textColor="?attr/colorPrimary"/>
-
-            <TextView
-                android:id="@+id/suggestionText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:maxLines="3"
-                android:ellipsize="end"
-                android:textIsSelectable="true"
-                android:textAppearance="?attr/textAppearanceBodySmall"
-                android:textColor="?attr/colorOnSurface"
-                tools:text="Could you tell me your full name and the process to verify?"/>
-        </LinearLayout>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/useSuggestionButton"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="Use"/>
-
-    </LinearLayout>
-
-    <!-- Message Input Bar -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingHorizontal="12dp"
-        android:paddingVertical="8dp"
-        android:gravity="center_vertical"
-        android:background="?attr/colorSurfaceContainer">
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense"
-            app:boxBackgroundColor="?attr/colorSurface"
-            app:boxCornerRadiusBottomEnd="24dp"
-            app:boxCornerRadiusBottomStart="24dp"
-            app:boxCornerRadiusTopEnd="24dp"
-            app:boxCornerRadiusTopStart="24dp"
-            app:boxStrokeColor="?attr/colorOutline">
-
-            <com.google.android.material.textfield.TextInputEditText
+            <EditText
                 android:id="@+id/messageInput"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:hint="Type reply..."
-                android:textColor="?attr/colorOnSurface"
-                android:textColorHint="?attr/colorOnSurfaceVariant"
-                android:maxLines="4"
-                android:inputType="textMultiLine|textCapSentences"/>
+                android:layout_weight="1"
+                android:background="@drawable/bg_message_input"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="12dp"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_muted"
+                android:hint="Type your reply..."
+                android:textSize="15sp"
+                android:inputType="textMultiLine|textCapSentences"
+                android:minLines="1"
+                android:maxLines="6"
+                android:scrollbars="vertical" />
 
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/sendButton"
-            style="@style/Widget.Material3.Button"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:layout_marginStart="8dp"
-            android:minWidth="56dp"
-            android:minHeight="56dp"
-            android:padding="0dp"
-            android:text=""
-            app:cornerRadius="28dp"
-            app:backgroundTint="?attr/colorPrimary"
-            app:icon="@drawable/ic_send"
-            app:iconSize="24dp"
-            app:iconTint="?attr/colorOnPrimary"
-            android:contentDescription="Send"/>
+            <!-- Send button (circle, accent_blue) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/sendButton"
+                style="@style/Widget.Material3.Button.IconButton.Filled"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="8dp"
+                android:layout_gravity="bottom"
+                app:icon="@drawable/ic_send"
+                app:iconSize="20dp"
+                app:iconTint="@color/text_on_accent"
+                app:backgroundTint="@color/accent_blue"
+                app:cornerRadius="24dp"
+                android:contentDescription="Send reply" />
+        </LinearLayout>
     </LinearLayout>
 
-</LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

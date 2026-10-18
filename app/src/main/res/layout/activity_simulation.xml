@@ -1,107 +1,140 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?android:attr/colorBackground">
+    android:orientation="vertical"
+    android:background="@color/bg_primary">
 
+    <!-- ── App bar ──────────────────────────────────────────────────────── -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent">
+        android:background="@color/bg_primary"
+        app:elevation="0dp">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
+            android:background="@color/bg_primary"
+            app:titleTextColor="@color/text_primary"
+            app:navigationIconTint="@color/text_secondary"
             app:title="Testing Session"
-            app:navigationIcon="@drawable/abc_ic_ab_back_material" />
+            app:navigationIcon="?attr/homeAsUpIndicator" />
 
+        <!-- 1dp divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/divider_color" />
     </com.google.android.material.appbar.AppBarLayout>
+
+
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chatRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_weight="1"
         android:clipToPadding="false"
-        android:padding="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/inputContainer"
-        app:layout_constraintTop_toBottomOf="@id/appBarLayout" />
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"/>
 
-    <com.google.android.material.card.MaterialCardView
+    <!-- Bottom input area ────────────────────────────────────────────── -->
+    <LinearLayout
         android:id="@+id/inputContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardCornerRadius="0dp"
-        app:cardElevation="8dp"
-        app:layout_constraintBottom_toBottomOf="parent">
+        android:layout_gravity="bottom"
+        android:orientation="vertical"
+        android:background="@color/bg_card"
+        android:paddingHorizontal="12dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="12dp">
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="10dp"
+            android:background="@color/card_stroke" />
+
+        <!-- Sender Toggle -->
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/senderToggleGroup"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginBottom="12dp"
+            app:singleSelection="true"
+            app:selectionRequired="true"
+            app:checkedButton="@+id/selectV"
+            android:background="@drawable/bg_segment_container"
+            android:padding="4dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/selectV"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="Victim"
+                android:textSize="13sp"
+                android:textColor="@color/text_primary"
+                app:cornerRadius="8dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/selectA"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="Attacker"
+                android:textSize="13sp"
+                android:textColor="@color/text_primary"
+                app:cornerRadius="8dp" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+        <!-- Row 1: text input + send button -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="8dp">
+            android:orientation="horizontal"
+            android:gravity="bottom">
 
-            <com.google.android.material.button.MaterialButtonToggleGroup
-                android:id="@+id/senderToggleGroup"
-                android:layout_width="wrap_content"
+            <EditText
+                android:id="@+id/messageInput"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="8dp"
-                app:singleSelection="true"
-                app:selectionRequired="true"
-                app:checkedButton="@+id/selectV">
+                android:layout_weight="1"
+                android:background="@drawable/bg_message_input"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="12dp"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_muted"
+                android:hint="Type message here..."
+                android:textSize="15sp"
+                android:inputType="textMultiLine|textCapSentences"
+                android:minLines="1"
+                android:maxLines="6"
+                android:scrollbars="vertical" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/selectV"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Victim (V)"
-                    android:textColor="@color/selector_v_button"
-                    app:strokeColor="@color/selector_v_button"
-                    app:strokeWidth="2dp" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/selectA"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Attacker (A)"
-                    android:textColor="@color/selector_a_button"
-                    app:strokeColor="@color/selector_a_button"
-                    app:strokeWidth="2dp" />
-            </com.google.android.material.button.MaterialButtonToggleGroup>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <EditText
-                    android:id="@+id/messageInput"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:hint="Type message here..."
-                    android:inputType="textMultiLine"
-                    android:maxLines="4"
-                    android:padding="12dp"
-                    android:background="@android:color/transparent"
-                    android:autofillHints="none" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/sendButton"
-                    style="@style/Widget.Material3.Button.IconButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:icon="@android:drawable/ic_menu_send" />
-
-            </LinearLayout>
+            <!-- Send button (circle, accent_blue) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/sendButton"
+                style="@style/Widget.Material3.Button.IconButton.Filled"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="8dp"
+                android:layout_gravity="bottom"
+                app:icon="@drawable/ic_send"
+                app:iconSize="20dp"
+                app:iconTint="@color/text_on_accent"
+                app:backgroundTint="@color/accent_blue"
+                app:cornerRadius="24dp"
+                android:contentDescription="Send" />
         </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

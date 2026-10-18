@@ -1,85 +1,282 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent" android:layout_height="match_parent"
-    android:background="?attr/colorSurface">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_primary">
+
+    <!-- ── App Bar ──────────────────────────────────────────────────────── -->
     <com.google.android.material.appbar.AppBarLayout
-        android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:background="?attr/colorSurface" android:elevation="0dp">
-        <FrameLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/bg_primary"
+        app:backgroundTint="@color/bg_primary"
+        android:elevation="0dp"
+        app:elevation="0dp"
+        app:liftOnScroll="false">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/bg_primary">
+
             <com.google.android.material.appbar.MaterialToolbar
-                android:id="@+id/toolbar" android:layout_width="match_parent"
-                android:layout_height="wrap_content" android:minHeight="?attr/actionBarSize"
-                android:paddingEnd="56dp"
-                app:title="Honeypot" app:subtitle="SMS threat analysis" />
-            <com.google.android.material.button.MaterialButton
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="?attr/actionBarSize"
+                app:contentInsetStartWithNavigation="0dp"
+                android:paddingVertical="8dp"
+                android:background="@color/bg_primary"
+                app:backgroundTint="@color/bg_primary"
+                android:elevation="0dp"
+                app:elevation="0dp">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_gravity="center_vertical|start">
+
+                    <TextView
+                        android:id="@+id/customTitleText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Honeypot"
+                        android:textSize="26sp"
+                        android:textColor="@color/text_primary"
+                        android:textStyle="bold"
+                        android:letterSpacing="-0.01" />
+
+                    <TextView
+                        android:id="@+id/customSubtitleText"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:visibility="gone" />
+                </LinearLayout>
+            </com.google.android.material.appbar.MaterialToolbar>
+
+            <ImageButton
                 android:id="@+id/settingsButton"
-                style="@style/Widget.Material3.Button.IconButton"
-                android:layout_width="48dp" android:layout_height="48dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:layout_gravity="end|center_vertical"
-                android:contentDescription="Open settings" android:padding="12dp"
-                app:icon="@drawable/ic_settings" app:iconTint="?attr/colorOnSurface"
-                app:backgroundTint="@android:color/transparent" />
+                android:contentDescription="Open settings"
+                android:src="@drawable/ic_settings"
+                android:scaleType="center"
+                app:tint="@color/text_secondary"
+                android:background="?attr/actionBarItemBackground" />
         </FrameLayout>
     </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- HOME TAB                                                            -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/homeContent"
-        android:layout_width="match_parent" android:layout_height="match_parent"
-        android:clipToPadding="false" android:paddingBottom="96dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingBottom="120dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:orientation="vertical" android:paddingHorizontal="20dp" android:paddingTop="12dp">
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:text="Your protection overview" android:textAppearance="?attr/textAppearanceHeadlineSmall" />
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="4dp" android:text="Monitor incoming messages and test the detection pipeline when needed."
-                android:textAppearance="?attr/textAppearanceBodyMedium" android:textColor="?attr/colorOnSurfaceVariant" />
-            <com.google.android.material.card.MaterialCardView android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="20dp" app:cardBackgroundColor="?attr/colorPrimaryContainer"
-                app:cardCornerRadius="24dp" app:cardElevation="0dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:orientation="vertical" android:padding="20dp">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Pipeline status" android:textAppearance="?attr/textAppearanceTitleLarge"
-                        android:textColor="?attr/colorOnPrimaryContainer" />
-                    <TextView android:id="@+id/resultText" android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp" android:text="Permissions are being checked…"
-                        android:textAppearance="?attr/textAppearanceBodyMedium" android:textColor="?attr/colorOnPrimaryContainer" />
-                    <com.google.android.material.button.MaterialButton android:id="@+id/testButton"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp"
-                        android:text="Run diagnostics" android:textColor="?attr/colorOnPrimary"
-                        app:backgroundTint="?attr/colorPrimary" app:icon="@android:drawable/ic_media_play" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="28dp"
-                android:text="Explore" android:textAppearance="?attr/textAppearanceTitleMedium" />
-            <com.google.android.material.card.MaterialCardView android:id="@+id/liveHoneypotButton"
-                android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp"
-                android:clickable="true" android:focusable="true" app:cardCornerRadius="20dp" app:cardElevation="0dp"
-                app:strokeColor="?attr/colorOutlineVariant" app:strokeWidth="1dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:padding="18dp">
-                    <ImageView android:layout_width="28dp" android:layout_height="28dp" android:contentDescription="Flagged messages"
-                        android:src="@android:drawable/ic_dialog_alert" app:tint="?attr/colorError" />
-                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:layout_weight="1" android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Flagged messages" android:textAppearance="?attr/textAppearanceTitleMedium" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:text="Review live honeypot conversations" android:textAppearance="?attr/textAppearanceBodySmall" android:textColor="?attr/colorOnSurfaceVariant" />
-                    </LinearLayout>
-                    <ImageView android:layout_width="24dp" android:layout_height="24dp" android:contentDescription="Open" android:src="@android:drawable/ic_media_play" app:tint="?attr/colorOnSurfaceVariant" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:orientation="horizontal">
-                <com.google.android.material.button.MaterialButton android:id="@+id/simulationButton" style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Testing sandbox" app:icon="@android:drawable/ic_menu_edit" />
-                <com.google.android.material.button.MaterialButton android:id="@+id/evidenceButton" style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="10dp" android:layout_weight="1" android:text="History" app:icon="@android:drawable/ic_menu_recent_history" />
-            </LinearLayout>
-            <com.google.android.material.card.MaterialCardView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20dp"
-                app:cardBackgroundColor="?attr/colorSurfaceContainer" app:cardCornerRadius="16dp" app:cardElevation="0dp">
-                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="16dp"
-                    android:text="Call Manager  •  Coming soon\nA dedicated space for call analysis will be added in a future update."
-                    android:textAppearance="?attr/textAppearanceBodyMedium" android:textColor="?attr/colorOnSurfaceVariant" />
-            </com.google.android.material.card.MaterialCardView>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="12dp"
+            android:paddingTop="16dp">
+
+            <!-- ── TYPOGRAPHY HEADER: GOOGLE M3 CLEAN TITLE ─────────────── -->
+            <TextView
+                android:id="@+id/heroTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="16dp"
+                android:text="You are protected"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:letterSpacing="-0.01" />
+
+            <!-- ── PROTECTION OVERVIEW (Google Contacts Style List) ─────── -->
+            <TextView
+                android:id="@+id/sectionOverviewTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Protection overview"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_secondary" />
+
+            <LinearLayout
+                android:id="@+id/overviewCardContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_m3_surface"
+                android:orientation="vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="6dp">
+
+                <!-- Item 1: Messages checked -->
+                <LinearLayout
+                    android:id="@+id/overviewRow1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingVertical="12dp">
+
+                    <FrameLayout
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/bg_m3_avatar">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_message"
+                            android:contentDescription="Messages checked"
+                            app:tint="@color/accent_blue" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/statMessagesScanned"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="14dp"
+                        android:text="0 messages scanned"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="54dp"
+                    android:background="@color/divider_color" />
+
+                <!-- Item 2: Scams caught -->
+                <LinearLayout
+                    android:id="@+id/overviewRow2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingVertical="12dp">
+
+                    <FrameLayout
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/bg_m3_avatar">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_warning"
+                            android:contentDescription="Scams caught"
+                            app:tint="@color/accent_red" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/statScamsCaught"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="14dp"
+                        android:text="0 scams caught"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- ── RECENT MESSAGES (Google Messages Paradigm) ───────────── -->
+            <TextView
+                android:id="@+id/sectionRecentTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:text="Recent messages"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_secondary" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="vertical">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recentActivityRecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    android:clipToPadding="false" />
+
+                <TextView
+                    android:id="@+id/recentActivityEmptyText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="20dp"
+                    android:gravity="center"
+                    android:text="No recent messages yet"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <!-- ── QUICK ACTIONS (Text-First, Ergonomic 48dp+ Targets) ───── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/chipScanMessage"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="0dp"
+                    android:layout_height="52dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:text="Scan a screenshot"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    app:backgroundTint="@color/bg_elevated"
+                    app:cornerRadius="16dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/chipFileReport"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="0dp"
+                    android:layout_height="52dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:text="Report to police"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    app:backgroundTint="@color/bg_elevated"
+                    app:cornerRadius="16dp" />
+            </LinearLayout>
+
+            <!-- Hidden compatibility views for legacy controller references -->
+            <TextView android:id="@+id/heroProtectionStatus" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
+            <TextView android:id="@+id/statThreatsToday" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
+            <Button android:id="@+id/chipViewThreats" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
+
+            <!-- ── HIDDEN DEBUG TOOLS ────────────────────────────────────── -->
             <LinearLayout
                 android:id="@+id/advancedTools"
                 android:layout_width="match_parent"
@@ -87,95 +284,460 @@
                 android:layout_marginTop="24dp"
                 android:orientation="vertical"
                 android:visibility="gone">
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Advanced tools"
-                    android:textAppearance="?attr/textAppearanceTitleMedium" />
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/injectSmsButton"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:text="DEVELOPER TOOLS"
+                    style="@style/TextAppearance.Honeypot.SectionLabel" />
+
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Inject test SMS" />
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/directProcessButton"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Start processing service" />
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/testSafeBrowsingButton"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Test Safe Browsing API" />
+                    app:cardBackgroundColor="@color/bg_card"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <!-- resultText kept for diagnostics code -->
+                        <TextView
+                            android:id="@+id/resultText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="13sp"
+                            android:text="Checking…" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/testButton"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:text="Run diagnostics"
+                            android:textColor="@color/text_secondary"
+                            app:strokeColor="@color/divider_color" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/injectSmsButton"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="Inject test SMS"
+                            android:textColor="@color/text_secondary"
+                            app:strokeColor="@color/divider_color" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/directProcessButton"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="Start processing service"
+                            android:textColor="@color/text_secondary"
+                            app:strokeColor="@color/divider_color" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/testSafeBrowsingButton"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="Test Safe Browsing API"
+                            android:textColor="@color/text_secondary"
+                            app:strokeColor="@color/divider_color" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
+
+            <!-- keep legacy button IDs referenced by MainActivity -->
+            <Button android:id="@+id/simulationButton" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
+            <Button android:id="@+id/evidenceButton" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
+            <Button android:id="@+id/liveHoneypotButton" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
-    <androidx.core.widget.NestedScrollView
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- THREATS TAB                                                         -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/messagesContent"
-        android:layout_width="match_parent" android:layout_height="match_parent"
-        android:paddingBottom="96dp" android:visibility="gone"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:orientation="vertical" android:padding="20dp">
-            <androidx.recyclerview.widget.RecyclerView android:id="@+id/messagesRecyclerView"
-                android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20dp"
-                android:nestedScrollingEnabled="false" android:clipToPadding="false" />
-            <TextView android:id="@+id/messagesEmptyText" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="28dp" android:gravity="center" android:text="No flagged messages yet"
-                android:textAppearance="?attr/textAppearanceTitleMedium" android:textColor="?attr/colorOnSurfaceVariant" />
-            <com.google.android.material.button.MaterialButton android:id="@+id/openMessagesButton" style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_horizontal" android:layout_marginTop="16dp" android:text="Refresh messages" />
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/historyContent"
-        android:layout_width="match_parent" android:layout_height="match_parent"
-        android:paddingBottom="96dp" android:visibility="gone"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
-            <androidx.recyclerview.widget.RecyclerView android:id="@+id/historyRecyclerView"
-                android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20dp"
-                android:nestedScrollingEnabled="false" android:clipToPadding="false" />
-            <TextView android:id="@+id/historyEmptyText" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="28dp" android:gravity="center" android:text="No history to show yet"
-                android:textAppearance="?attr/textAppearanceTitleMedium" android:textColor="?attr/colorOnSurfaceVariant" />
-            <com.google.android.material.button.MaterialButton android:id="@+id/openHistoryButton" style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_horizontal" android:layout_marginTop="16dp" android:text="Refresh history" app:icon="@drawable/ic_history" />
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/sandboxContent"
-        android:layout_width="match_parent" android:layout_height="match_parent"
-        android:paddingBottom="96dp" android:visibility="gone"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
-            <androidx.recyclerview.widget.RecyclerView android:id="@+id/sandboxRecyclerView"
-                android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20dp"
-                android:nestedScrollingEnabled="false" android:clipToPadding="false" />
-            <TextView android:id="@+id/sandboxEmptyText" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="28dp" android:gravity="center" android:text="No testing sessions yet"
-                android:textAppearance="?attr/textAppearanceTitleMedium" android:textColor="?attr/colorOnSurfaceVariant" />
-            <com.google.android.material.button.MaterialButton android:id="@+id/openSandboxButton" style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_horizontal" android:layout_marginTop="16dp" android:text="New testing session" app:icon="@drawable/ic_sandbox" />
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/messagesRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingTop="8dp"
+                android:paddingBottom="120dp"
+                android:paddingHorizontal="12dp" />
+
+            <!-- Empty state for flagged messages -->
+            <LinearLayout
+                android:id="@+id/messagesEmptyState"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center_horizontal"
+                android:layout_marginBottom="280dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_message"
+                    android:contentDescription="No messages"
+                    app:tint="@color/text_muted" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="No flagged messages yet"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </FrameLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- HISTORY TAB                                                         -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <LinearLayout
+        android:id="@+id/historyContent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <!-- Filter chips -->
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="12dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="8dp"
+            android:scrollbars="none"
+            android:clipToPadding="false">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/filterAll"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:gravity="center"
+                    android:text="All"
+                    android:background="@drawable/bg_chip_active"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:paddingHorizontal="16dp" />
+
+                <TextView
+                    android:id="@+id/filterHighRisk"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:gravity="center"
+                    android:layout_marginStart="8dp"
+                    android:text="High Risk"
+                    android:background="@drawable/bg_chip_neutral"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    android:paddingHorizontal="16dp" />
+
+                <TextView
+                    android:id="@+id/filterLowRisk"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:gravity="center"
+                    android:layout_marginStart="8dp"
+                    android:text="Low Risk"
+                    android:background="@drawable/bg_chip_neutral"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    android:paddingHorizontal="16dp" />
+
+                <TextView
+                    android:id="@+id/filterReported"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:gravity="center"
+                    android:layout_marginStart="8dp"
+                    android:text="Reported"
+                    android:background="@drawable/bg_chip_neutral"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    android:paddingHorizontal="16dp" />
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/historySwipeRefresh"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/historyRecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:paddingBottom="120dp"
+                    android:paddingHorizontal="12dp" />
+
+                <!-- Empty state for history -->
+                <LinearLayout
+                    android:id="@+id/historyEmptyState"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|center_horizontal"
+                    android:layout_marginBottom="280dp"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@drawable/ic_history"
+                        android:contentDescription="No history"
+                        app:tint="@color/text_muted" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="No history yet"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </FrameLayout>
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <TextView
+            android:id="@+id/historyEmptyText"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone" />
+
+        <!-- keep legacy button ID -->
+        <Button android:id="@+id/openHistoryButton" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
+    </LinearLayout>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- SANDBOX TAB                                                         -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <FrameLayout
+        android:id="@+id/sandboxContent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/sandboxRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingTop="8dp"
+            android:paddingBottom="120dp"
+            android:paddingHorizontal="12dp" />
+
+        <!-- Empty state for sandbox -->
+        <LinearLayout
+            android:id="@+id/sandboxEmptyState"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="280dp"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_sandbox"
+                android:contentDescription="No sessions"
+                app:tint="@color/text_muted" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="No testing sessions yet"
+                android:textColor="@color/text_secondary"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/sandboxEmptyText"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone" />
+
+        <!-- FAB -->
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/openSandboxButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_margin="16dp"
+            android:layout_marginBottom="88dp"
+            android:text="New test session"
+            android:textColor="@color/text_on_accent"
+            app:backgroundTint="@color/accent_blue"
+            app:icon="@drawable/ic_sandbox"
+            app:iconTint="@color/text_on_accent" />
+    </FrameLayout>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- SCANS TAB                                                           -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <LinearLayout
+        android:id="@+id/scansContent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <!-- Filter chips -->
+        <HorizontalScrollView
+            android:id="@+id/scansFilterScroll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="12dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="8dp"
+            android:scrollbars="none"
+            android:clipToPadding="false"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:id="@+id/scansFilterContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <!-- Chips dynamically added in MainActivity -->
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/scansRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingTop="8dp"
+                android:paddingBottom="120dp"
+                android:paddingHorizontal="12dp" />
+
+            <!-- Empty state -->
+            <LinearLayout
+                android:id="@+id/scansEmptyState"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center_horizontal"
+                android:layout_marginBottom="280dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_scan"
+                    android:contentDescription="No scans"
+                    app:tint="@color/text_muted" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="No scans yet"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Empty text (legacy ID kept) -->
+            <TextView
+                android:id="@+id/scansEmptyText"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+
+            <!-- FAB -->
+            <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+                android:id="@+id/openScansButton"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_gravity="bottom|center_horizontal"
+                android:layout_margin="16dp"
+                android:layout_marginBottom="88dp"
+                android:text="Scan screenshot"
+                android:textColor="@color/text_on_accent"
+                app:backgroundTint="@color/accent_blue"
+                app:icon="@drawable/ic_scan"
+                app:iconTint="@color/text_on_accent" />
+        </FrameLayout>
+    </LinearLayout>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- BOTTOM NAVIGATION                                                   -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <LinearLayout
+        android:id="@+id/bottomNavContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="?attr/colorSurfaceContainer"
-        android:elevation="8dp"
-        android:gravity="center"
-        app:itemIconTint="?attr/colorPrimary"
-        app:itemIconSize="22dp"
-        app:itemPaddingTop="0dp"
-        app:itemPaddingBottom="0dp"
-        app:itemTextColor="?attr/colorOnSurface"
-        app:labelVisibilityMode="labeled"
-        app:menu="@menu/main_bottom_nav" />
+        android:orientation="vertical">
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottomNavigation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/bg_primary"
+            android:elevation="0dp"
+            app:itemIconTint="@color/bottom_nav_item"
+            app:itemTextColor="@color/bottom_nav_text"
+            app:itemActiveIndicatorStyle="@style/Widget.Honeypot.BottomNav.Indicator"
+            app:labelVisibilityMode="labeled"
+            app:menu="@menu/main_bottom_nav" />
+    </LinearLayout>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

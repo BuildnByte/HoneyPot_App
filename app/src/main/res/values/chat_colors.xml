@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Scammer / attacker bubble -->
+    <color name="attacker_bubble_bg">#FEF2F2</color>
+    <color name="attacker_bubble_label">#EF4444</color>
+
+    <!-- Bubble risk states -->
+    <color name="attacker_bubble_scam_bg">#FEF2F2</color>
+    <color name="attacker_bubble_scam_stroke">#EF4444</color>
+    <color name="attacker_bubble_safe_bg">#ECFDF5</color>
+    <color name="attacker_bubble_safe_stroke">#10B981</color>
+    <color name="attacker_bubble_warn_bg">#FFFBEB</color>
+    <color name="attacker_bubble_warn_stroke">#F59E0B</color>
+
+    <!-- AI Honeypot reply bubble -->
+
+    <!-- Manual user input bubble -->
+    <color name="user_bubble_bg">#E2E8F0</color>
+    <color name="user_bubble_label">#475569</color>
+
+    <!-- Chat screen background -->
+</resources>

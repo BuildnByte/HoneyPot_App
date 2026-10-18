@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:overScrollMode="never">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:paddingHorizontal="28dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="20dp">
+
+        <!-- Smartphone Frame Preview Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardPreview"
+            android:layout_width="165dp"
+            android:layout_height="260dp"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="6dp"
+            app:strokeWidth="1.5dp"
+            app:strokeColor="#254777"
+            app:cardBackgroundColor="#0F1B2D"
+            android:layout_marginBottom="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="16dp">
+
+                <!-- Circular glowing chip icon container -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardChipIcon"
+                    android:layout_width="84dp"
+                    android:layout_height="84dp"
+                    app:cardCornerRadius="42dp"
+                    app:cardBackgroundColor="#132338"
+                    app:strokeColor="#254777"
+                    app:strokeWidth="1.5dp"
+                    app:cardElevation="0dp">
+
+                    <ImageView
+                        android:id="@+id/imgChipIcon"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_memory"
+                        app:tint="#60A5FA"
+                        android:contentDescription="@null" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- On-Device AI text only -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="On-Device AI"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#F0F4FF"
+                    android:layout_marginTop="20dp" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/onboardTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="On-Device AI\nProtection"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#F0F4FF"
+            android:gravity="center"
+            android:lineSpacingMultiplier="1.15"
+            android:layout_marginBottom="10dp" />
+
+        <!-- Body description -->
+        <TextView
+            android:id="@+id/onboardBody"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Detect scams locally with zero latency and full privacy. Download our on-device AI package (~234 MB) now, or set it up later in Settings."
+            android:textSize="14sp"
+            android:textColor="#7B8FAF"
+            android:gravity="center"
+            android:lineSpacingMultiplier="1.4"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Interactive Download States Container -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp">
+
+            <!-- State 1: Download Action Button & Notes -->
+            <LinearLayout
+                android:id="@+id/layoutDownloadAction"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnStartDownload"
+                    style="@style/Widget.MaterialComponents.Button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:text="Download Models (~234 MB)"
+                    android:textAllCaps="false"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFFFFF"
+                    app:backgroundTint="#2563EB"
+                    app:cornerRadius="24dp"
+                    app:icon="@drawable/ic_memory"
+                    app:iconTint="#FFFFFF"
+                    app:iconPadding="8dp"
+                    app:iconGravity="textStart"
+                    android:paddingHorizontal="22dp"
+                    android:elevation="3dp" />
+
+                <TextView
+                    android:id="@+id/tvDownloadNote"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Wi-Fi recommended • You can continue while downloading"
+                    android:textSize="11.5sp"
+                    android:textColor="#64748B"
+                    android:gravity="center"
+                    android:layout_marginTop="8dp" />
+            </LinearLayout>
+
+            <!-- State 2: Active Download Progress Bar & Cancel -->
+            <LinearLayout
+                android:id="@+id/layoutDownloadProgress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:visibility="gone">
+
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/downloadProgressBar"
+                    android:layout_width="match_parent"
+                    android:layout_height="8dp"
+                    android:layout_marginHorizontal="12dp"
+                    app:trackCornerRadius="4dp"
+                    app:indicatorColor="#3B82F6"
+                    app:trackColor="#1E293B"
+                    android:indeterminate="false" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginHorizontal="14dp"
+                    android:layout_marginTop="8dp">
+
+                    <TextView
+                        android:id="@+id/tvProgressPercent"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Connecting…"
+                        android:textSize="12.5sp"
+                        android:textStyle="bold"
+                        android:textColor="#F0F4FF" />
+
+                    <TextView
+                        android:id="@+id/tvProgressSize"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0.0 / 234.0 MB"
+                        android:textSize="12sp"
+                        android:textColor="#7B8FAF" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/btnCancelDownload"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Cancel Download"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="#EF4444"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_marginTop="6dp" />
+            </LinearLayout>
+
+            <!-- State 3: Ready / Completed Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/layoutDownloadReady"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="8dp"
+                app:cardCornerRadius="16dp"
+                app:cardBackgroundColor="#0B2518"
+                app:strokeWidth="1.5dp"
+                app:strokeColor="#1E5238"
+                app:cardElevation="0dp"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="14dp">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        app:cardCornerRadius="19dp"
+                        app:cardBackgroundColor="#133824"
+                        app:strokeWidth="0dp"
+                        app:cardElevation="0dp"
+                        android:layout_marginEnd="12dp">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_onboard_ready"
+                            app:tint="#34D399"
+                            android:contentDescription="@null" />
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Offline Protection Active"
+                            android:textSize="14.5sp"
+                            android:textStyle="bold"
+                            android:textColor="#34D399" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="AI models are installed and ready on this device"
+                            android:textSize="12sp"
+                            android:textColor="#A7F3D0"
+                            android:layout_marginTop="2dp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </FrameLayout>
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

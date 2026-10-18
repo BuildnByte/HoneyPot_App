@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:overScrollMode="never">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:paddingHorizontal="28dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="20dp">
+
+        <!-- Smartphone Frame Preview Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardPreview"
+            android:layout_width="165dp"
+            android:layout_height="260dp"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="6dp"
+            app:strokeWidth="1.5dp"
+            app:strokeColor="#254777"
+            app:cardBackgroundColor="#0F1B2D"
+            android:layout_marginBottom="20dp">
+
+            <ImageView
+                android:id="@+id/onboardIllustration"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitCenter"
+                android:contentDescription="@null" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/onboardTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#F0F4FF"
+            android:gravity="center"
+            android:lineSpacingMultiplier="1.15"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Body description -->
+        <TextView
+            android:id="@+id/onboardBody"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14.5sp"
+            android:textColor="#7B8FAF"
+            android:gravity="center"
+            android:lineSpacingMultiplier="1.4"
+            android:layout_marginBottom="16dp" />
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

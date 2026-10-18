@@ -1,22 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurface">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="?attr/colorSurface"
+        app:elevation="0dp">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="Testing Sandbox"
-            app:subtitle="Create and review detection sessions"
             app:navigationIcon="?attr/homeAsUpIndicator"/>
+
+        <com.google.android.material.divider.MaterialDivider
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:dividerColor="?attr/colorOutlineVariant"/>
+
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.recyclerview.widget.RecyclerView
@@ -24,20 +30,21 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:paddingHorizontal="12dp"
-        android:paddingTop="12dp"
+        android:paddingTop="4dp"
         android:clipToPadding="false"
-        android:paddingBottom="88dp" />
+        android:paddingHorizontal="12dp"
+        android:paddingBottom="88dp"/>
 
     <TextView
         android:id="@+id/emptyText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="No testing sessions yet. Create one to begin."
+        android:text="No testing sessions yet.\nCreate one to begin."
         android:layout_gravity="center"
+        android:gravity="center"
         android:textAppearance="?attr/textAppearanceBodyLarge"
         android:textColor="?attr/colorOnSurfaceVariant"
-        android:visibility="gone" />
+        android:visibility="gone"/>
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fabAddSession"
@@ -45,7 +52,10 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="20dp"
-        android:text="New testing session"
-        app:icon="@android:drawable/ic_input_add" />
+        android:text="New session"
+        android:textColor="@color/text_on_accent"
+        app:backgroundTint="@color/accent_blue"
+        app:iconTint="@color/text_on_accent"
+        app:icon="@drawable/ic_sandbox"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

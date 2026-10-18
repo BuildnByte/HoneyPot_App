@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/bg_card">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="22dp">
+
+        <!-- Drag handle -->
+        <View
+            android:layout_width="40dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center_horizontal"
+            android:background="@color/divider_color"
+            android:layout_marginBottom="16dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@drawable/ic_brain"
+                app:tint="@color/accent_blue"
+                android:contentDescription="Architecture" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="14dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="System Architecture &amp; AI Engine"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Technical specifications &amp; security pipeline"
+                    android:textSize="13sp"
+                    android:textColor="@color/text_secondary" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Spec 1: On-device BERT -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/bg_m3_card_neutral"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="On-Device Neural Classifier"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="@color/accent_blue"
+                android:letterSpacing="0.01" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Model: Quantized MobileBERT / BERT-Mini (INT8 optimized)\nInference Latency: ~14ms per message\nParameters: 11.2M quantized weights\nExecution Engine: ONNX Runtime / TFLite native acceleration"
+                android:textSize="13sp"
+                android:textColor="@color/text_primary"
+                android:lineSpacingExtra="3dp" />
+        </LinearLayout>
+
+        <!-- Spec 2: Safe Browsing -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_m3_card_neutral"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Google Safe Browsing API v4"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="@color/accent_green"
+                android:letterSpacing="0.01" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Protocol: ThreatList lookup API (REST)\nCategories: MALWARE, SOCIAL_ENGINEERING, UNWANTED_SOFTWARE\nCache: Local LRU hash prefix verification\nFallback: Local regex heuristic scoring"
+                android:textSize="13sp"
+                android:textColor="@color/text_primary"
+                android:lineSpacingExtra="3dp" />
+        </LinearLayout>
+
+        <!-- Spec 3: Forensic Screenshot Vault -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_m3_card_neutral"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Forensic Evidence Integrity"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="@color/accent_amber"
+                android:letterSpacing="0.01" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Capture Engine: Android MediaProjection &amp; Accessibility Service\nResolution: 1080p uncompressed display capture with status bar clock\nIntegrity: SHA-256 session hash fingerprint\nStorage: App-private encrypted storage (non-scam captures auto-purged)"
+                android:textSize="13sp"
+                android:textColor="@color/text_primary"
+                android:lineSpacingExtra="3dp" />
+        </LinearLayout>
+
+        <!-- Spec 4: Privacy Guarantee -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_m3_card_neutral"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Zero-Cloud Privacy Guarantee"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_secondary"
+                android:letterSpacing="0.01" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Personal messages, contacts, and screen contents are processed strictly inside the device hardware boundary. No personal identifiers are logged or sent to cloud servers."
+                android:textSize="13sp"
+                android:textColor="@color/text_primary"
+                android:lineSpacingExtra="3dp" />
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCloseSpecs"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="20dp"
+            android:text="Close"
+            android:textColor="@color/text_on_accent"
+            app:backgroundTint="@color/accent_blue"
+            app:cornerRadius="16dp" />
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

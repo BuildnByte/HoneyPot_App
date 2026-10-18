@@ -4,7 +4,7 @@
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/brand_primary_dark</item>
         <item name="colorSecondary">@color/brand_secondary_dark</item>
-        <item name="colorTertiary">@color/brand_tertiary</item>
+        <item name="colorTertiary">@color/brand_tertiary_dark</item>
         <item name="colorSurface">@color/app_surface</item>
         <item name="colorSurfaceContainer">@color/app_surface_container</item>
         <item name="colorSurfaceContainerHigh">@color/app_surface_container_high</item>
@@ -16,7 +16,9 @@
         <item name="colorOnPrimaryContainer">@color/app_on_primary_container</item>
         <item name="colorTertiaryContainer">@color/app_tertiary_container</item>
         <item name="colorOnTertiaryContainer">@color/app_on_tertiary_container</item>
-        <item name="android:fontFamily">sans</item>
+        <item name="android:windowBackground">@color/bg_primary</item>
+        <item name="elevationOverlayEnabled">false</item>
+        <item name="android:windowLightStatusBar">false</item>
         <item name="android:navigationBarColor">?attr/colorSurface</item>
 
         <item name="android:statusBarColor">?attr/colorSurface</item>

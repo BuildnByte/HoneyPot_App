@@ -3,18 +3,25 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?android:attr/colorBackground">
+    android:background="?attr/colorSurface">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="?attr/colorSurface"
+        app:elevation="0dp">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="History"
-            app:navigationIcon="@drawable/abc_ic_ab_back_material" />
+            app:title="Evidence Vault"
+            app:navigationIcon="?attr/homeAsUpIndicator"/>
+
+        <com.google.android.material.divider.MaterialDivider
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:dividerColor="?attr/colorOutlineVariant"/>
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/filterTabs"
@@ -22,7 +29,8 @@
             android:layout_height="wrap_content"
             app:tabMode="scrollable"
             app:tabIndicatorAnimationMode="elastic"
-            android:background="?attr/colorSurface" />
+            app:tabRippleColor="?attr/colorPrimary"
+            android:background="?attr/colorSurface"/>
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -31,8 +39,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
-        android:padding="8dp"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+        android:paddingTop="4dp"
+        android:paddingBottom="16dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
     <TextView
         android:id="@+id/emptyText"
@@ -40,8 +49,9 @@
         android:layout_height="wrap_content"
         android:text="No history to show yet."
         android:layout_gravity="center"
+        android:gravity="center"
         android:textAppearance="?attr/textAppearanceBodyLarge"
         android:textColor="?attr/colorOnSurfaceVariant"
-        android:visibility="gone" />
+        android:visibility="gone"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

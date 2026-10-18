@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  A single scanned message card shown inside ScanDetailActivity's messagesContainer.
+  Plain text display — NOT a chat bubble.
+-->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardBackgroundColor="@color/bg_card"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="14dp">
+
+        <!-- Top row: source + date -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="10dp">
+
+            <!-- Source dot -->
+            <View
+                android:id="@+id/sourceAppDot"
+                android:layout_width="6dp"
+                android:layout_height="6dp"
+                android:layout_marginEnd="6dp"
+                android:background="@drawable/bg_badge_blue" />
+
+            <TextView
+                android:id="@+id/tvSourceLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="11sp"
+                android:textColor="@color/text_muted"
+                tools:text="From WhatsApp" />
+
+            <TextView
+                android:id="@+id/tvDateTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="11sp"
+                android:textColor="@color/text_muted"
+                tools:text="10 Oct 2026, 01:23 AM" />
+        </LinearLayout>
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/divider_color"
+            android:layout_marginBottom="10dp" />
+
+        <!-- Message text — plain, not a bubble -->
+        <TextView
+            android:id="@+id/tvMessageText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textColor="@color/text_primary"
+            android:lineSpacingMultiplier="1.4"
+            android:ellipsize="end"
+            android:maxLines="4"
+            tools:text="Congratulations! You have won a cash prize of ₹25,00,000 in the KBC Lucky Draw 2026. To claim your reward, contact our manager Mr. Sharma on WhatsApp at +91-9876543210 immediately." />
+
+        <!-- Show more / less -->
+        <TextView
+            android:id="@+id/btnShowMore"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Show more"
+            android:textSize="13sp"
+            android:textColor="@color/accent_blue"
+            android:visibility="gone" />
+
+        <!-- Copy message -->
+        <TextView
+            android:id="@+id/btnCopyMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Copy message"
+            android:textSize="12sp"
+            android:textColor="@color/text_muted"
+            android:padding="4dp" />
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

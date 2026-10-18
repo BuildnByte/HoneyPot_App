@@ -10,11 +10,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.myapplication"
+    namespace = "com.honeypot.app"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.myapplication"
+        applicationId = "com.honeypot.app"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
@@ -39,7 +39,7 @@ android {
     }
 
     androidResources {
-        noCompress += listOf("tflite", "task", "litertlm", "bin")
+        noCompress += listOf("tflite", "task", "litertlm", "bin", "onnx")
     }
 
     compileOptions {
@@ -76,11 +76,11 @@ dependencies {
     implementation("androidx.room:room-ktx:$roomVersion")
     ksp("androidx.room:room-compiler:$roomVersion")
 
+    // ONNX Runtime — runs the fine-tuned MuRIL BERT scam classifier
+    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.19.2")
+
     // MediaPipe Text Embedder
     implementation("com.google.mediapipe:tasks-text:1.0.0")
-
-    // LiteRT-LM
-    implementation("com.google.mediapipe:tasks-genai:0.10.35")
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
@@ -88,11 +88,14 @@ dependencies {
     // Kotlin Serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
 
-    // OkHttp — used for cloud API (OpenAI GPT-4o-mini) reply generation
+    // OkHttp — used for cloud API (Google Gemini 3.5 Flash Lite) reasoning and reply generation
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     // Lifecycle
     implementation("androidx.lifecycle:lifecycle-service:2.8.4")
+
+    // Pull-to-refresh support for Threats and History tabs
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
     // ML Kit bundled Latin text recognizer — on-device OCR for manual capture feature.
     // Bundled (not play-services) so scanning works immediately without a model download.

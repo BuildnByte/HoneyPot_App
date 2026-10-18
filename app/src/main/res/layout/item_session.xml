@@ -1,61 +1,140 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Clean Google Messages / Material 3 style item — used for Threats, Sandbox, Recent Activity -->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/sessionCardRoot"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="8dp"
+    android:layout_marginHorizontal="6dp"
     android:layout_marginVertical="4dp"
-    app:cardElevation="2dp"
-    app:cardCornerRadius="12dp">
+    android:clickable="true"
+    android:focusable="true"
+    android:longClickable="true"
+    app:cardBackgroundColor="@color/bg_card"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:orientation="horizontal"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="12dp"
+        android:gravity="center_vertical">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+        <!-- ── 40dp Circular Avatar ───────────────────────────────────── -->
+        <FrameLayout
+            android:id="@+id/sessionIconCard"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_m3_avatar_dark">
+
+            <ImageView
+                android:id="@+id/sessionIconView"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_message"
+                android:contentDescription="Icon"
+                android:visibility="gone"
+                app:tint="@color/accent_blue" />
 
             <TextView
-                android:id="@+id/sessionName"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textAppearance="?attr/textAppearanceTitleMedium"
-                tools:text="KBC Lottery Scam" />
-
-            <TextView
-                android:id="@+id/sessionDate"
+                android:id="@+id/sessionInitialView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?attr/textAppearanceLabelSmall"
-                android:textColor="?attr/colorOnSurfaceVariant"
-                tools:text="Aug 14" />
+                android:layout_gravity="center"
+                android:text="S"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/accent_blue" />
+        </FrameLayout>
+
+        <!-- ── Content ───────────────────────────────────────────────── -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="14dp"
+            android:orientation="vertical">
+
+            <!-- Title + Date row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/sessionName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:singleLine="true"
+                    android:ellipsize="end"
+                    tools:text="+91 98231 09841" />
+
+                <TextView
+                    android:id="@+id/sessionDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"
+                    tools:text="Today" />
+            </LinearLayout>
+
+            <!-- Snippet / Notes row (Single line, ellipsize end) -->
+            <TextView
+                android:id="@+id/sessionNotes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                android:singleLine="true"
+                android:ellipsize="end"
+                tools:text="Your power will be disconnected at 9:30 PM due to unpaid bills..." />
+
+            <!-- Hidden / legacy fields kept for backwards-compatibility -->
+            <TextView
+                android:id="@+id/sessionAttacker"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/sessionScamType"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+
+            <View
+                android:id="@+id/sessionStatusDot"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/sessionStatusLabel"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/sessionAttacker"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textAppearance="?attr/textAppearanceBodyMedium"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            tools:text="Sender: +91-9876543210" />
-
-        <TextView
-            android:id="@+id/sessionNotes"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:textAppearance="?attr/textAppearanceBodySmall"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            android:maxLines="2"
-            android:ellipsize="end"
-            tools:text="Testing the prize extraction with GPT-4o-mini" />
-
+        <!-- ── Chevron ───────────────────────────────────────────────── -->
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/ic_chevron_right"
+            android:contentDescription="Open"
+            app:tint="@color/text_muted" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

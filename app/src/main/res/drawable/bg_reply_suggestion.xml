@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Rounded card background for the honeypot reply suggestion section -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="#FFF8E1" />   <!-- Amber 50 — a warm, non-alarming highlight -->
-    <stroke android:width="1dp" android:color="#FFD54F" />  <!-- Amber 300 border -->
-    <corners android:radius="12dp" />
-</shape>
