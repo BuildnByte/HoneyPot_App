@@ -90,7 +90,7 @@
         </com.google.android.material.appbar.AppBarLayout>
 
         <!-- Screenshot overlay view (expands to take all remaining space) -->
-        <com.example.myapplication.manualcapture.BlockOverlayView
+        <com.honeypot.app.manualcapture.BlockOverlayView
             android:id="@+id/blockOverlayView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

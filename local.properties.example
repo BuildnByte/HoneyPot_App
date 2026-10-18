@@ -1,0 +1,63 @@
+## ==============================================================================
+## local.properties.example — Honeypot Android Application
+## ==============================================================================
+## This is a template configuration file for local developer machine setup.
+##
+## HOW TO USE:
+## 1. Copy or rename this file to "local.properties" in the project root:
+##      cp local.properties.example local.properties
+## 2. Fill in your Android SDK path and optional API keys below.
+## 3. Note: "local.properties" is in .gitignore and will NEVER be committed to Git.
+## ==============================================================================
+
+## -----------------------------------------------------------------------------
+## 1. Android SDK Location (Required for Gradle build)
+## -----------------------------------------------------------------------------
+## Path to your Android SDK installation.
+##
+## Windows example (note double backslashes and escaped colon):
+##   sdk.dir=C\:\\Users\\YourUsername\\AppData\\Local\\Android\\Sdk
+##
+## macOS / Linux example:
+##   sdk.dir=/Users/YourUsername/Library/Android/sdk
+##
+sdk.dir=C\:\\Users\\Harshal\\AppData\\Local\\Android\\Sdk
+
+
+## -----------------------------------------------------------------------------
+## 2. Google Gemini API Key (Optional — Cloud AI Reply & Reasoning)
+## -----------------------------------------------------------------------------
+## Powers cloud-based generative honeypot replies and first-message threat
+## reasoning via Gemini 1.5 / 2.0 Flash API.
+##
+## HOW TO GET A FREE KEY:
+## 1. Visit Google AI Studio: https://aistudio.google.com/
+## 2. Sign in with your Google account.
+## 3. Click "Get API key" -> "Create API key".
+## 4. Copy the key and paste it below.
+##
+## NOTE: If this key is blank or omitted, the application automatically uses
+## the on-device deterministic ReplyProgressionEngine (offline question banks)
+## with zero loss of core scam detection functionality.
+##
+GEMINI_API_KEY=
+
+
+## -----------------------------------------------------------------------------
+## 3. Google Safe Browsing API Key (Optional — URL Threat Verification)
+## -----------------------------------------------------------------------------
+## Powers real-time URL threat checks for suspicious links found in scam SMS.
+##
+## HOW TO GET A FREE KEY:
+## 1. Visit Google Cloud Console: https://console.cloud.google.com/
+## 2. Create or select a project.
+## 3. Navigate to "APIs & Services" -> "Library".
+## 4. Search for "Safe Browsing API" (v4) and click "Enable".
+## 5. Navigate to "APIs & Services" -> "Credentials".
+## 6. Click "+ CREATE CREDENTIALS" -> "API key".
+## 7. Copy the key and paste it below.
+##
+## NOTE: If this key is blank or omitted, URL checking is gracefully skipped
+## and URLs are evaluated by regex and indicator rules only.
+##
+SAFE_BROWSING_API_KEY=

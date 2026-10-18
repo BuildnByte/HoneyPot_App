@@ -46,7 +46,6 @@
     <!-- Chat bubbles -->
     <color name="bubble_attacker_bg">#370B0E</color>
     <color name="bubble_honeypot_bg">#002D4C</color>
-    <color name="bubble_user_bg">#282A31</color>
     <color name="badge_red_stroke">@color/transparent</color>
     <color name="badge_green_stroke">@color/transparent</color>
     <color name="badge_amber_stroke">@color/transparent</color>

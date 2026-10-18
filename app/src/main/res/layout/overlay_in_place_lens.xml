@@ -15,7 +15,7 @@
     android:fitsSystemWindows="false">
 
     <!-- 1. Full-screen screenshot + interactive bounding box overlay -->
-    <com.example.myapplication.manualcapture.BlockOverlayView
+    <com.honeypot.app.manualcapture.BlockOverlayView
         android:id="@+id/blockOverlayView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

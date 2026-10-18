@@ -9,12 +9,10 @@
     <string name="discard_title">Discard capture?</string>
     <string name="discard_message">The screenshot and any unsaved text will be permanently deleted.</string>
     <string name="discard_confirm">Discard</string>
-    <string name="cross_app_scan_section">Cross-app scanning</string>
     <string name="accessibility_service_description">Enables Honeypot to silently capture screenshots of suspicious messages on-demand when you tap the floating scan button, without showing recording or casting dialogs (similar to Google Lens).</string>
     <string name="box_hint_zero">✏️ Drag on image to draw selection box</string>
     <string name="box_hint_count">✏️ %1$d box(es) active (tap ✕ on box to delete)</string>
     <string name="clear_boxes">Clear boxes</string>
     <string name="auto_select_incoming">Auto incoming</string>
     <string name="select_all">Select all</string>
-    <string name="clear_all">Clear all</string>
 </resources>

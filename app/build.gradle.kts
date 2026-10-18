@@ -10,11 +10,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.myapplication"
+    namespace = "com.honeypot.app"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.myapplication"
+        applicationId = "com.honeypot.app"
         minSdk = 26
         targetSdk = 35
         versionCode = 1

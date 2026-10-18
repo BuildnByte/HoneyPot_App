@@ -38,33 +38,22 @@
     <color name="badge_blue_stroke">@color/transparent</color>
 
     <!-- Chat bubbles -->
-    <color name="scammer_bubble_bg">#FCE8E6</color>
-    <color name="scammer_bubble_border">#B3261E</color>
-    <color name="ai_bubble_bg">#E8F0FE</color>
-    <color name="ai_bubble_border">#0B57D0</color>
     <color name="user_bubble_border">#94A3B8</color>
     <color name="bubble_attacker_bg">#FCE8E6</color>
     <color name="bubble_honeypot_bg">#E8F0FE</color>
-    <color name="bubble_user_bg">#F1F5F9</color>
 
     <!-- Structure -->
     <color name="divider_color">#E0E3E8</color>
     <color name="card_stroke">#E0E3E8</color>
 
     <!-- Keep legacy aliases just in case -->
-    <color name="background_primary">#F2F4F9</color>
-    <color name="background_card">#FFFFFF</color>
-    <color name="background_elevated">#E8EBF0</color>
 
     <color name="brand_primary">#0B57D0</color>
     <color name="brand_primary_dark">#0B57D0</color>
-    <color name="brand_secondary">#444746</color>
     <color name="brand_secondary_dark">#444746</color>
-    <color name="brand_tertiary">#0B57D0</color>
     <color name="brand_tertiary_dark">#0B57D0</color>
 
     <color name="success">#146C2E</color>
-    <color name="warning">#B54708</color>
     <color name="danger">#B3261E</color>
 
     <!-- Material3 surface aliases -->
@@ -93,7 +82,5 @@
     <color name="switch_track_unchecked">#E0E3E8</color>
     <color name="switch_thumb_unchecked">#747775</color>
 
-    <color name="black">#FF1F1F1F</color>
-    <color name="white">#FFFFFFFF</color>
     <color name="transparent">#00000000</color>
 </resources>
