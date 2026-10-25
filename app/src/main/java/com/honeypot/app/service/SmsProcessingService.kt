@@ -62,7 +62,7 @@ class SmsProcessingService : LifecycleService() {
             return START_NOT_STICKY
         }
 
-        Log.d(TAG, "SMS received from: [${incomingSms.sender}] body: ${incomingSms.body.take(50)}")
+        Log.i(TAG, "📩 [SMS-RECEIVED] From: [${incomingSms.sender}] | Body: \"${incomingSms.body}\"")
 
         lifecycleScope.launch {
             try {
@@ -186,12 +186,13 @@ class SmsProcessingService : LifecycleService() {
                 val cloudGranted = consentManager.getConsent(sms.sender) == true
                 val scamType = result.scamResult?.scamType ?: priorScamLog?.scamType ?: "unknown"
 
-                val suggestedReply = if (cloudGranted) {
+                val suggestedReply = if (result.suggestedReply.isNotBlank()) {
+                    result.suggestedReply
+                } else if (cloudGranted) {
                     val cloudHistory = engineHistory + "[A]: ${sms.body}"
                     CloudReplyGenerator.generateReply(cloudHistory, scamType)
                 } else {
-                    result.suggestedReply.takeIf { it.isNotBlank() }
-                        ?: "Could you share more details before I proceed?"
+                    "Could you share more details before I proceed?"
                 }
 
                 // 5. Save analysis log with reply
@@ -271,11 +272,28 @@ class SmsProcessingService : LifecycleService() {
                 val scamResult = result.scamResult
                 Log.d(TAG, "Engine result: isScam=${scamResult?.isScam}, confidence=${scamResult?.confidence}")
 
-                if (scamResult != null && !scamResult.isScam) {
-                    // LLM says not a scam — archive the session so it doesn't clutter the live list
-                    Log.d(TAG, "LLM disagrees: not a scam. Archiving session ${newSession.id}.")
-                    withContext(Dispatchers.IO) {
-                        db.knowledgeBaseDao().archiveSession(newSession.id)
+                if (scamResult != null) {
+                    if (scamResult.isScam) {
+                        val log = AiAnalysisLog(
+                            messageId = savedMsgId.toInt(),
+                            confidence = scamResult.confidence,
+                            isScam = true,
+                            scamType = scamResult.scamType,
+                            reason = scamResult.reasoning.takeIf { it.isNotBlank() } ?: "Initial scam message detected.",
+                            firedTriggers = result.triggerResult?.firedTriggers?.joinToString(",") ?: "",
+                            kbMatches = result.kbResults.joinToString(",") { it.entry.scamType },
+                            evidenceFlagsJson = "[]",
+                            suggestedReply = result.suggestedReply,
+                            suggestedReplySource = "cloud",
+                            timestamp = System.currentTimeMillis()
+                        )
+                        withContext(Dispatchers.IO) { db.knowledgeBaseDao().insertAiAnalysisLog(log) }
+                    } else {
+                        // LLM says not a scam — archive the session so it doesn't clutter the live list
+                        Log.d(TAG, "LLM disagrees: not a scam. Archiving session ${newSession.id}.")
+                        withContext(Dispatchers.IO) {
+                            db.knowledgeBaseDao().archiveSession(newSession.id)
+                        }
                     }
                 }
             } catch (e: Exception) {

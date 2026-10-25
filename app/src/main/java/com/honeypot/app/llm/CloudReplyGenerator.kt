@@ -52,16 +52,18 @@ object CloudReplyGenerator {
             return@withContext ReplyProgressionEngine.nextReply(conversationHistory, scamType)
         }
 
+        Log.i(TAG, "🤖 [GEMINI-HONEYPOT-REPLY] Requesting reply for scamType='$scamType' (${conversationHistory.size} turns)")
         try {
             val reply = callGemini(apiKey, conversationHistory, scamType)
             if (reply.isNullOrBlank()) {
-                Log.w(TAG, "Empty response from API — falling back to local")
+                Log.w(TAG, "⚠️ [GEMINI-HONEYPOT-REPLY] Empty response — falling back to local engine")
                 ReplyProgressionEngine.nextReply(conversationHistory, scamType)
             } else {
+                Log.i(TAG, "✅ [GEMINI-HONEYPOT-REPLY] Generated suggestion: \"$reply\"")
                 reply
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Cloud API call failed — falling back to local", e)
+            Log.e(TAG, "❌ [GEMINI-HONEYPOT-REPLY] API call failed — falling back to local engine", e)
             ReplyProgressionEngine.nextReply(conversationHistory, scamType)
         }
     }
@@ -83,16 +85,18 @@ object CloudReplyGenerator {
             return@withContext fallbackSafeReply(scamType)
         }
 
+        Log.i(TAG, "🤖 [GEMINI-SAFE-REPLY] Requesting safe reply for scamType='$scamType' | Text: \"${messageText.take(80)}\"")
         try {
             val reply = callGeminiForSafeReply(apiKey, messageText, scamType, reasoning)
             if (reply.isNullOrBlank()) {
-                Log.w(TAG, "Empty safe reply from Gemini — using local fallback")
+                Log.w(TAG, "⚠️ [GEMINI-SAFE-REPLY] Empty response — using local fallback")
                 fallbackSafeReply(scamType)
             } else {
+                Log.i(TAG, "✅ [GEMINI-SAFE-REPLY] Generated reply: \"$reply\"")
                 reply
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Gemini safe reply call failed — using local fallback", e)
+            Log.e(TAG, "❌ [GEMINI-SAFE-REPLY] API call failed — using local fallback", e)
             fallbackSafeReply(scamType)
         }
     }

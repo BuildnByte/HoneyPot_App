@@ -64,11 +64,18 @@ object CloudReasoningService {
             return@withContext templateFallback(scamType, firedTriggers, kbMatchNames)
         }
 
+        Log.i(TAG, "🤖 [GEMINI-REASONING] Requesting analysis for scam: '$scamType' | Message: \"${smsBody.take(80)}\"")
         try {
-            callGemini(apiKey, smsBody, scamType, firedTriggers, kbMatchNames)
-                ?: templateFallback(scamType, firedTriggers, kbMatchNames)
+            val result = callGemini(apiKey, smsBody, scamType, firedTriggers, kbMatchNames)
+            if (result != null) {
+                Log.i(TAG, "✅ [GEMINI-REASONING] Output generated: \"${result.reasoning}\" (Entities found: ${result.additionalEntities.size})")
+                result
+            } else {
+                Log.w(TAG, "⚠️ [GEMINI-REASONING] Null response from Gemini — falling back to template")
+                templateFallback(scamType, firedTriggers, kbMatchNames)
+            }
         } catch (e: Exception) {
-            Log.e(TAG, "Cloud reasoning failed — template fallback", e)
+            Log.e(TAG, "❌ [GEMINI-REASONING] Call failed — falling back to template", e)
             templateFallback(scamType, firedTriggers, kbMatchNames)
         }
     }
@@ -134,9 +141,11 @@ Only include entity types that appear EXPLICITLY in the SMS text. Omit entities 
 
         client.newCall(request).execute().use { response ->
             val body = response.body?.string() ?: return null
-            Log.d(TAG, "Gemini reasoning (${response.code}): ${body.take(600)}")
-
-            if (!response.isSuccessful) { Log.e(TAG, "API error ${response.code}"); return null }
+            Log.i(TAG, "🤖 [GEMINI-REASONING] HTTP ${response.code} received (${body.length} bytes)")
+            if (!response.isSuccessful) {
+                Log.e(TAG, "❌ [GEMINI-REASONING] API error HTTP ${response.code}: $body")
+                return null
+            }
 
             return try {
                 val json = JSONObject(body)

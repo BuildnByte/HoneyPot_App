@@ -10,6 +10,7 @@ import android.telephony.SmsManager
 import android.util.Log
 import android.view.View
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -47,6 +48,10 @@ class HoneypotConversationActivity : AppCompatActivity() {
     private lateinit var messageInput: EditText
     private lateinit var sendButton: View
     private var scamAlertBanner: View? = null
+    private var suggestedReplyBanner: View? = null
+    private var suggestedReplyText: TextView? = null
+    private var useReplyAction: View? = null
+    private var previousAutoSuggestedReply: String? = null
 
     private lateinit var sessionId: String
     private var attackerPhone: String = ""
@@ -100,6 +105,20 @@ class HoneypotConversationActivity : AppCompatActivity() {
 
         // Scam alert banner + end session
         scamAlertBanner = findViewById(R.id.scamAlertBanner)
+
+        // AI Suggested reply banner
+        suggestedReplyBanner = findViewById(R.id.suggestedReplyBanner)
+        suggestedReplyText = findViewById(R.id.suggestedReplyText)
+        useReplyAction = findViewById(R.id.useReplyAction)
+
+        useReplyAction?.setOnClickListener {
+            val reply = suggestedReplyText?.text?.toString() ?: ""
+            if (reply.isNotBlank()) {
+                messageInput.setText(reply)
+                messageInput.setSelection(reply.length)
+                previousAutoSuggestedReply = reply
+            }
+        }
     }
 
     // ── Real-time message observation ─────────────────────────────────────────
@@ -148,18 +167,28 @@ class HoneypotConversationActivity : AppCompatActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 db.knowledgeBaseDao().observeLatestSuggestedReply(sessionId).collect { log ->
-                    if (log == null) return@collect
+                    if (log == null || log.suggestedReply.isBlank()) {
+                        suggestedReplyBanner?.visibility = View.GONE
+                        return@collect
+                    }
 
                     // Only surface if the last message is unanswered attacker turn
                     val lastMsg = withContext(Dispatchers.IO) {
                         db.knowledgeBaseDao().getSimulationHistory(sessionId).lastOrNull()
                     }
                     if (lastMsg != null && lastMsg.senderType == "A") {
-                        // Directly fill the text box
-                        if (messageInput.text.toString().isBlank()) {
+                        suggestedReplyBanner?.visibility = View.VISIBLE
+                        suggestedReplyText?.text = log.suggestedReply
+
+                        // Directly fill the text box if it was blank or previously had the older auto-suggestion
+                        val currentText = messageInput.text.toString().trim()
+                        if (currentText.isBlank() || currentText == previousAutoSuggestedReply) {
                             messageInput.setText(log.suggestedReply)
                             messageInput.setSelection(log.suggestedReply.length)
+                            previousAutoSuggestedReply = log.suggestedReply
                         }
+                    } else {
+                        suggestedReplyBanner?.visibility = View.GONE
                     }
                 }
             }
@@ -417,6 +446,8 @@ class HoneypotConversationActivity : AppCompatActivity() {
             }
 
             messageInput.text.clear()
+            suggestedReplyBanner?.visibility = View.GONE
+            previousAutoSuggestedReply = null
 
             // Save with senderType "U" — ChatAdapter and ReplyProgressionEngine both
             // treat "U" as an outgoing/victim message now.

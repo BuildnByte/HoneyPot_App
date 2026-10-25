@@ -87,7 +87,7 @@ interface KnowledgeBaseDao {
         INNER JOIN simulated_messages m ON a.messageId = m.id
         WHERE m.sessionId = :sessionId
           AND a.suggestedReply != ''
-        ORDER BY a.timestamp DESC
+        ORDER BY m.id DESC, a.id DESC
         LIMIT 1
     """)
     fun observeLatestSuggestedReply(sessionId: String): Flow<AiAnalysisLog?>
